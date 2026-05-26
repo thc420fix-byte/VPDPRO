@@ -1,0 +1,3616 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>VPD PRO — Grow Environment Monitor</title>
+  <!-- PWA manifest -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#22c55e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VPD PRO">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+  <!-- Icons for Apple devices -->
+  <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
+
+  <!-- Load Japanese web font (non-blocking for offline PWA) -->
+  <link rel=”preconnect” href=”https://fonts.googleapis.com” crossorigin>
+  <link rel=”preconnect” href=”https://fonts.gstatic.com” crossorigin>
+  <link href=”https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Rajdhani:wght@700&display=swap” rel=”stylesheet” media=”print” onload=”this.media='all'”>
+  <noscript><link href=”https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Rajdhani:wght@700&display=swap” rel=”stylesheet”></noscript>
+
+  <style>
+    /* 基本テーマ（ダーク） */
+    :root {
+      --bg: #090d0b;
+      --surface: #101510;
+      --surface2: #161e16;
+      --border: #5aaa70;
+      --accent: #00ff88;
+      --accent2: #00ccff;
+      --danger: #ff3333;
+      --ok: #00ff88;
+      --text: #dff5e8;
+      --muted: #4a6a55;
+      --leaf: #88ffaa;
+    }
+    /* ライトモード */
+    body.light-mode {
+      --bg: #f0f7f2;
+      --surface: #ffffff;
+      --surface2: #e8f5ed;
+      --border: #5aaa6a;
+      --accent: #00aa55;
+      --accent2: #0099cc;
+      --danger: #dd2222;
+      --ok: #00aa55;
+      --text: #1a3325;
+      --muted: #7aaa8a;
+      --leaf: #22aa55;
+    }
+    #settingsToggle {
+      position: absolute;
+      right: 8px;
+      top: max(10px, env(safe-area-inset-top));
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text);
+      font-size: 1rem;
+      padding: 4px 10px;
+      cursor: pointer;
+      opacity: 0.8;
+    }
+    #settingsModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 9999;
+      align-items: flex-start;
+      justify-content: flex-end;
+    }
+    #settingsModal.open { display: flex; }
+    #settingsPanel {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 0 0 0 14px;
+      padding: 20px 18px 24px;
+      min-width: 220px;
+      max-width: 280px;
+      margin-top: max(0px, env(safe-area-inset-top));
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 8px;
+      padding-top: max(10px, env(safe-area-inset-top));
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      /* iOS ダブルタップズーム / ピンチズーム抑止（アプリ的UIで固定） */
+      touch-action: manipulation;
+      -webkit-touch-callout: none;
+      -webkit-text-size-adjust: 100%;
+    }
+    html { touch-action: manipulation; }
+    h1 {
+      font-size: 1.9rem;
+      font-weight: 800;
+      text-align: center;
+      color: var(--accent);
+      margin: 0 0 2px 0;
+      letter-spacing: 2px;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text);
+      margin-bottom: 6px;
+      opacity: 0.75;
+      letter-spacing: 0.2px;
+    }
+    /* テントバー */
+    .tent-bar {
+      display: flex;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; /* Firefox */
+    }
+    .tent-bar::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+    .tent-btn {
+      flex: 1 0 auto;
+      min-width: 56px;
+      max-width: 90px;
+      padding: 10px 6px;
+      background: var(--surface);
+      border: none;
+      color: var(--text);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      white-space: pre-line;
+      font-family: inherit;
+    }
+    .tent-btn.solo {
+      max-width: none;
+    }
+    .tent-btn:first-child { border-radius: 10px 0 0 10px; }
+    .tent-btn:last-child  { border-radius: 0 10px 10px 0; }
+    .tent-btn.active {
+      background: var(--accent);
+      color: #000;
+    }
+    /* タブ */
+    .tabs {
+      display: flex;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .tab {
+      flex: 1;
+      /* 拡大してタップしやすくする */
+      padding: 10px 6px;
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color:var(--text);
+      cursor: pointer;
+      background: var(--surface);
+    }
+    .tab.active {
+      background: var(--accent);
+      color: #000;
+    }
+    /* コンテンツ */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    /* カード */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+    }
+    .card-title {
+      font-size: 0.95rem;
+      color:var(--text);
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+    }
+    /* ステージボタン */
+    .stage-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .stage-btn {
+      flex: 1;
+      min-width: calc(33% - 6px);
+      padding: 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      background: transparent;
+      cursor: pointer;
+      text-align: center;
+    }
+    .stage-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0, 255, 136, 0.1);
+    }
+    /* 入力行とボタン */
+    .input-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    #stageStartDate::-webkit-calendar-picker-indicator { opacity: 0; width: 0; padding: 0; margin: 0; }
+    #stageStartDate { cursor: pointer; -webkit-tap-highlight-color: transparent; accent-color: var(--accent); }
+    #stageStartDate::-webkit-datetime-edit-day-field:focus,
+    #stageStartDate::-webkit-datetime-edit-month-field:focus,
+    #stageStartDate::-webkit-datetime-edit-year-field:focus {
+      background-color: rgba(0,255,136,0.15);
+      color: var(--accent);
+      outline: none;
+      border-radius: 2px;
+    }
+    #phInput::placeholder,
+    #ecInput::placeholder,
+    #runoffEcInput::placeholder,
+    #waterTempInput::placeholder {
+      color: var(--muted);
+      opacity: 1;
+    }
+    /* iOS Safari での入力文字色を確実に適用 */
+    #phInput, #ecInput, #runoffEcInput, #waterTempInput {
+      -webkit-text-fill-color: var(--accent);
+    }
+    .small-btn {
+      flex: 0 0 auto;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 2px solid var(--accent);
+      background: rgba(0, 255, 136, 0.2);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    /* iPhone optimization */
+    @media (max-width: 600px) {
+      .small-btn {
+        padding: 6px 10px;
+        font-size: 1rem;
+      }
+      .tab, .tent-btn {
+        padding: 7px 4px;
+        font-size: 0.75rem;
+      }
+      .stage-btn {
+        padding: 6px 4px;
+        font-size: 0.75rem;
+      }
+    }
+    /* VPD表示 */
+    .vpd-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      margin-top: -8px;
+    }
+    .vpd-block {
+      flex: 1;
+      text-align: center;
+    }
+    .vpd-label {
+      font-size: 0.65rem;
+      color: var(--text);
+    }
+    .vpd-num {
+      font-family: 'Rajdhani', -apple-system, sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-transform: none;
+      letter-spacing: 0.2px;
+    }
+    .status-ok {
+      background: rgba(0, 255, 136, 0.15);
+      color: var(--ok);
+      border: 1px solid var(--ok);
+    }
+    .toggle-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .toggle-btn {
+      flex: 1;
+      padding: 4px 3px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      text-align: center;
+    }
+    .toggle-btn.active-day {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0,255,136,0.1);
+    }
+    .toggle-btn.active-night {
+      border-color: #8888ff;
+      color: #8888ff;
+      background: rgba(136,136,255,0.1);
+    }
+    .toggle-btn.active-leaf {
+      border-color: var(--leaf);
+      color: var(--leaf);
+      background: rgba(136,255,170,0.1);
+    }
+    .toggle-btn.active-co2 {
+      border-color: var(--accent2);
+      color: var(--accent2);
+      background: rgba(0,204,255,0.1);
+    }
+    /* 写真比較オーバーレイ */
+    .photo-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .photo-overlay img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+    }
+    .photo-overlay .overlay-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      font-size: 1.6rem;
+      color: #fff;
+      cursor: pointer;
+      z-index: 10;
+      background: none;
+      border: none;
+      padding: 8px;
+      line-height: 1;
+    }
+    .toast {
+      position: fixed;
+      bottom: max(28px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #000;
+      padding: 10px 28px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 2000;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+    .save-btn { position:relative; overflow:hidden; }
+    .save-btn::after {
+      content:'';
+      position:absolute;
+      left:0; top:0; bottom:0;
+      width:0%;
+      background:rgba(0,255,136,0.35);
+      transition:none;
+    }
+    .save-btn.holding::after { width:100%; transition:width 0.8s linear; }
+    .save-popup {
+      position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex;
+      align-items:center; justify-content:center; z-index:3000;
+      opacity:0; transition:opacity 0.25s; pointer-events:none;
+    }
+    .save-popup.show { opacity:1; pointer-events:all; }
+    .save-popup-box {
+      background:var(--surface); border:1px solid rgba(0,255,136,0.4);
+      border-radius:16px; padding:24px 28px; min-width:260px; max-width:320px;
+      text-align:center; box-shadow:0 0 30px rgba(0,255,136,0.2);
+    }
+  
+/* === Pro enhancements === */
+*, *::before, *::after { -webkit-tap-highlight-color: transparent; }
+.status-danger { color:#fff; background:linear-gradient(90deg,#ff1f3d,#ff0033); border:1px solid #ff0033; box-shadow:0 0 6px rgba(255,0,50,.8),0 0 12px rgba(255,0,50,.6),0 0 20px rgba(255,0,50,.4); transform:scale(1.03); }
+.status-warning { color:#ff9500; background:rgba(255,149,0,.15); border:1px solid #ff9500; }
+@keyframes dangerPulse { 0%{opacity:1; transform:scale(1.03);} 50%{opacity:.6; transform:scale(1.06);} 100%{opacity:1; transform:scale(1.03);} }
+.pulse { animation: dangerPulse 1.2s ease-in-out infinite; }
+.ppfd-alert { display:block;width:100%;box-sizing:border-box;padding:5px 8px;border-radius:8px;color:#fff;font-weight:700;font-size:0.72rem;text-align:center;background:rgba(255,30,0,0.85);box-shadow:0 0 8px rgba(255,0,0,.7),0 0 16px rgba(255,0,0,.4); }
+.tabs .tab, .stage-btn, .small-btn { font-weight: 700; }
+
+.mode-pill { padding:3px 9px; font-size:0.6rem; cursor:pointer; color:rgba(255,255,255,0.45); user-select:none; }
+.mode-pill.active-pill { background:rgba(0,255,136,0.2); color:var(--accent); font-weight:700; }
+.spot-delta { font-size:0.63rem; }
+.spot-delta.on  { color:var(--accent); }
+.spot-delta.off { color:#ff8866; }
+
+/* === PIN Lock === */
+#pinOverlay {
+  position:fixed;top:0;left:0;width:100%;height:100%;z-index:10000;
+  background:var(--bg,#090d0b);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
+}
+#blankScreen {
+  position:fixed;top:0;left:0;width:100%;height:100%;z-index:10001;
+  background:var(--bg,#090d0b);display:none;
+}
+.pin-dots { display:flex;gap:18px; }
+.pin-dot {
+  width:15px;height:15px;border-radius:50%;
+  border:2px solid var(--accent);background:transparent;
+  transition:background 0.12s;
+}
+.pin-dot.filled { background:var(--accent); }
+.pin-keypad {
+  display:grid;grid-template-columns:repeat(3,72px);gap:12px;
+}
+.pin-key {
+  width:72px;height:72px;border-radius:50%;
+  background:rgba(0,255,136,0.07);border:1.5px solid rgba(0,255,136,0.22);
+  color:var(--text);font-size:1.45rem;font-weight:600;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+  transition:background 0.1s,transform 0.08s;
+}
+.pin-key:active { background:rgba(0,255,136,0.22);transform:scale(0.93); }
+@keyframes pinShake {
+  0%,100%{transform:translateX(0)}
+  18%{transform:translateX(-9px)} 36%{transform:translateX(9px)}
+  54%{transform:translateX(-6px)} 72%{transform:translateX(6px)}
+}
+.pin-shake { animation:pinShake 0.38s ease; }
+
+</style>
+</head>
+<body>
+  <!-- ===== PIN Lock Overlay ===== -->
+  <div id="pinOverlay" style="display:none;">
+    <div style="font-size:1.4rem;font-weight:700;color:var(--accent);letter-spacing:0.15em;">VPD PRO</div>
+    <div id="pinMessage" style="font-size:0.88rem;color:var(--text);opacity:0.75;min-height:20px;text-align:center;"></div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-keypad">
+      <div class="pin-key pin-digit"></div>
+      <div class="pin-key pin-digit"></div>
+      <div class="pin-key pin-digit"></div>
+      <div class="pin-key pin-digit"></div>
+      <div class="pin-key pin-digit"></div>
+      <div class="pin-key pin-digit"></div>
+      <div class="pin-key pin-digit"></div>
+      <div class="pin-key pin-digit"></div>
+      <div class="pin-key pin-digit"></div>
+      <div class="pin-key pin-digit"></div>
+      <div class="pin-key pin-digit"></div>
+      <div class="pin-key" data-pin-del="1" onclick="pinDelete()" style="font-size:1.1rem;">⌫</div>
+    </div>
+    <div id="pinFailInfo" style="font-size:0.73rem;color:var(--danger);min-height:18px;text-align:center;"></div>
+  </div>
+  <!-- ===== Blank / Lockout Screen ===== -->
+  <div id="blankScreen"></div>
+
+  <button id="settingsToggle" onclick="openSettings()" aria-label="Settings">⚙️</button>
+  <!-- Settings Modal -->
+  <div id="settingsModal" role="dialog" aria-modal="true" onclick="closeSettings(event)">
+    <div id="settingsPanel">
+      <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:14px;">SETTINGS</div>
+      <!-- テーマ -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <span style="font-size:0.8rem;font-weight:500;color:var(--text);">DARK MODE</span>
+        <div id="themeToggle" onclick="toggleTheme()" style="width:42px;height:24px;border-radius:12px;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.4);cursor:pointer;position:relative;transition:background 0.2s;">
+          <div id="themeThumb" style="width:18px;height:18px;border-radius:50%;background:var(--accent);position:absolute;top:2px;left:2px;transition:left 0.2s;"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <span style="font-size:0.8rem;font-weight:500;color:var(--text);">WEEK / DAY</span>
+        <div id="dayCountToggle" onclick="toggleDayCount()" style="width:42px;height:24px;border-radius:12px;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.4);cursor:pointer;position:relative;transition:background 0.2s;">
+          <div id="dayCountThumb" style="width:18px;height:18px;border-radius:50%;background:var(--accent);position:absolute;top:2px;left:2px;transition:left 0.2s;"></div>
+        </div>
+      </div>
+      <!-- 言語切替 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <span style="font-size:0.8rem;font-weight:500;color:var(--text);">LANGUAGE</span>
+        <div style="display:flex;border:1px solid var(--border);border-radius:20px;overflow:hidden;">
+          <div id="langJA" onclick="setLang('ja')" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">🇯🇵 JA</div>
+          <div id="langEN" onclick="setLang('en')" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">🇺🇸 EN</div>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--border);margin-bottom:16px;"></div>
+      <!-- バックアップ -->
+      <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">BACKUP</div>
+      <button class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="exportData()">⬆ EXPORT JSON</button>
+      <button class="small-btn" style="width:100%;margin-bottom:16px;font-size:0.78rem;" onclick="importData()">⬇ IMPORT JSON</button>
+      <input type="file" accept="application/json" id="importFile" style="display:none" onchange="handleImport(event)">
+      <div style="border-top:1px solid var(--border);margin-bottom:16px;"></div>
+      <!-- データ操作 -->
+      <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">DATA</div>
+      <button class="small-btn" style="width:100%;margin-bottom:8px;border-color:var(--danger);color:var(--danger);font-size:0.78rem;" onclick="clearLogs()">🗑 CLEAR LOG</button>
+      <button class="small-btn" style="width:100%;border-color:var(--danger);color:var(--danger);font-size:0.78rem;" onclick="eraseAllData()">🗑 ERASE ALL</button>
+      <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
+      <!-- セキュリティ -->
+      <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">SECURITY</div>
+      <button id="pinSetupBtn" class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="setupPin()">🔒 SET PIN</button>
+      <button id="pinRemoveBtn" class="small-btn" style="width:100%;display:none;border-color:var(--danger);color:var(--danger);font-size:0.78rem;" onclick="removePin()">🗑 REMOVE PIN</button>
+      <!-- 侵入者写真 -->
+      <div id="intruderSection" style="display:none;margin-top:12px;">
+        <div style="font-size:0.68rem;color:var(--danger);font-weight:700;margin-bottom:6px;">⚠ UNAUTHORIZED ACCESS DETECTED</div>
+        <div id="intruderTime" style="font-size:0.68rem;color:var(--text-dim);margin-bottom:6px;"></div>
+        <img id="intruderImg" src="" style="width:100%;border-radius:8px;border:1px solid var(--danger);" />
+        <button class="small-btn" style="width:100%;margin-top:8px;font-size:0.75rem;border-color:var(--danger);color:var(--danger);" onclick="clearIntruderPhoto()">🗑 CLEAR PHOTO</button>
+      </div>
+      <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
+      <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">MY SPOT TOLERANCE</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:0.8rem;color:var(--text);" data-i18n="settings.tolTemp">温度 ±°C</span>
+        <input type="number" id="tolTemp" min="0.5" max="5" step="0.5" value="1" style="width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 8px;font-size:0.85rem;text-align:center;" onchange="saveSpotTol()">
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:0.8rem;color:var(--text);" data-i18n="settings.tolHum">湿度 ±%RH</span>
+        <input type="number" id="tolHum" min="1" max="10" step="1" value="3" style="width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 8px;font-size:0.85rem;text-align:center;" onchange="saveSpotTol()">
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:0.8rem;color:var(--text);">PPFD ±µmol</span>
+        <input type="number" id="tolPpfd" min="10" max="200" step="10" value="50" style="width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 8px;font-size:0.85rem;text-align:center;" onchange="saveSpotTol()">
+      </div>
+    </div>
+  </div>
+  <h1>VPD PRO</h1>
+  <div class="subtitle">Grow Environment Monitor</div>
+
+  <div class="tent-bar" id="tentBar"></div>
+  <div class="tabs">
+    <div class="tab active" data-tab="monitor" data-i18n="tab.monitor">📊 Monitor</div>
+    <div class="tab" data-tab="log" data-i18n="tab.log">💧 Feeding</div>
+    <div class="tab" data-tab="analysis" data-i18n="tab.analysis">📈 Analysis</div>
+    <div class="tab" data-tab="table" data-i18n="tab.table">📋 Reference</div>
+  </div>
+  <div class="tab-content active" id="tab-monitor">
+    <div class="card">
+      <div class="card-title" style="display:flex;align-items:center;">
+        <span style="flex:1;font-size:0.95rem;font-weight:700;color:var(--text);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">ENVIRONMENT LOG</span>
+        <div style="flex-shrink:0;display:flex;border:1px solid rgba(0,255,136,0.35);border-radius:20px;overflow:hidden;">
+          <div id="modeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')">Theory</div>
+          <div id="modeMySpot" class="mode-pill" onclick="setSpotMode('myspot')">📌 My Spot</div>
+        </div>
+      </div>
+      <div style="width:100%;padding:6px 14px;background:rgba(0,255,136,0.07);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2px;box-sizing:border-box;overflow:hidden;">
+        <button id="stageSelectorBtn" onclick="toggleStageDropdown()" style="min-width:0;padding:0;background:transparent;border:none;color:var(--text);font-weight:600;display:flex;align-items:center;cursor:pointer;gap:6px;overflow:hidden;font-family:inherit;font-size:inherit;line-height:inherit;">
+          <span style="color:var(--text);font-size:0.82rem;flex-shrink:0;text-transform:uppercase;letter-spacing:0.05em;">Stage ：</span>
+          <span id="stageSelectorLabel" style="color:var(--accent);font-size:0.95rem;font-weight:700;flex-shrink:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Clone</span>
+          <span id="stageDropArrow" style="font-size:0.85rem;color:var(--accent);flex-shrink:0;">▾</span>
+        </button>
+        <div id="stageDayCount" style="display:none;flex-shrink:0;font-size:0.85rem;color:var(--text);font-weight:600;white-space:nowrap;"></div>
+      </div>
+      <div id="stageDropdown" style="display:none;margin-bottom:2px;">
+        <div class="stage-row">
+          <div class="stage-btn" data-s="clone" onclick="setStage('clone')">Clone</div>
+          <div class="stage-btn" data-s="veg" onclick="setStage('veg')">Veg</div>
+          <div class="stage-btn" data-s="flower_early" onclick="setStage('flower_early')">Flower Early</div>
+          <div class="stage-btn" data-s="flower_late" onclick="setStage('flower_late')">Flower Late</div>
+          <div class="stage-btn" data-s="flush" onclick="setStage('flush')">Flush</div>
+          <div class="stage-btn" data-s="dry" onclick="setStage('dry')">Dry</div>
+          <div class="stage-btn" data-s="harvest" onclick="setStage('harvest')">Harvest</div>
+        </div>
+      </div>
+      <div class="input-row" style="margin-top:2px;margin-bottom:2px; align-items:center; gap:8px; justify-content:center;">
+        <label style="font-size:0.95rem;color:var(--text);font-weight:700;flex-shrink:0;height:28px;display:flex;align-items:center;transform:translateY(-2px);">Start Date</label>
+        <input id="stageStartDate" type="date" style="width:120px;flex-shrink:0;font-size:0.95rem;height:28px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(0,255,136,0.4);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
+        <button id="clearDateBtn" oncontextmenu="return false;" style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.85rem;width:28px;height:28px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;">🗑</button>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-btn active-day" id="btnDay" role="button" aria-pressed="true" onclick="setDayNight('day')">💡 Light ON</div>
+        <div class="toggle-btn" id="btnNight" role="button" aria-pressed="false" onclick="setDayNight('night')">🌑 Light OFF</div>
+        <div class="toggle-btn" id="btnLeaf" role="button" aria-pressed="false" onclick="toggleLeaf()">🌿 Leaf VPD</div>
+        <div class="toggle-btn" id="btnCO2" role="button" aria-pressed="false" onclick="toggleCO2()">💨 CO₂</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin:6px 0;width:100%;">
+        <!-- Temp -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <button class="small-btn" onclick="adjustTemp(-1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
+          <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
+            <span style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">Temp</span>
+            <input id="tempVal" type="text" inputmode="decimal" value="24" onfocus="this.select()" onchange="applyInlineVal('temp', this.value)" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
+            <span id="tempUnitLabel" onclick="toggleTempUnit()" style="font-size:1.1rem;color:var(--text);cursor:pointer;user-select:none;min-width:45px;">℃</span>
+          </div>
+          <button class="small-btn" onclick="adjustTemp(1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+        </div>
+        <!-- Humidity -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <button class="small-btn" onclick="adjustHum(-1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
+          <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
+            <span style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">Humidity</span>
+            <input id="humVal" type="text" inputmode="decimal" value="60" onfocus="this.select()" onchange="applyInlineVal('hum', this.value)" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
+            <span style="font-size:1.1rem;color:var(--text);min-width:45px;">%RH</span>
+          </div>
+          <button class="small-btn" onclick="adjustHum(1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+        </div>
+        <!-- PPFD -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;">
+          <button class="small-btn" onclick="adjustCurrentPpfd(-10)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
+          <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
+            <span style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">PPFD</span>
+            <input id="ppfdVal" type="text" inputmode="decimal" value="300" onfocus="this.select()" onchange="applyInlineVal('ppfd', this.value)" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
+            <span style="font-size:1.1rem;color:var(--text);min-width:45px;">µmol</span>
+          </div>
+          <button class="small-btn" onclick="adjustCurrentPpfd(10)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+        </div>
+        <!-- Theory reference (Theory mode only) -->
+        <div id="monitorTheoryRef" style="display:none;border-top:1px solid rgba(255,255,255,0.06);padding:5px 0;font-size:0.68rem;color:var(--text);opacity:0.8;text-align:center;line-height:1.7;"></div>
+        <div style="padding:4px 8px 0;">
+          <input id="monitorNoteInput" type="text" placeholder="📝 メモ（任意）" maxlength="100" style="width:100%;box-sizing:border-box;padding:6px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:var(--text);font-size:0.78rem;outline:none;margin-bottom:4px;">
+        </div>
+        <div style="padding:4px 8px 2px;">
+          <button id="monitorSaveBtn" class="save-btn"
+            onmousedown="startSaveHold('monitor',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
+            ontouchstart="startSaveHold('monitor',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
+            style="width:100%;padding:8px;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.4);border-radius:10px;color:var(--accent);font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;">Save</button>
+        </div>
+        <!-- CO2 Level (shown when CO2 is ON) -->
+        <div id="co2LevelCard" style="display:none; border-top:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;">
+            <button class="small-btn" onclick="adjustCo2Level(-100)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
+            <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
+              <span style="font-size:1.1rem;color:var(--text);font-weight:500;">CO₂</span>
+              <input id="co2LevelVal" type="text" inputmode="decimal" value="1000" onfocus="this.select()" onchange="applyCo2Level(this.value)" style="width:92px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
+              <span style="font-size:1.1rem;color:var(--text);">ppm</span>
+            </div>
+            <button class="small-btn" onclick="adjustCo2Level(100)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+          </div>
+        </div>
+        <!-- Leaf offset -->
+        <div id="leafOffsetCard" style="display:none; border-top:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;">
+            <button class="small-btn" onclick="adjustLeafOffset(-0.5)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
+            <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
+              <span style="font-size:1.1rem;color:var(--text);font-weight:500;">Leaf Offset</span>
+              <input id="leafOffsetInput" type="text" inputmode="decimal" value="-2.0" onfocus="this.select()" onchange="applyLeafOffset(this.value)" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
+              <span id="leafUnitLabel" onclick="toggleTempUnit()" style="font-size:1.1rem;color:var(--text);cursor:pointer;user-select:none;">℃</span>
+            </div>
+            <button class="small-btn" onclick="adjustLeafOffset(0.5)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+          </div>
+          <div style="font-size:0.6rem;color:var(--text);text-align:center;">Leaf Temp = Air Temp + Offset</div>
+        </div>
+      </div>
+      <!-- Sweet Spot Bar -->
+      <div id="sweetSpotBar" style="display:none;flex-direction:column;gap:3px;padding:5px 2px;border-top:1px solid rgba(0,255,136,0.15);margin-top:2px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+          <div id="spotInfo" style="font-size:0.63rem;color:var(--text);flex:1;line-height:1.4;text-align:center;"></div>
+          <div style="display:flex;gap:4px;flex-shrink:0;">
+            <button onclick="saveStageSpot()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);border-radius:6px;color:var(--accent);font-size:0.63rem;padding:3px 8px;cursor:pointer;white-space:nowrap;">📌 Save</button>
+            <button id="deleteSpotBtn" style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.85rem;width:28px;height:28px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 0.1s;">🗑</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="position:relative;display:flex;justify-content:center;align-items:center;cursor:pointer;margin-bottom:4px;" onclick="(function(){var el=document.getElementById('vpdCardBody');var ic=document.getElementById('vpdToggleIcon');var ci=document.getElementById('vpdCollapsedInfo');var open=el.style.display!=='none';el.style.display=open?'none':'';ic.textContent=open?'▶':'▼';ci.style.visibility=open?'visible':'hidden';})()">
+        <span id="vpdCollapsedInfo" style="visibility:hidden;font-size:1rem;font-weight:700;color:var(--text);"></span>
+        <span id="vpdToggleIcon" style="position:absolute;right:0;font-size:0.7rem;color:var(--text);opacity:0.5;">▼</span>
+      </div>
+      <div id="vpdCardBody">
+      <div class="vpd-row">
+        <div class="vpd-block">
+          <div class="vpd-label">Air VPD</div>
+          <div class="vpd-num" id="vpdAir">—</div>
+          <div style="font-size:0.7rem;color:var(--text);">kPa</div>
+        </div>
+        <div class="vpd-block" id="leafBlock">
+          <div class="vpd-label">Leaf VPD</div>
+          <div class="vpd-num" id="vpdLeaf" style="color:var(--leaf)">—</div>
+          <div style="font-size:0.7rem;color:var(--text);">kPa</div>
+        </div>
+      </div>
+      <div id="statusBadge" class="status-badge status-ok">—</div>
+      <!-- VPDの状態と推奨アクション -->
+      <div id="rec" style="font-size:0.68rem;color:var(--text); margin-bottom:2px;"></div>
+      <div id="vpdDiff" style="font-size:0.68rem;color:var(--text); margin-bottom:2px;"></div>
+      <div style="font-size:0.68rem; color:var(--text);"><span data-i18n="monitor.target_hum">目標湿度:</span> <span id="targetHum">—</span> %RH　<span data-i18n="monitor.ppfd_now">現在PPFD:</span> <span id="ppfdNow">—</span> <span data-i18n="monitor.ppfd_target">/ 目標:</span> <span id="targetPpfd">—</span> µmol</div>
+      <div id="ppfdAdvice" style="font-size:0.68rem;color:var(--text); margin-top:2px;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="tab-content" id="tab-table">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="card-title" style="margin-bottom:0;" data-i18n="ref.stage_guide">ステージ目安</div>
+        <div style="display:flex;gap:6px;">
+          <button id="refMediumBtn" onclick="toggleRefMedium()" style="background:transparent;border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:0.72rem;padding:3px 10px;cursor:pointer;opacity:0.8;" data-i18n="ref.soil">土壌</button>
+          <button id="refCo2Btn" onclick="toggleRefCo2()" style="background:transparent;border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:0.72rem;padding:3px 10px;cursor:pointer;opacity:0.8;">CO₂ OFF</button>
+        </div>
+      </div>
+      <div id="stageTable"></div>
+      <div id="waterTempNote" style="margin-top:8px;font-size:0.68rem;color:var(--accent);opacity:0.85;" data-i18n="ref.water_temp">💧 水温目安: 18〜22°C（根の健康・溶存酸素量の観点から）</div>
+    </div>
+    <div class="card">
+      <div class="card-title">VPD REFERENCE CHART</div>
+      <div id="vpdMatrix"></div>
+    </div>
+  </div>
+  
+<div class="tab-content" id="tab-log">
+  <div class="card">
+    <!-- Header: Feeding Log + Theory / My Spot -->
+    <div class="card-title" style="display:flex;align-items:center;">
+      <span style="flex:1;font-size:0.95rem;font-weight:700;color:var(--text);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">NUTRIENT LOG</span>
+      <div style="flex-shrink:0;display:flex;border:1px solid rgba(0,255,136,0.35);border-radius:20px;overflow:hidden;">
+        <div id="feedModeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')">Theory</div>
+        <div id="feedModeMySpot" class="mode-pill" onclick="setSpotMode('myspot')">📌 My Spot</div>
+      </div>
+    </div>
+    <!-- Stage badge (read-only) -->
+    <div style="width:100%;padding:6px 14px;background:rgba(0,255,136,0.07);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2px;box-sizing:border-box;overflow:hidden;">
+      <div style="min-width:0;padding:0;background:transparent;border:none;color:var(--text);font-weight:600;display:flex;align-items:center;gap:6px;overflow:hidden;">
+        <span style="color:var(--text);font-size:0.82rem;font-weight:600;flex-shrink:0;text-transform:uppercase;letter-spacing:0.05em;">Stage ：</span>
+        <span id="feedingStageName" style="color:var(--accent);font-size:0.95rem;font-weight:700;flex-shrink:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
+        <span style="font-size:0.85rem;color:var(--accent);flex-shrink:0;">▾</span>
+      </div>
+      <div id="feedingDayCount" style="display:none;flex-shrink:0;font-size:0.85rem;color:var(--text);font-weight:600;white-space:nowrap;"></div>
+    </div>
+    <!-- Fertilizer管理 -->
+    <div style="border-top:1px solid rgba(0,255,136,0.12);padding-top:8px;margin:6px 0 4px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:0.95rem;color:#ffffff;font-weight:700;letter-spacing:0.03em;">💧 NUTRIENT</span>
+        <button onclick="addFertilizer()" style="width:22px;height:22px;border-radius:50%;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);color:var(--accent);font-size:1rem;line-height:1;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
+      </div>
+      <!-- タブバー -->
+      <div id="fertTabBar" class="toggle-row" style="margin-bottom:6px;"></div>
+      <!-- タブコンテンツ -->
+      <div id="fertTabContent" style="display:none;"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;margin:6px 0;width:100%;">
+      <!-- pH -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <button class="small-btn" onclick="adjustPh(-0.1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
+        <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
+          <span style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">pH</span>
+          <input id="phInput" type="text" inputmode="decimal" placeholder="6.0" onfocus="this.select()" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
+          <span style="font-size:1.1rem;color:var(--text);min-width:45px;"></span>
+        </div>
+        <button class="small-btn" onclick="adjustPh(0.1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+      </div>
+      <!-- Water Temp -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <button class="small-btn" onclick="adjustWaterTemp(-0.5)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
+        <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
+          <span style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">Water</span>
+          <input id="waterTempInput" type="text" inputmode="numeric" placeholder="20" onfocus="this.select()" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
+          <span style="font-size:1.1rem;color:var(--text);min-width:45px;">°C</span>
+        </div>
+        <button class="small-btn" onclick="adjustWaterTemp(0.5)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+      </div>
+      <!-- Input EC -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <button class="small-btn" onclick="adjustEc(-0.1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
+        <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
+          <span id="inputEcLabel" style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">Input EC</span>
+          <input id="ecInput" type="text" inputmode="decimal" placeholder="1.5" onfocus="this.select()" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
+          <span style="font-size:1.1rem;color:var(--text);min-width:45px;">mS</span>
+        </div>
+        <button class="small-btn" onclick="adjustEc(0.1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+      </div>
+      <!-- Runoff EC -->
+      <div id="runoffEcRow" style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;">
+        <button class="small-btn" onclick="adjustRunoffEc(-0.1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
+        <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
+          <span style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">Runoff EC</span>
+          <input id="runoffEcInput" type="text" inputmode="decimal" placeholder="1.8" onfocus="this.select()" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
+          <span style="font-size:1.1rem;color:var(--text);min-width:45px;">mS</span>
+        </div>
+        <button class="small-btn" onclick="adjustRunoffEc(0.1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+      </div>
+    </div>
+    <!-- EC Theory reference (Theory mode only) -->
+    <div id="feedingRef" style="font-size:0.68rem;color:var(--text);text-align:center;opacity:0.8;border-top:1px solid rgba(255,255,255,0.06);padding:5px 0;line-height:1.7;"></div>
+    <div style="padding:4px 8px 0;">
+      <input id="feedingNoteInput" type="text" placeholder="📝 メモ（任意）" maxlength="100" style="width:100%;box-sizing:border-box;padding:6px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:var(--text);font-size:0.78rem;outline:none;margin-bottom:4px;">
+    </div>
+    <div style="padding:4px 8px 2px;">
+      <button id="feedingSaveBtn" class="save-btn"
+        onmousedown="startSaveHold('feeding',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
+        ontouchstart="startSaveHold('feeding',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
+        style="width:100%;padding:8px;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.4);border-radius:10px;color:var(--accent);font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;">Save</button>
+    </div>
+    <!-- Feeding Sweet Spot Bar -->
+    <div id="feedingSpotBar" style="display:none;flex-direction:column;gap:2px;padding:4px 2px;border-top:1px solid rgba(0,255,136,0.15);margin-top:2px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+        <div id="feedingSpotInfo" style="font-size:0.68rem;color:var(--text);flex:1;line-height:1.3;text-align:center;overflow:hidden;"></div>
+        <div style="display:flex;gap:4px;flex-shrink:0;">
+          <button onclick="saveFeedingSpot()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);border-radius:6px;color:var(--accent);font-size:0.63rem;padding:3px 8px;cursor:pointer;white-space:nowrap;">📌 Save</button>
+          <button id="deleteFeedingSpotBtn" style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.85rem;width:28px;height:28px;cursor:pointer;flex-shrink:0;display:none;align-items:center;justify-content:center;">🗑</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+<div class="tab-content" id="tab-analysis">
+  <!-- ステージ進捗タイムライン -->
+  <div class="card">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:0;padding:4px 0;" onclick="(function(){var el=document.getElementById('stageTimeline');el.style.display=el.style.display!=='none'?'none':'';})()">
+      <span data-i18n="analysis.stage_progress" style="text-align:left;">ステージ進捗</span>
+      <span style="display:flex;align-items:center;gap:8px;">
+        <span style="display:flex;gap:6px;" onclick="event.stopPropagation()">
+          <button onclick="triggerPhoto('camera','gallery')" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);border-radius:6px;color:var(--accent);font-size:0.75rem;padding:4px 8px;cursor:pointer;">📷</button>
+          <button onclick="triggerPhoto('library','gallery')" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);border-radius:6px;color:var(--accent);font-size:0.75rem;padding:4px 8px;cursor:pointer;">🖼</button>
+        </span>
+        <span id="stageTotalDays" style="font-size:0.8rem;color:var(--accent);font-weight:700;"></span>
+      </span>
+    </div>
+    <div id="stageTimeline"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- Save ポップアップ -->
+<div id="savePopup" class="save-popup" onclick="document.getElementById('savePopup').classList.remove('show')">
+  <div class="save-popup-box">
+    <div style="font-size:2rem;margin-bottom:8px;">✅</div>
+    <div id="savePopupTitle" style="font-size:1.1rem;font-weight:700;color:var(--accent);margin-bottom:12px;">Saved!</div>
+    <div id="savePopupBody" style="font-size:0.82rem;color:var(--text);line-height:1.8;"></div>
+    <div style="margin-top:16px;font-size:0.72rem;color:var(--text);opacity:0.5;" data-i18n="popup.tap_to_close">タップして閉じる</div>
+  </div>
+</div>
+
+<!-- テント名変更モーダル -->
+<div id="renameModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:12px;padding:24px;width:80%;max-width:320px;">
+    <div style="font-size:0.9rem;color:var(--text);margin-bottom:12px;">Rename Tent</div>
+    <textarea id="renameInput" maxlength="24" rows="2" style="width:100%;font-size:1.1rem;background:transparent;color:var(--accent);border:none;border-bottom:1px solid var(--accent);outline:none;padding:4px 0;box-sizing:border-box;resize:none;font-family:inherit;line-height:1.3;"></textarea>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button onclick="confirmRename()" style="flex:2;padding:10px;background:var(--accent);color:#000;border:none;border-radius:6px;font-weight:700;font-size:0.9rem;cursor:pointer;">OK</button>
+      <button onclick="closeRenameModal()" style="flex:1;padding:10px;background:transparent;color:var(--text);border:1px solid var(--muted);border-radius:6px;font-size:0.9rem;cursor:pointer;">Cancel</button>
+      <button onclick="deleteTent(_renameTentIndex)" style="flex:1;padding:10px;background:transparent;color:rgba(255,100,100,0.9);border:1px solid rgba(255,100,100,0.6);border-radius:6px;font-size:0.9rem;cursor:pointer;">🗑</button>
+    </div>
+  </div>
+</div>
+
+<!-- 肥料名変更モーダル -->
+<div id="renameFertilizerModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:12px;padding:24px;width:80%;max-width:320px;">
+    <div style="font-size:0.9rem;color:var(--text);margin-bottom:16px;">Rename Fertilizer</div>
+    <input id="renameFertilizerInput" type="text" maxlength="24" style="width:100%;font-size:1.1rem;background:transparent;color:var(--accent);border:none;border-bottom:1px solid var(--accent);outline:none;padding:6px 0 8px 0;box-sizing:border-box;font-family:inherit;">
+    <div style="display:flex;gap:8px;margin-top:20px;">
+      <button onclick="confirmRenameFertilizer()" style="flex:2;padding:10px;background:var(--accent);color:#000;border:none;border-radius:6px;font-weight:700;font-size:0.9rem;cursor:pointer;">OK</button>
+      <button onclick="closeRenameFertilizerModal()" style="flex:1;padding:10px;background:transparent;color:var(--text);border:1px solid var(--muted);border-radius:6px;font-size:0.9rem;cursor:pointer;">Cancel</button>
+      <button onclick="removeFertilizer(_renameFertilizerIndex);closeRenameFertilizerModal();" style="padding:10px 12px;background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:1rem;cursor:pointer;">🗑</button>
+    </div>
+  </div>
+</div>
+
+<!-- ログ編集モーダル -->
+<div id="editLogModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:12px;padding:20px;width:86%;max-width:360px;max-height:85vh;overflow-y:auto;">
+    <div style="font-size:0.9rem;color:var(--accent);margin-bottom:14px;letter-spacing:0.05em;font-weight:700;">EDIT LOG</div>
+    <div id="editLogBody"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button onclick="confirmEditLog()" style="flex:2;padding:10px;background:var(--accent);color:#000;border:none;border-radius:6px;font-weight:700;font-size:0.9rem;cursor:pointer;">OK</button>
+      <button onclick="closeEditLogModal()" style="flex:1;padding:10px;background:transparent;color:var(--text);border:1px solid var(--muted);border-radius:6px;font-size:0.9rem;cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file inputs for camera/library -->
+  <input type="file" accept="image/*" capture="environment" id="photoCamera" style="display:none" onchange="handlePhoto(event)">
+  <input type="file" accept="image/*" id="photoFile" style="display:none" onchange="handlePhoto(event)">
+
+
+  <!-- 写真比較オーバーレイ -->
+  <div class="photo-overlay" id="photoOverlay" onclick="closeOverlay()">
+    <button class="overlay-close" onclick="closeOverlay()">✕</button>
+    <img id="overlayImg" src="" alt="Grow photo" onclick="event.stopPropagation()">
+  </div>
+
+  <script>
+  /* === 多言語対応 === */
+  let appLang = localStorage.getItem('appLang') || 'ja';
+  const STRINGS = {
+    ja: {
+      'tab.monitor':'📊 環境','tab.log':'💧 給水','tab.analysis':'📈 分析','tab.table':'📋 参考',
+      'settings.tolTemp':'温度 ±°C','settings.tolHum':'湿度 ±%RH',
+      'monitor.target_hum':'目標湿度:','monitor.ppfd_now':'現在PPFD:','monitor.ppfd_target':'/ 目標:',
+      'vpd.too_low':'⚠ 低すぎ','vpd.too_high':'⚠ 高すぎ','vpd.warning':'注意','vpd.ok':'適正',
+      'vpd.rec_warning':'境界付近です。急変に注意して微調整してください',
+      'vpd.rec_ok':' は適正範囲内です','vpd.diff':'差:','vpd.hum_adj':'/ 湿度調整:',
+      'spot.in':'スポット内 ✓','spot.out':'スポット外','spot.in_range':'マイスポットの範囲内です',
+      'spot.approach':' でマイスポットに近づきます','spot.unsaved':'このステージのスポット未保存',
+      'spot.label':'📌 スポット: ','spot.temp_adj':'温度: ','spot.hum_adj':'湿度: ','spot.light_adj':'光量: ',
+      'ref.stage_guide':'STAGE CHART','ref.soil':'土壌','ref.hydro':'ハイドロ/ココ',
+      'ref.water_temp':'💧 水温目安: 18〜22°C（根の健康・溶存酸素量の観点から）',
+      'analysis.stage_progress':'STAGE PROGRESS',
+      'analysis.no_logs':'記録なし',
+      'analysis.total_days':'合計: ','analysis.days':'日',
+      'toast.last_tent':'最後のテントは削除できません','toast.input_error':'⚠ 入力値を確認してください',
+      'toast.import_ok':'インポート完了 ✓',
+      'toast.import_bad_format':'⚠ 不正なファイル形式です','toast.import_error':'⚠ 読み込みエラー: ',
+      'confirm.delete_tent':'"${name}" を削除しますか？\nこのテントのログも全て削除されます。',
+      'confirm.clear_logs':'「${name}」の全記録を削除しますか？',
+      'confirm.erase_all':'全テントのデータを初期状態に戻しますか？',
+      'confirm.delete_log':'このログを削除しますか？',
+      'confirm.ok_btn':'削除','confirm.cancel_btn':'キャンセル',
+      'action.hum_up':'湿度 +','action.hum_down':'湿度 -',
+      'action.temp_down':'温度 -1.0℃','action.temp_up':'温度 +1.0℃',
+      'action.flush':'フラッシュを推奨','action.ec_up':'ECを少し上げる','action.no_change':'変更不要',
+      'popup.tap_to_close':'タップして閉じる',
+      'ppfd.high':'⚠ PPFD 高 / ','ppfd.low':'PPFD 低 / ',
+      'ppfd.raise':'光量を上げてください（目安 ','ppfd.lower':'光量を下げてください（目安 ','ppfd.diff':'（差 ',
+    },
+    en: {
+      'tab.monitor':'📊 Monitor','tab.log':'💧 Feeding','tab.analysis':'📈 Analysis','tab.table':'📋 Reference',
+      'settings.tolTemp':'Temp ±°C','settings.tolHum':'Humidity ±%RH',
+      'monitor.target_hum':'Target RH:','monitor.ppfd_now':'PPFD:','monitor.ppfd_target':'/ Target:',
+      'vpd.too_low':'⚠ Too Low','vpd.too_high':'⚠ Too High','vpd.warning':'Caution','vpd.ok':'Optimal',
+      'vpd.rec_warning':'Near boundary. Watch for sudden changes and fine-tune.',
+      'vpd.rec_ok':' is within target range','vpd.diff':'Diff:','vpd.hum_adj':'/ RH adj:',
+      'spot.in':'In Spot ✓','spot.out':'Off Spot','spot.in_range':'Within your My Spot range',
+      'spot.approach':' to reach My Spot','spot.unsaved':'No spot saved for this stage',
+      'spot.label':'📌 Spot: ','spot.temp_adj':'Temp: ','spot.hum_adj':'RH: ','spot.light_adj':'Light: ',
+      'ref.stage_guide':'STAGE CHART','ref.soil':'Soil','ref.hydro':'Hydro/Coco',
+      'ref.water_temp':'💧 Water temp: 18–22°C (for root health & dissolved oxygen)',
+      'analysis.stage_progress':'STAGE PROGRESS',
+      'analysis.no_logs':'No records',
+      'analysis.total_days':'Total: ','analysis.days':' days',
+      'toast.last_tent':'Cannot delete the last tent','toast.input_error':'⚠ Please check your input values',
+      'toast.import_ok':'Import complete ✓',
+      'toast.import_bad_format':'⚠ Invalid file format','toast.import_error':'⚠ Load error: ',
+      'confirm.delete_tent':'Delete "${name}"?\nAll logs for this tent will also be deleted.',
+      'confirm.clear_logs':'Delete all records for "${name}"?',
+      'confirm.erase_all':'Reset all tent data to defaults?',
+      'confirm.delete_log':'Delete this log entry?',
+      'confirm.ok_btn':'Delete','confirm.cancel_btn':'Cancel',
+      'action.hum_up':'RH +','action.hum_down':'RH -',
+      'action.temp_down':'Temp -1.0°C','action.temp_up':'Temp +1.0°C',
+      'action.flush':'Flush recommended','action.ec_up':'Raise EC slightly','action.no_change':'No changes needed',
+      'popup.tap_to_close':'Tap to close',
+      'ppfd.high':'⚠ PPFD High / ','ppfd.low':'PPFD Low / ',
+      'ppfd.raise':'Increase light (est. ','ppfd.lower':'Decrease light (est. ','ppfd.diff':'(diff ',
+    }
+  };
+  const tr = k => (STRINGS[appLang]?.[k]) ?? (STRINGS.ja[k] ?? k);
+  const esc = s => s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+
+  /* === アプリの状態 === */
+  const MAX_TENTS = 8;
+  let tents = [];
+  let currentTent = 0;
+  let pendingPhoto = null;
+
+  const STAGE_ORDER = ['clone','veg','flower_early','flower_late','flush','dry','harvest'];
+
+  // 全ステージの終了日を開始日から自動計算する（次ステージ開始日 − 1日）
+  function recalculateStageEndDates(t) {
+    if (!t.stageDates) t.stageDates = {};
+    if (!t.stageEndDates) t.stageEndDates = {};
+    for (let i = 0; i < STAGE_ORDER.length; i++) {
+      const s = STAGE_ORDER[i];
+      if (!t.stageDates[s]) continue;
+      let nextStart = null;
+      for (let j = i + 1; j < STAGE_ORDER.length; j++) {
+        if (t.stageDates[STAGE_ORDER[j]]) { nextStart = t.stageDates[STAGE_ORDER[j]]; break; }
+      }
+      if (nextStart) {
+        const d = new Date(nextStart);
+        d.setDate(d.getDate() - 1);
+        t.stageEndDates[s] = d.toISOString().slice(0, 10);
+      } else {
+        delete t.stageEndDates[s]; // まだ終了していない（現役 or 最新）
+      }
+    }
+  }
+
+  // ステージ定義
+  const stages = {
+    clone:        { name: 'Clone',      vpd: [0.4,0.8],  ppfd: [100,200],  ppfdCo2: [150,250],  color: '#00c8ff', co2: [0.4,0.9], ecInput: [0.5,0.8],  ecRunoff: [0.5,1.0],  temp: [22,26], hum: [70,80] },
+    veg:          { name: 'Veg',        vpd: [0.8,1.1],  ppfd: [300,500],  ppfdCo2: [500,700],  color: '#39d67a', co2: [0.9,1.3], ecInput: [1.0,1.4],  ecRunoff: [1.0,1.6],  temp: [22,28], hum: [50,70] },
+    flower_early: { name: 'Flower Early',vpd: [0.8,1.2],  ppfd: [500,700],  ppfdCo2: [700,900],  color: '#ffaa00', co2: [0.9,1.4], ecInput: [1.4,1.8],  ecRunoff: [1.4,2.0],  temp: [20,26], hum: [50,60] },
+    flower_late:  { name: 'Flower Late',vpd: [1.2,1.5],  ppfd: [700,900],  ppfdCo2: [900,1100], color: '#ff6644', co2: [1.3,1.7], ecInput: [1.6,2.0],  ecRunoff: [1.6,2.2],  temp: [18,24], hum: [40,50] },
+    flush:        { name: 'Flush',      vpd: [1.0,1.2],  ppfd: [400,600],  ppfdCo2: [500,700],  color: '#cc88ff', co2: [1.0,1.3], ecInput: [0.1,0.3],  ecRunoff: [0.1,0.5],  temp: [18,24], hum: [45,55] },
+    dry:          { name: 'Dry',        vpd: [0.6,0.8],  ppfd: [0,0],      ppfdCo2: [0,0],      color: '#aaaaaa', co2: [0.6,0.8], ecInput: [0,0],      ecRunoff: [0,0],      temp: [15,16], hum: [58,62] },
+  harvest:      { name: 'Harvest',    vpd: [0.6,0.9],  ppfd: [0,0],      ppfdCo2: [0,0],      color: '#f5c842', co2: [0.6,0.9], ecInput: [0,0],      ecRunoff: [0,0],      temp: null,    hum: null    }
+  };
+
+  /* === IndexedDB === */
+  let db;
+  async function initDB() {
+    return new Promise((resolve,reject) => {
+      const req = indexedDB.open('VPD_FINAL_DB', 1);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        db.createObjectStore('tents', { keyPath:'id' });
+        db.createObjectStore('logs', { keyPath:'id' });
+      };
+      req.onsuccess = (e) => { db = e.target.result; resolve(); };
+      req.onerror = () => { reject(); };
+    });
+  }
+  function dbPut(store, value) {
+    return new Promise((resolve) => {
+      const tx = db.transaction(store, 'readwrite');
+      tx.objectStore(store).put(value);
+      tx.oncomplete = resolve;
+    });
+  }
+  function dbGet(store, key) {
+    return new Promise((resolve) => {
+      const tx = db.transaction(store, 'readonly');
+      const req = tx.objectStore(store).get(key);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror   = () => resolve(null);
+    });
+  }
+  function dbGetAll(store) {
+    return new Promise((resolve) => {
+      const tx = db.transaction(store, 'readonly');
+      const req = tx.objectStore(store).getAll();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror   = () => resolve([]);
+    });
+  }
+  function dbDelete(store, key) {
+    return new Promise((resolve) => {
+      const tx = db.transaction(store, 'readwrite');
+      tx.objectStore(store).delete(key);
+      tx.oncomplete = resolve;
+    });
+  }
+
+  /* === ユーティリティ === */
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2000);
+  }
+
+  function defaultTent(id, name) {
+    return {
+      id: id,
+      name: name || 'Tent',
+      stage: 'veg',
+      stageDates: {},
+      stageEndDates: {},
+      temp: 24,
+      hum: 60,
+      dayNight: 'day',
+      leaf: false,
+      leafOffset: -2.0,
+      co2: false,
+      co2Level: 1000,
+      ppfd: 300,
+      stageSpots: {},
+      logs: []
+    };
+  }
+  // 飽和水蒸気圧
+  function svp(t) { return 0.6108 * Math.exp((17.27 * t) / (t + 237.3)); }
+  function calcVPD(t, rh) { return svp(t) * (1 - rh / 100); }
+  function calcLeafVPD(t, rh, offset) { return svp(t + offset) - svp(t) * (rh / 100); }
+  function tgtHum(t, vpd) { return Math.round((1 - vpd / svp(t)) * 100); }
+
+  /* === テント切替 === */
+  const _tentLastTap = {};  // buildTentBar再作成でもリセットされないよう外部管理
+  function buildTentBar() {
+    const bar = document.getElementById('tentBar');
+    bar.innerHTML = '';
+    tents.forEach((t,i) => {
+      const btn = document.createElement('div');
+      btn.className = 'tent-btn' + (i === currentTent ? ' active' : '') + (tents.length === 1 ? ' solo' : '');
+      btn.textContent = t.name;
+      if (i > 0) btn.style.borderLeft = '1px solid var(--border)';
+      btn.onclick = () => {
+        const now = Date.now();
+        if (_tentLastTap[i] && now - _tentLastTap[i] < 350) {
+          _tentLastTap[i] = 0;
+          renameTent(i);
+        } else {
+          _tentLastTap[i] = now;
+          if (i !== currentTent) selectTent(i);
+        }
+      };
+      bar.appendChild(btn);
+    });
+    if (tents.length < MAX_TENTS) {
+      const addBtn = document.createElement('div');
+      addBtn.className = 'tent-btn';
+      addBtn.style.cssText = 'flex:0 0 36px;font-size:0.75rem;color:var(--accent);display:flex;align-items:center;justify-content:center;border-left:1px solid var(--border);padding:7px 4px;';
+      addBtn.textContent = '+';
+      addBtn.onclick = addTent;
+      bar.appendChild(addBtn);
+    }
+  }
+
+  async function addTent() {
+    if (tents.length >= MAX_TENTS) return;
+    const id = Date.now();
+    const num = tents.length + 1;
+    const t = defaultTent(id, `Tent ${num}`);
+    await dbPut('tents', t);
+    tents.push(t);
+    buildTentBar();
+    await selectTent(tents.length - 1);
+  }
+
+  async function deleteTent(i) {
+    if (tents.length <= 1) { showToast(tr('toast.last_tent')); return; }
+    if (!(await customConfirm(tr('confirm.delete_tent').replace('${name}', tents[i].name)))) return;
+    const tentId = tents[i].id;
+    const allLogs = await dbGetAll('logs');
+    for (const l of allLogs) {
+      if (l.tentId === tentId) await dbDelete('logs', l.id);
+    }
+    await dbDelete('tents', tentId);
+    tents.splice(i, 1);
+    if (currentTent >= tents.length) currentTent = tents.length - 1;
+    closeRenameModal();
+    buildTentBar();
+    loadTentToUI(currentTent);
+    update();
+    buildStageTable();
+  }
+
+  let _renameTentIndex = 0;
+  function renameTent(i) {
+    _renameTentIndex = i;
+    const modal = document.getElementById('renameModal');
+    const input = document.getElementById('renameInput');
+    input.value = tents[i].name;
+    modal.style.display = 'flex';
+    setTimeout(() => input.focus(), 50);
+  }
+  async function confirmRename() {
+    const input = document.getElementById('renameInput');
+    const newName = input.value.trim().slice(0, 24);
+    if (newName) {
+      tents[_renameTentIndex].name = newName;
+      await dbPut('tents', tents[_renameTentIndex]);
+      buildTentBar();
+    }
+    closeRenameModal();
+  }
+  function closeRenameModal() {
+    document.getElementById('renameModal').style.display = 'none';
+  }
+
+  let _renameFertilizerIndex = 0;
+
+  function renameFertilizer(i) {
+    _renameFertilizerIndex = i;
+    currentFertTab = i;
+    const modal = document.getElementById('renameFertilizerModal');
+    const input = document.getElementById('renameFertilizerInput');
+    const t = tents[currentTent];
+    input.value = (t.fertilizerList[i].name || `NUTRIENT${i + 1}`);
+    modal.style.display = 'flex';
+    setTimeout(() => input.focus(), 50);
+  }
+
+  async function confirmRenameFertilizer() {
+    const input = document.getElementById('renameFertilizerInput');
+    const newName = input.value.trim().slice(0, 24);
+    if (newName) {
+      const t = tents[currentTent];
+      t.fertilizerList[_renameFertilizerIndex].name = newName;
+      await dbPut('tents', t);
+      renderFertilizerTabs();
+    }
+    closeRenameFertilizerModal();
+  }
+
+  function closeRenameFertilizerModal() {
+    document.getElementById('renameFertilizerModal').style.display = 'none';
+  }
+
+  async function selectTent(i) {
+    if (i === currentTent) return;
+    await saveCurrentTentState();
+    currentTent = i;
+    loadTentToUI(i);
+    buildTentBar();
+    update();
+    buildStageTable();
+    updateFeedingHeader();
+    const logs = await dbGetAll('logs');
+    renderStageTimeline(logs);
+  }
+  async function saveCurrentTentState() {
+    const t = tents[currentTent];
+    const rawTemp = parseFloat(document.getElementById('tempVal').value);
+    t.temp = useFahrenheit ? (rawTemp - 32) * 5/9 : rawTemp;
+    t.hum  = parseFloat(document.getElementById('humVal').value);
+    const rawOffset = parseFloat(document.getElementById('leafOffsetInput').value);
+    t.leafOffset = useFahrenheit ? rawOffset * 5/9 : rawOffset;
+    t.ppfd = parseInt(document.getElementById('ppfdVal').value || '0', 10) || 0;
+    // 給水フォームの入力値をテントに紐付けて保存
+    t.lastFeeding = {
+      ph:       document.getElementById('phInput')?.value       ?? '',
+      ec:       document.getElementById('ecInput')?.value       ?? '',
+      runoffEc: document.getElementById('runoffEcInput')?.value ?? '',
+      waterTemp:document.getElementById('waterTempInput')?.value?? ''
+    };
+    await dbPut('tents', t);
+  }
+  function loadTentToUI(i) {
+    const t = tents[i];
+    const monitorColor = 'var(--accent)';
+    ['tempVal','humVal','ppfdVal','co2LevelVal','leafOffsetInput',
+     'phInput','ecInput','runoffEcInput','waterTempInput'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.color = monitorColor;
+    });
+    // 給水フォームをこのテントの前回値で復元
+    const lf = t.lastFeeding || {};
+    const _setFeed = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+    _setFeed('phInput',       lf.ph);
+    _setFeed('ecInput',       lf.ec);
+    _setFeed('runoffEcInput', lf.runoffEc);
+    _setFeed('waterTempInput',lf.waterTemp);
+    // modeInputCache もこのテントの値に同期
+    modeInputCache[spotMode] = {
+      ph: lf.ph ?? '', ec: lf.ec ?? '', runoffEc: lf.runoffEc ?? '', waterTemp: lf.waterTemp ?? ''
+    };
+    document.getElementById('tempVal').value = useFahrenheit ? Math.round(t.temp * 9/5 + 32) : Math.round(t.temp);
+    document.getElementById('humVal').value  = Math.round(t.hum);
+    const leafOff = (t.leafOffset !== undefined && t.leafOffset !== null) ? t.leafOffset : -2.0;
+    document.getElementById('leafOffsetInput').value = useFahrenheit ? (leafOff * 9/5).toFixed(1) : leafOff.toFixed(1);
+    document.getElementById('ppfdVal').value = t.ppfd || 0;
+    document.getElementById('btnDay').classList.toggle('active-day', t.dayNight==='day');
+    document.getElementById('btnDay').setAttribute('aria-pressed', t.dayNight==='day');
+    document.getElementById('btnNight').classList.toggle('active-night', t.dayNight==='night');
+    document.getElementById('btnNight').setAttribute('aria-pressed', t.dayNight==='night');
+    document.getElementById('btnLeaf').classList.toggle('active-leaf', t.leaf);
+    document.getElementById('btnLeaf').setAttribute('aria-pressed', !!t.leaf);
+    document.getElementById('btnCO2').classList.toggle('active-co2', t.co2);
+    document.getElementById('btnCO2').setAttribute('aria-pressed', !!t.co2);
+    updateStageSelector(t.stage);
+    document.getElementById('leafOffsetCard').style.display = t.leaf ? 'block' : 'none';
+    document.getElementById('co2LevelCard').style.display = t.co2 ? 'block' : 'none';
+    document.getElementById('co2LevelVal').value = t.co2Level || 1000;
+    updateCompactMode();
+    const dateInput = document.getElementById('stageStartDate');
+    const currentDate = (t.stageDates && t.stageDates[t.stage]) || '';
+    const currentEnd = (t.stageEndDates && t.stageEndDates[t.stage]) || null;
+    if (dateInput) dateInput.value = currentDate;
+    const linked = getLinkedDayCountDates(t, t.stage);
+    updateStageDayCount(linked.base, linked.end, t.stage);
+  }
+
+  // 3-stage grouping: Growth (Clone, Veg) | Flower (Flower Early, Flower Late, Flush) | Dry (Dry) | Harvest (Harvest)
+  const GROWTH_LINKED  = ['clone', 'veg'];
+  const FLOWER_LINKED  = ['flower_early', 'flower_late', 'flush'];
+  const DRY_LINKED     = ['dry'];
+  const HARVEST_LINKED = ['harvest'];
+
+  // Determine which group a stage belongs to
+  function getStageGroup(stage) {
+    if (GROWTH_LINKED.includes(stage)) return 'growth';
+    if (FLOWER_LINKED.includes(stage)) return 'flower';
+    if (DRY_LINKED.includes(stage)) return 'dry';
+    if (HARVEST_LINKED.includes(stage)) return 'harvest';
+    return null;
+  }
+
+  // Get the start stage for each group
+  function getGroupStartStage(group) {
+    if (group === 'growth') return 'clone';
+    if (group === 'flower') return 'flower_early';
+    if (group === 'dry') return 'flush';
+    if (group === 'harvest') return 'harvest';
+    return null;
+  }
+
+  function getLinkedDayCountDates(t, stage) {
+    const own    = (t.stageDates    && t.stageDates[stage])    || '';
+    const ownEnd = (t.stageEndDates && t.stageEndDates[stage]) || null;
+    const group = getStageGroup(stage);
+
+    if (!group) return { base: own, end: ownEnd };
+
+    // Get the start stage of the group and use its date as base
+    const startStage = getGroupStartStage(group);
+    const base = (t.stageDates && t.stageDates[startStage]) || '';
+    // If dry stage and harvest date is set, use harvest date as end
+    let end = ownEnd;
+    if (stage === 'dry' && t.stageDates && t.stageDates['harvest']) {
+      end = t.stageDates['harvest'];
+    }
+    return { base: base || own, end };
+  }
+
+  /* === ステージ＆モードSettings === */
+  const stageLabelMap = { clone:'Clone', veg:'Veg', flower_early:'Flower Early', flower_late:'Flower Late', flush:'Flush', dry:'Dry', harvest:'Harvest' };
+
+  function toggleStageDropdown() {
+    const d = document.getElementById('stageDropdown');
+    const arrow = document.getElementById('stageDropArrow');
+    const open = d.style.display !== 'none';
+    d.style.display = open ? 'none' : 'block';
+    if (arrow) arrow.textContent = open ? '▾' : '▴';
+  }
+
+  function updateStageSelector(s) {
+    const lbl = document.getElementById('stageSelectorLabel');
+    if (lbl) lbl.textContent = stageLabelMap[s] || s;
+    document.querySelectorAll('.stage-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.s === s);
+    });
+    const d = document.getElementById('stageDropdown');
+    const arrow = document.getElementById('stageDropArrow');
+    if (d) d.style.display = 'none';
+    if (arrow) arrow.textContent = '▾';
+  }
+
+  async function setStage(s) {
+    const t = tents[currentTent];
+    t.stage = s;
+    const dateInput = document.getElementById('stageStartDate');
+    const savedDate = (t.stageDates && t.stageDates[s]) || '';
+    const endDate = (t.stageEndDates && t.stageEndDates[s]) || null;
+    if (dateInput) dateInput.value = savedDate;
+    updateStageSelector(s);
+    const linked = getLinkedDayCountDates(t, s);
+    updateStageDayCount(linked.base, linked.end, s);
+    await dbPut('tents', t);
+    update();
+    buildStageTable();
+    updateFeedingHeader();
+  }
+
+  async function clearStageStartDate() {
+    const t = tents[currentTent];
+    if (!t.stageDates) t.stageDates = {};
+    if (!t.stageEndDates) t.stageEndDates = {};
+    t.stageDates[t.stage] = null;
+    delete t.stageEndDates[t.stage];
+    recalculateStageEndDates(t);
+    const el = document.getElementById('stageStartDate');
+    if (el) el.value = '';
+    const dc = document.getElementById('stageDayCount');
+    if (dc) dc.textContent = '';
+    await dbPut('tents', t);
+  }
+
+  async function clearAllStageDates() {
+    const t = tents[currentTent];
+    t.stageDates = {};
+    t.stageEndDates = {};
+    await dbPut('tents', t);
+    const el = document.getElementById('stageStartDate');
+    if (el) el.value = '';
+    const dc = document.getElementById('stageDayCount');
+    if (dc) dc.textContent = '';
+    if (typeof buildStageTable === 'function') buildStageTable();
+  }
+
+  // 🗑 button: double tap = clear current stage date, long press = clear all
+  (() => {
+    const btn = document.getElementById('clearDateBtn');
+    if (!btn) return;
+    let longTimer = null;
+    let longPressed = false;
+    let lastTap = 0;
+
+    function flashRed() {
+      btn.style.borderColor = 'rgba(255,50,50,0.9)';
+      btn.style.background = 'rgba(255,50,50,0.2)';
+      setTimeout(() => { btn.style.borderColor = ''; btn.style.background = ''; }, 600);
+    }
+
+    // --- Touch ---
+    btn.addEventListener('touchstart', e => {
+      e.preventDefault();
+      longPressed = false;
+      longTimer = setTimeout(() => {
+        longPressed = true;
+        longTimer = null;
+        clearAllStageDates();
+        flashRed();
+      }, 600);
+    }, { passive: false });
+
+    btn.addEventListener('touchend', e => {
+      e.preventDefault();
+      if (longTimer) { clearTimeout(longTimer); longTimer = null; }
+      if (longPressed) return;
+      const now = Date.now();
+      if (now - lastTap < 350) {
+        lastTap = 0;
+        clearStageStartDate();
+      } else {
+        lastTap = now;
+      }
+    });
+
+    btn.addEventListener('touchmove', () => {
+      if (longTimer) { clearTimeout(longTimer); longTimer = null; }
+    }, { passive: true });
+
+    // --- Mouse (desktop / preview) ---
+    btn.addEventListener('mousedown', () => {
+      longPressed = false;
+      longTimer = setTimeout(() => {
+        longPressed = true;
+        longTimer = null;
+        clearAllStageDates();
+        flashRed();
+      }, 600);
+    });
+    btn.addEventListener('mouseup', () => {
+      if (longTimer) { clearTimeout(longTimer); longTimer = null; }
+    });
+    btn.addEventListener('mouseleave', () => {
+      if (longTimer) { clearTimeout(longTimer); longTimer = null; }
+    });
+    btn.addEventListener('click', () => {
+      if (longPressed) return;
+      const now = Date.now();
+      if (now - lastTap < 350) {
+        lastTap = 0;
+        clearStageStartDate();
+      } else {
+        lastTap = now;
+      }
+    });
+  })();
+
+  async function applyStageStartDate(val) {
+    const t = tents[currentTent];
+    if (!t.stageDates) t.stageDates = {};
+    t.stageDates[t.stage] = val || null;
+    recalculateStageEndDates(t);
+    await dbPut('tents', t);
+    const linked = getLinkedDayCountDates(t, t.stage);
+    updateStageDayCount(linked.base, linked.end, t.stage);
+    updateFeedingHeader();
+  }
+
+  function updateStageDayCount(dateStr, endDateStr, stage) {
+    const el = document.getElementById('stageDayCount');
+    if (!el) return;
+    if (!dateStr) { el.textContent = ''; el.style.display = 'none'; return; }
+    if (stage === 'harvest') {
+      el.textContent = dateStr.replace(/-/g, '/');
+      el.style.display = '';
+      return;
+    }
+    const start = new Date(dateStr);
+    const end = endDateStr ? new Date(endDateStr) : new Date();
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    const days = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    const week = Math.ceil(days / 7);
+    if (days >= 1) {
+      el.textContent = endDateStr ? `Week ${week} Day ${days}✓` : `Week ${week} Day ${days}`;
+      el.style.display = dayCountVisible ? '' : 'none';
+    } else {
+      el.textContent = '';
+      el.style.display = 'none';
+    }
+  }
+  async function setDayNight(mode) {
+    tents[currentTent].dayNight = mode;
+    document.getElementById('btnDay').classList.toggle('active-day', mode === 'day');
+    document.getElementById('btnDay').setAttribute('aria-pressed', mode === 'day');
+    document.getElementById('btnNight').classList.toggle('active-night', mode === 'night');
+    document.getElementById('btnNight').setAttribute('aria-pressed', mode === 'night');
+    await dbPut('tents', tents[currentTent]);
+    update();
+  }
+  function updateCompactMode() {
+    const t = tents[currentTent];
+    const compact = t.leaf || t.co2;
+    const valSize = compact ? '1.2rem' : '1.6rem';
+    const valWidth = compact ? '44px' : '52px';
+    const labelSize = compact ? '0.9rem' : '1.1rem';
+    const btnSize = compact ? '28px' : '36px';
+    const padding = compact ? '2px 0' : '5px 0';
+    const gap = compact ? '8px' : '16px';
+    document.querySelectorAll('#tab-monitor .card > div > div[style*="flex-direction:column"] > div').forEach(row => {
+      if (!row.style.display || row.style.display !== 'none') {
+        const inner = row.querySelector('div[style*="flex-direction:column"]') ? null : row;
+        if (inner) {
+          inner.style.padding = padding;
+          inner.style.gap = gap;
+        }
+      }
+    });
+    ['tempVal','humVal','ppfdVal','co2LevelVal','leafOffsetInput'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.fontSize = valSize;
+        // co2LevelVal は4桁(1000-1500ppm)表示のため広めに確保
+        el.style.width = (id === 'co2LevelVal') ? (compact ? '72px' : '92px') : valWidth;
+      }
+    });
+    document.querySelectorAll('#tab-monitor .card span[style*="1.1rem"], #tab-monitor .card span[style*="0.9rem"]').forEach(el => {
+      if ((!el.id || !el.id.includes('selector')) && !el.closest('.card-title')) el.style.fontSize = labelSize;
+    });
+    document.querySelectorAll('#tab-monitor .card button.small-btn[style*="36px"], #tab-monitor .card button.small-btn[style*="28px"]').forEach(btn => {
+      btn.style.width = btnSize; btn.style.height = btnSize;
+    });
+  }
+
+  async function toggleLeaf() {
+    const t = tents[currentTent];
+    t.leaf = !t.leaf;
+    document.getElementById('btnLeaf').classList.toggle('active-leaf', t.leaf);
+    document.getElementById('btnLeaf').setAttribute('aria-pressed', t.leaf);
+    document.getElementById('leafOffsetCard').style.display = t.leaf ? 'block' : 'none';
+    await dbPut('tents', t);
+    updateCompactMode();
+    update();
+  }
+  async function toggleCO2() {
+    const t = tents[currentTent];
+    t.co2 = !t.co2;
+    document.getElementById('btnCO2').classList.toggle('active-co2', t.co2);
+    document.getElementById('btnCO2').setAttribute('aria-pressed', t.co2);
+    document.getElementById('co2LevelCard').style.display = t.co2 ? 'block' : 'none';
+    if (t.co2) document.getElementById('co2LevelVal').value = t.co2Level || 1000;
+    await dbPut('tents', t);
+    updateCompactMode();
+    update();
+    buildStageTable();
+  }
+  function adjustLeafOffset(delta) {
+    let c = tents[currentTent].leafOffset || -2.0;
+    c = Math.max(-10, Math.min(10, Math.round((c + delta)*10)/10));
+    tents[currentTent].leafOffset = c;
+    const input = document.getElementById('leafOffsetInput');
+    input.value = useFahrenheit ? (c * 9/5).toFixed(1) : c.toFixed(1);
+    applyLeafOffset(input.value);
+  }
+
+  /**
+   * 温度を±deltaで調整し、範囲内で丸めて保存する。
+   * deltaは°C単位。
+   */
+  async function adjustTemp(delta) {
+    let c = tents[currentTent].temp;
+    if (isNaN(c)) c = 24;
+    c = Math.max(10, Math.min(45, Math.round(c + delta)));
+    tents[currentTent].temp = c;
+    document.getElementById('tempVal').value = useFahrenheit ? Math.round(c * 9/5 + 32) : c;
+    document.getElementById('tempVal').style.color = 'var(--accent)';
+    await dbPut('tents', tents[currentTent]);
+    update();
+  }
+
+  /**
+   * 湿度を±deltaで調整し、1刻みで丸めて保存する。
+   * deltaは%RH単位。
+   */
+  function adjustHum(delta) {
+    let val = parseFloat(document.getElementById('humVal').value);
+    if (isNaN(val)) val = tents[currentTent].hum;
+    val = Math.max(10, Math.min(100, Math.round(val + delta)));
+    document.getElementById('humVal').value = val;
+    applyInlineVal('hum', val);
+  }
+  async function applyLeafOffset(val) {
+    const t = tents[currentTent];
+    let v = parseFloat(val);
+    if (isNaN(v)) v = -2.0;
+    const c = useFahrenheit ? v * 5/9 : v;
+    t.leafOffset = Math.max(-10, Math.min(10, c));
+    await dbPut('tents', t);
+    update();
+  }
+
+  async function applyInlineVal(type, val) {
+    let v = parseFloat(String(val).replace(',', '.'));
+    if (isNaN(v)) return;
+    if (type === 'temp') {
+      let c = useFahrenheit ? (v - 32) * 5/9 : v;
+      c = Math.max(10, Math.min(45, c));
+      tents[currentTent].temp = c;
+      document.getElementById('tempVal').value = useFahrenheit ? Math.round(c * 9/5 + 32) : Math.round(c);
+    } else if (type === 'hum') {
+      v = Math.max(10, Math.min(100, v));
+      tents[currentTent].hum = v;
+      document.getElementById('humVal').value = Math.round(v);
+    } else if (type === 'ppfd') {
+      v = Math.max(0, Math.min(2000, Math.round(v)));
+      tents[currentTent].ppfd = v;
+      document.getElementById('ppfdVal').value = v;
+    }
+    await dbPut('tents', tents[currentTent]);
+    ['tempVal','humVal','ppfdVal','co2LevelVal','leafOffsetInput'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.color = 'var(--accent)';
+    });
+    update();
+  }
+
+  /* === 温度単位 === */
+  let useFahrenheit = false;
+  function toggleTempUnit() {
+    useFahrenheit = !useFahrenheit;
+    const unit = useFahrenheit ? '°F' : '℃';
+    document.getElementById('tempUnitLabel').textContent = unit;
+    const leafLabel = document.getElementById('leafUnitLabel');
+    if (leafLabel) leafLabel.textContent = unit;
+    const c = tents[currentTent].temp;
+    document.getElementById('tempVal').value = useFahrenheit ? Math.round(c * 9/5 + 32) : Math.round(c);
+    const offset = tents[currentTent].leafOffset || -2.0;
+    const offsetEl = document.getElementById('leafOffsetInput');
+    if (offsetEl) offsetEl.value = useFahrenheit ? (offset * 9/5).toFixed(1) : offset.toFixed(1);
+  }
+
+  /* === Sweet Spot Mode === */
+  let spotMode = 'theory';
+  let dayCountVisible = localStorage.getItem('dayCountVisible') !== 'false';
+  let spotTolTemp = parseFloat(localStorage.getItem('spotTolTemp') || '1');
+  let spotTolHum  = parseFloat(localStorage.getItem('spotTolHum')  || '3');
+  let spotTolPpfd = parseFloat(localStorage.getItem('spotTolPpfd') || '50');
+  let modeInputCache = { theory: null, myspot: null };
+
+  function saveModeInputs() {
+    modeInputCache[spotMode] = {
+      ph: document.getElementById('phInput')?.value ?? '',
+      ec: document.getElementById('ecInput')?.value ?? '',
+      runoffEc: document.getElementById('runoffEcInput')?.value ?? '',
+      waterTemp: document.getElementById('waterTempInput')?.value ?? ''
+    };
+  }
+
+  function restoreModeInputs(mode) {
+    const cached = modeInputCache[mode];
+    const ph = document.getElementById('phInput');
+    const ec = document.getElementById('ecInput');
+    const runoff = document.getElementById('runoffEcInput');
+    const wt = document.getElementById('waterTempInput');
+    const _s = stages[tents[currentTent]?.stage];
+    const _defEc = (_s && _s.ecInput && _s.ecInput[1] > 0) ? ((_s.ecInput[0] + _s.ecInput[1]) / 2).toFixed(1) : '1.2';
+    const _defRo = (_s && _s.ecRunoff && _s.ecRunoff[1] > 0) ? ((_s.ecRunoff[0] + _s.ecRunoff[1]) / 2).toFixed(1) : '1.4';
+    const vals = cached || { ph: '6.0', ec: _defEc, runoffEc: _defRo, waterTemp: '' };
+    if (ph) ph.value = vals.ph;
+    if (ec) ec.value = vals.ec;
+    if (runoff) runoff.value = vals.runoffEc;
+    if (wt) wt.value = vals.waterTemp;
+  }
+
+  function setSpotMode(mode) {
+    saveModeInputs();
+    spotMode = mode;
+    restoreModeInputs(mode);
+    document.getElementById('modeTheory').classList.toggle('active-pill', mode === 'theory');
+    document.getElementById('modeMySpot').classList.toggle('active-pill', mode === 'myspot');
+    const feedT = document.getElementById('feedModeTheory');
+    const feedM = document.getElementById('feedModeMySpot');
+    if (feedT) feedT.classList.toggle('active-pill', mode === 'theory');
+    if (feedM) feedM.classList.toggle('active-pill', mode === 'myspot');
+    const bar = document.getElementById('sweetSpotBar');
+    if (bar) bar.style.display = mode === 'myspot' ? 'flex' : 'none';
+    const feedBar = document.getElementById('feedingSpotBar');
+    if (feedBar) feedBar.style.display = mode === 'myspot' ? 'flex' : 'none';
+    const feedRef = document.getElementById('feedingRef');
+    if (feedRef) feedRef.style.display = mode === 'theory' ? '' : 'none';
+    updateSpotDisplay();
+    updateFeedingHeader();
+    updateFeedingSpotDisplay();
+    update();
+  }
+
+  function updateFeedingHeader() {
+    const t = tents[currentTent];
+    if (!t) return;
+    const nameEl = document.getElementById('feedingStageName');
+    const refEl  = document.getElementById('feedingRef');
+    if (nameEl) nameEl.textContent = stages[t.stage] ? stages[t.stage].name : '—';
+    // Sync Week/Day display to Feeding tab
+    const feedDC = document.getElementById('feedingDayCount');
+    if (feedDC) {
+      const linked = getLinkedDayCountDates(t, t.stage);
+      if (linked.base) {
+        if (t.stage === 'harvest') {
+          feedDC.textContent = linked.base.replace(/-/g, '/');
+          feedDC.style.display = '';
+        } else {
+        const start = new Date(linked.base);
+        const end = linked.end ? new Date(linked.end) : new Date();
+        start.setHours(0,0,0,0); end.setHours(0,0,0,0);
+        const days = Math.floor((end - start) / (1000*60*60*24)) + 1;
+        const week = Math.ceil(days / 7);
+        if (days >= 1) {
+          feedDC.textContent = linked.end ? `Week ${week} Day ${days}✓` : `Week ${week} Day ${days}`;
+          feedDC.style.display = dayCountVisible ? '' : 'none';
+        } else { feedDC.textContent = ''; feedDC.style.display = 'none'; }
+        }
+      } else { feedDC.textContent = ''; feedDC.style.display = 'none'; }
+    }
+    if (refEl) {
+      const s = stages[t.stage];
+      if (s && s.ecInput) {
+        refEl.textContent = `Input EC: ${s.ecInput[0]}–${s.ecInput[1]} mS  |  Runoff EC: ${s.ecRunoff[0]}–${s.ecRunoff[1]} mS`;
+      } else {
+        refEl.textContent = '';
+      }
+    }
+  }
+
+
+
+  let currentFertTab = 0;
+  const _fertLastTap = {};  // renderFertilizerTabs再作成でもリセットされないよう外部管理
+
+  function renderFertilizerTabs() {
+    const bar = document.getElementById('fertTabBar');
+    const content = document.getElementById('fertTabContent');
+    if (!bar || !content) return;
+    const t = tents[currentTent];
+    const list = t.fertilizerList || [];
+
+    // タブバー
+    if (!list.length) {
+      bar.innerHTML = '<div style="font-size:0.72rem;color:var(--text);padding:2px 0;">Not registered</div>';
+      content.style.display = 'none';
+      return;
+    }
+    if (currentFertTab >= list.length) currentFertTab = list.length - 1;
+    bar.innerHTML = list.map((f, i) => {
+      const label = f.name || `NUTRIENT${i + 1}`;
+      const active = i === currentFertTab;
+      return `<div class="toggle-btn fert-tab-btn${active ? ' active-day' : ''}" data-index="${i}" onclick="(function(){var now=Date.now();if(_fertLastTap[${i}]&&now-_fertLastTap[${i}]<350){_fertLastTap[${i}]=0;selectFertilizerTabAndEdit(${i});}else{_fertLastTap[${i}]=now;selectFertTab(${i});}})()" style="white-space:nowrap;outline:none;">${label}</div>`;
+    }).join('');
+
+    // タブコンテンツ
+    const f = list[currentFertTab];
+    const ratio = (f.waterL && f.amountMl) ? (f.amountMl / f.waterL).toFixed(2) : '—';
+    content.style.display = 'block';
+    content.innerHTML = `
+      <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);border-radius:10px;padding:10px 12px;position:relative;">
+        <!-- 数値 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end;">
+          <div>
+            <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">Water</div>
+            <div style="display:flex;align-items:baseline;gap:3px;">
+              <input value="${f.waterL || ''}" placeholder="0" type="number" min="0" step="0.5" oninput="updateFertilizer(${currentFertTab},'waterL',this.value)"
+                style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.18);color:var(--accent);font-size:0.95rem;outline:none;text-align:right;padding:3px 0;">
+              <span style="font-size:0.65rem;color:var(--text);white-space:nowrap;">L</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">Amount</div>
+            <div style="display:flex;align-items:baseline;gap:3px;">
+              <input value="${f.amountMl || ''}" placeholder="0" type="number" min="0" step="0.5" oninput="updateFertilizer(${currentFertTab},'amountMl',this.value)"
+                style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.18);color:var(--accent);font-size:0.95rem;outline:none;text-align:right;padding:3px 0;">
+              <span style="font-size:0.65rem;color:var(--text);white-space:nowrap;">ml</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">Dilution</div>
+            <div style="display:flex;align-items:baseline;gap:3px;">
+              <span style="color:var(--accent);font-size:0.95rem;font-weight:600;">${ratio}</span>
+              <span style="font-size:0.63rem;color:var(--text);white-space:nowrap;">ml/L</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function selectFertTab(idx) {
+    currentFertTab = idx;
+    renderFertilizerTabs();
+  }
+
+  function selectFertilizerTabAndEdit(idx) {
+    currentFertTab = idx;
+    renderFertilizerTabs();
+    renameFertilizer(idx);
+  }
+
+  async function addFertilizer() {
+    const t = tents[currentTent];
+    if (!t.fertilizerList) t.fertilizerList = [];
+    const nextNum = t.fertilizerList.length + 1;
+    t.fertilizerList.push({ name: `NUTRIENT${nextNum}`, waterL: '', amountMl: '' });
+    currentFertTab = t.fertilizerList.length - 1;
+    await dbPut('tents', t);
+    renderFertilizerTabs();
+  }
+
+  async function removeFertilizer(idx) {
+    const t = tents[currentTent];
+    if (!t.fertilizerList) return;
+    t.fertilizerList.splice(idx, 1);
+    if (currentFertTab >= t.fertilizerList.length) currentFertTab = Math.max(0, t.fertilizerList.length - 1);
+    await dbPut('tents', t);
+    renderFertilizerTabs();
+  }
+
+  let fertSaveTimer = null;
+  function updateFertilizer(idx, key, val) {
+    const t = tents[currentTent];
+    if (!t.fertilizerList || !t.fertilizerList[idx]) return;
+    t.fertilizerList[idx][key] = key === 'name' ? val : parseFloat(val) || '';
+    clearTimeout(fertSaveTimer);
+    fertSaveTimer = setTimeout(async () => {
+      await dbPut('tents', t);
+      renderFertilizerTabs();
+    }, 600);
+  }
+
+  async function saveStageSpot() {
+    const t = tents[currentTent];
+    if (!t.stageSpots) t.stageSpots = {};
+    t.stageSpots[t.stage] = { temp: t.temp, hum: t.hum, ppfd: t.ppfd };
+    await dbPut('tents', t);
+    updateSpotDisplay();
+    update();
+  }
+
+  async function deleteStageSpot() {
+    const t = tents[currentTent];
+    if (t.stageSpots) delete t.stageSpots[t.stage];
+    await dbPut('tents', t);
+    updateSpotDisplay();
+    update();
+  }
+
+  // 🗑 deleteSpotBtn: double tap = current stage, long press = all stages
+  (() => {
+    let longTimer = null;
+    let longFired = false;
+    let lastTap = 0;
+
+    function flashBtn(btn) {
+      btn.style.background = 'rgba(255,50,50,0.25)';
+      setTimeout(() => { btn.style.background = 'transparent'; }, 500);
+    }
+
+    async function deleteCurrentSpot() {
+      await deleteStageSpot();
+    }
+
+    async function deleteAllSpots() {
+      const t = tents[currentTent];
+      t.stageSpots = {};
+      await dbPut('tents', t);
+      updateSpotDisplay();
+      update();
+      showToast('All stage spots cleared');
+    }
+
+    window.addEventListener('load', () => {
+      const btn = document.getElementById('deleteSpotBtn');
+      if (!btn) return;
+
+      function startHold() {
+        longFired = false;
+        btn.style.background = 'rgba(255,100,100,0.15)';
+        longTimer = setTimeout(async () => {
+          longFired = true;
+          longTimer = null;
+          btn.style.background = 'transparent';
+          await deleteAllSpots();
+          flashBtn(btn);
+        }, 600);
+      }
+      function cancelHold() {
+        if (longTimer) { clearTimeout(longTimer); longTimer = null; }
+        btn.style.background = 'transparent';
+      }
+
+      // Touch
+      btn.addEventListener('touchstart', e => { e.preventDefault(); startHold(); }, { passive: false });
+      btn.addEventListener('touchend', async e => {
+        e.preventDefault();
+        cancelHold();
+        if (longFired) return;
+        const now = Date.now();
+        if (now - lastTap < 350) {
+          lastTap = 0;
+          await deleteCurrentSpot();
+          flashBtn(btn);
+        } else {
+          lastTap = now;
+        }
+      });
+      btn.addEventListener('touchmove', cancelHold, { passive: true });
+
+      // Mouse
+      btn.addEventListener('mousedown', startHold);
+      btn.addEventListener('mouseup', cancelHold);
+      btn.addEventListener('mouseleave', cancelHold);
+      btn.addEventListener('click', async () => {
+        if (longFired) return;
+        const now = Date.now();
+        if (now - lastTap < 350) {
+          lastTap = 0;
+          await deleteCurrentSpot();
+          flashBtn(btn);
+        } else {
+          lastTap = now;
+        }
+      });
+    });
+  })();
+
+  async function saveFeedingSpot() {
+    const t = tents[currentTent];
+    if (!t.stageSpots) t.stageSpots = {};
+    const _fv = id => { const el = document.getElementById(id); return el ? (el.value.trim() || el.placeholder || '') : ''; };
+    const ph = parseFloat(_fv('phInput'));
+    const ec = parseFloat(_fv('ecInput'));
+    const runoffEc = parseFloat(_fv('runoffEcInput'));
+    const spot = t.stageSpots[t.stage] || {};
+    if (!isNaN(ph)) spot.ph = ph;
+    if (!isNaN(ec)) spot.ec = ec;
+    if (!isNaN(runoffEc)) spot.runoffEc = runoffEc;
+    const fertilizers = (t.fertilizerList || []).filter(f => f.waterL || f.amountMl);
+    if (fertilizers.length) {
+      spot.fertilizers = fertilizers.map(f => ({
+        name: f.name,
+        waterL: f.waterL,
+        amountMl: f.amountMl
+      }));
+    }
+    t.stageSpots[t.stage] = spot;
+    await dbPut('tents', t);
+    updateFeedingSpotDisplay();
+    updateFeedingHeader();
+  }
+
+  async function deleteFeedingSpot() {
+    const t = tents[currentTent];
+    if (t.stageSpots && t.stageSpots[t.stage]) {
+      delete t.stageSpots[t.stage].ph;
+      delete t.stageSpots[t.stage].ec;
+      delete t.stageSpots[t.stage].runoffEc;
+      delete t.stageSpots[t.stage].fertilizers;
+    }
+    await dbPut('tents', t);
+    updateFeedingSpotDisplay();
+    updateFeedingHeader();
+  }
+
+  async function deleteAllFeedingSpots() {
+    const t = tents[currentTent];
+    if (t.stageSpots) {
+      Object.keys(t.stageSpots).forEach(k => {
+        delete t.stageSpots[k].ph;
+        delete t.stageSpots[k].ec;
+        delete t.stageSpots[k].runoffEc;
+        delete t.stageSpots[k].fertilizers;
+      });
+    }
+    await dbPut('tents', t);
+    updateFeedingSpotDisplay();
+    updateFeedingHeader();
+    showToast('All feeding spots cleared');
+  }
+
+  // 🗑 deleteFeedingSpotBtn: double tap = current stage, long press = all stages
+  (() => {
+    let longTimer = null;
+    let longFired = false;
+    let lastTap = 0;
+
+    function flashBtn(btn) {
+      btn.style.background = 'rgba(255,50,50,0.25)';
+      setTimeout(() => { btn.style.background = 'transparent'; }, 500);
+    }
+
+    window.addEventListener('load', () => {
+      const btn = document.getElementById('deleteFeedingSpotBtn');
+      if (!btn) return;
+
+      function startHold() {
+        longFired = false;
+        btn.style.background = 'rgba(255,100,100,0.15)';
+        longTimer = setTimeout(async () => {
+          longFired = true; longTimer = null;
+          btn.style.background = 'transparent';
+          await deleteAllFeedingSpots();
+          flashBtn(btn);
+        }, 600);
+      }
+      function cancelHold() {
+        if (longTimer) { clearTimeout(longTimer); longTimer = null; }
+        btn.style.background = 'transparent';
+      }
+
+      btn.addEventListener('touchstart', e => { e.preventDefault(); startHold(); }, { passive: false });
+      btn.addEventListener('touchend', async e => {
+        e.preventDefault(); cancelHold();
+        if (longFired) return;
+        const now = Date.now();
+        if (now - lastTap < 350) { lastTap = 0; await deleteFeedingSpot(); flashBtn(btn); }
+        else { lastTap = now; }
+      });
+      btn.addEventListener('touchmove', cancelHold, { passive: true });
+      btn.addEventListener('mousedown', startHold);
+      btn.addEventListener('mouseup', cancelHold);
+      btn.addEventListener('mouseleave', cancelHold);
+      btn.addEventListener('click', async () => {
+        if (longFired) return;
+        const now = Date.now();
+        if (now - lastTap < 350) { lastTap = 0; await deleteFeedingSpot(); flashBtn(btn); }
+        else { lastTap = now; }
+      });
+    });
+  })();
+
+  function updateFeedingSpotDisplay() {
+    const bar = document.getElementById('feedingSpotBar');
+    const infoEl = document.getElementById('feedingSpotInfo');
+    if (!bar || !infoEl) return;
+    if (spotMode !== 'myspot') { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    const t = tents[currentTent];
+    const spot = t.stageSpots && t.stageSpots[t.stage];
+    const delBtn = document.getElementById('deleteFeedingSpotBtn');
+    const hasFeedingData = spot && (spot.ph != null || spot.ec != null || spot.runoffEc != null);
+    if (!hasFeedingData) {
+      infoEl.innerHTML = `<span style="color:rgba(255,255,255,0.45);">${tr('spot.unsaved')}</span>`;
+      if (delBtn) delBtn.style.display = 'none';
+      return;
+    }
+    if (delBtn) delBtn.style.display = 'flex';
+    const parts = [];
+    if (spot.ph != null) parts.push(`pH ${spot.ph}`);
+    if (spot.ec != null) parts.push(`EC ${spot.ec}mS`);
+    if (spot.runoffEc != null) parts.push(`Runoff ${spot.runoffEc}mS`);
+    let html = `📌 ${parts.join(' / ')}`;
+    if (spot.fertilizers && spot.fertilizers.length) {
+      const fertParts = spot.fertilizers.map(f => {
+        const name = f.name || 'Fert';
+        const ratio = (f.waterL && f.amountMl) ? (f.amountMl / f.waterL).toFixed(2) : null;
+        const detail = [f.waterL ? `${f.waterL}L` : null, f.amountMl ? `${f.amountMl}ml` : null, ratio ? `${ratio}ml/L` : null].filter(Boolean).join('/');
+        return detail ? `${name}: ${detail}` : name;
+      });
+      html += `<br><span style="font-size:0.62rem;opacity:0.85;">🌿 ${fertParts.join(' / ')}</span>`;
+    }
+    infoEl.innerHTML = html;
+  }
+
+  function updateSpotDisplay() {
+    const infoEl = document.getElementById('spotInfo');
+    if (!infoEl || spotMode !== 'myspot') return;
+    const t = tents[currentTent];
+    const spot = t.stageSpots && t.stageSpots[t.stage];
+    const delBtn = document.getElementById('deleteSpotBtn');
+    if (!spot) {
+      infoEl.innerHTML = `<span style="color:rgba(255,255,255,0.45);">${tr('spot.unsaved')}</span>`;
+      if (delBtn) delBtn.style.display = 'none';
+      return;
+    }
+    if (delBtn) delBtn.style.display = 'flex';
+    const dT = (t.temp - spot.temp).toFixed(1);
+    const dH = Math.round(t.hum - spot.hum);
+    const dP = Math.round(t.ppfd - spot.ppfd);
+    const fmt = (v, thr, unit) => {
+      const cls = Math.abs(v) <= thr ? 'on' : 'off';
+      return `<span class="spot-delta ${cls}">${v > 0 ? '+' : ''}${v}${unit}</span>`;
+    };
+    infoEl.innerHTML = `${tr('spot.label')}${spot.temp}°C / ${spot.hum}% / ${spot.ppfd}µmol &nbsp;|&nbsp; ${fmt(parseFloat(dT),1,'°C')} ${fmt(dH,3,'%')} ${fmt(dP,50,'µmol')}`;
+  }
+
+  /* === VPD計算および表示 === */
+  function update() {
+    const t = tents[currentTent];
+    const temp = t.temp;
+    const hum  = t.hum;
+    const airV = calcVPD(temp, hum);
+    const leafV= calcLeafVPD(temp, hum, t.leafOffset);
+    document.getElementById('vpdAir').textContent  = airV.toFixed(2);
+    document.getElementById('vpdLeaf').textContent = leafV.toFixed(2);
+    document.getElementById('leafBlock').style.opacity = t.leaf ? '1' : '0.6';
+    const range = t.co2 ? stages[t.stage].co2 : stages[t.stage].vpd;
+    const lo = range[0];
+    const hi = range[1];
+    const check = t.leaf ? leafV : airV;
+    const badge = document.getElementById('statusBadge');
+    const recEl= document.getElementById('rec');
+    const state = classifyVpd(check, lo, hi);
+    badge.className = 'status-badge';
+    if (state === 'danger') {
+      badge.classList.add('status-danger','pulse');
+      badge.textContent = check < lo ? tr('vpd.too_low') : tr('vpd.too_high');
+      const ppfdRange = getPpfdRange(t.stage, t.co2);
+      recEl.textContent = generateAction(check, lo, hi, temp, hum, Number(t.ppfd || 0), ppfdRange, null, null);
+    } else if (state === 'warning') {
+      badge.classList.add('status-warning');
+      badge.textContent = tr('vpd.warning');
+      recEl.textContent = tr('vpd.rec_warning');
+    } else {
+      badge.classList.add('status-ok');
+      badge.textContent = tr('vpd.ok');
+      recEl.textContent = `${stages[t.stage].name}${tr('vpd.rec_ok')}`;
+    }
+
+    // My Spot mode override
+    if (spotMode === 'myspot') {
+      const spot = t.stageSpots && t.stageSpots[t.stage];
+      if (spot) {
+        const dT = parseFloat((t.temp - spot.temp).toFixed(1));
+        const dH = Math.round(t.hum - spot.hum);
+        const dP = Math.round(t.ppfd - spot.ppfd);
+        const tOk = Math.abs(dT) <= spotTolTemp;
+        const hOk = Math.abs(dH) <= spotTolHum;
+        const pOk = Math.abs(dP) <= spotTolPpfd;
+        const allOk = tOk && hOk && pOk;
+        badge.className = 'status-badge';
+        if (allOk) {
+          badge.classList.add('status-ok');
+          badge.textContent = tr('spot.in');
+          recEl.textContent = tr('spot.in_range');
+        } else {
+          badge.classList.add('status-warning');
+          badge.textContent = tr('spot.out');
+          const tips = [];
+          if (!tOk) tips.push(`${tr('spot.temp_adj')}${dT > 0 ? '−' : '+'}${Math.abs(dT)}°C`);
+          if (!hOk) tips.push(`${tr('spot.hum_adj')}${dH > 0 ? '−' : '+'}${Math.abs(dH)}%`);
+          if (!pOk) tips.push(`${tr('spot.light_adj')}${dP > 0 ? '−' : '+'}${Math.abs(dP)}µmol`);
+          recEl.textContent = tips.join(' / ') + tr('spot.approach');
+        }
+      }
+    }
+
+    const _ci = document.getElementById('vpdCollapsedInfo');
+    if (_ci) {
+      const _ciColor = badge.classList.contains('status-danger') ? 'var(--danger)' : badge.classList.contains('status-warning') ? '#ff9500' : 'var(--ok)';
+      _ci.innerHTML = `<span style="color:var(--text);">VPD ｜ </span><span style="color:${_ciColor};">Air ${airV.toFixed(2)} kPa</span><span style="color:var(--text);"> / </span><span style="color:${_ciColor};">Leaf ${leafV.toFixed(2)} kPa</span>`;
+    }
+
+    const mid = (lo + hi)/2;
+    // 現在値との差分(kPa)
+    const diff = check - mid;
+    const diffSign = diff >= 0 ? '+' : '';
+    // 推奨湿度
+    const targetHumValue = tgtHum(temp, mid);
+    const humidityDiff = targetHumValue - hum;
+    const humiditySign = humidityDiff >= 0 ? '+' : '';    document.getElementById('vpdDiff').textContent = `${tr('vpd.diff')} ${diffSign}${diff.toFixed(2)} kPa ${tr('vpd.hum_adj')} ${humiditySign}${Math.round(humidityDiff)}%`;    document.getElementById('targetHum').textContent = targetHumValue;
+    const ppfd = Number(t.ppfd || 0);
+    const ppfdRange = getPpfdRange(t.stage, t.co2);
+    const ppfdState = classifyPpfd(ppfd, ppfdRange);
+    const ppfdMid = (ppfdRange[0] + ppfdRange[1]) / 2;
+    document.getElementById('ppfdNow').textContent = ppfd;
+    document.getElementById('targetPpfd').textContent = Math.round(ppfdMid);
+    const ppfdAdviceEl = document.getElementById('ppfdAdvice');
+    if (ppfdState === 'ok') {
+      ppfdAdviceEl.innerHTML = '';
+    } else if (ppfdState === 'high') {
+      ppfdAdviceEl.innerHTML = `<span class="ppfd-alert">${tr('ppfd.high')}${ppfdAction(ppfd, ppfdRange)}</span>`;
+    } else {
+      ppfdAdviceEl.textContent = `${tr('ppfd.low')}${ppfdAction(ppfd, ppfdRange)}`;
+      ppfdAdviceEl.style.color = '#ffaa00';
+    }
+    updateSpotDisplay();
+
+    // Theory 参考値をPPFD下に表示
+    const theoryRefEl = document.getElementById('monitorTheoryRef');
+    if (theoryRefEl) {
+      if (spotMode === 'theory') {
+        theoryRefEl.style.display = '';
+        const s = stages[t.stage];
+        const tempStr = s.temp ? `${s.temp[0]}–${s.temp[1]}℃` : '—';
+        const humStr = s.hum ? `${s.hum[0]}–${s.hum[1]}%` : '—';
+        const ppfdStr = `${ppfdRange[0]}–${ppfdRange[1]} µmol`;
+        theoryRefEl.innerHTML = `Temp: ${tempStr} &nbsp;|&nbsp; Humidity: ${humStr} &nbsp;|&nbsp; PPFD: ${ppfdStr}`;
+      } else {
+        theoryRefEl.style.display = 'none';
+      }
+    }
+  }
+
+  /* === ステージ表 === */
+  
+  function getPpfdRange(stageKey, co2Enabled) {
+    const s = stages[stageKey];
+    if (!co2Enabled) return s.ppfd;
+    const level = (tents[currentTent] || {}).co2Level || 1000;
+    if (level <= 400) return s.ppfd;
+    const base = Math.min(1, (level - 400) / 600);
+    const ext  = Math.max(0, (level - 1000) / 500);
+    const co2 = s.ppfdCo2 || s.ppfd;
+    return [
+      Math.round(s.ppfd[0] + (co2[0] - s.ppfd[0]) * base + co2[0] * 0.2 * ext),
+      Math.round(s.ppfd[1] + (co2[1] - s.ppfd[1]) * base + co2[1] * 0.2 * ext)
+    ];
+  }
+
+  function classifyPpfd(ppfd, range) {
+    if (ppfd < range[0]) return 'low';
+    if (ppfd > range[1]) return 'high';
+    return 'ok';
+  }
+
+  function ppfdAction(ppfd, range) {
+    const mid = (range[0] + range[1]) / 2;
+    const diff = Math.round(ppfd - mid);
+    const prefix = diff >= 0 ? '+' : '';
+    if (ppfd < range[0]) return `${tr('ppfd.raise')}${Math.max(50, range[0] - ppfd)}〜${Math.max(50, range[1] - ppfd)} µmol)`;
+    if (ppfd > range[1]) return `${tr('ppfd.lower')}${Math.max(50, ppfd - range[1])}〜${Math.max(50, ppfd - range[0])} µmol)`;
+    return `${tr('ppfd.diff')}${prefix}${diff} µmol)`;
+  }
+
+  function adjustCurrentPpfd(delta) {
+    let val = parseInt(document.getElementById('ppfdVal').value || '0', 10);
+    if (isNaN(val)) val = tents[currentTent].ppfd || 0;
+    val = Math.max(0, Math.min(2000, Math.round((val + delta) / 10) * 10));
+    document.getElementById('ppfdVal').value = val;
+    applyInlineVal('ppfd', val);
+  }
+
+  async function adjustCo2Level(delta) {
+    const t = tents[currentTent];
+    const v = Math.max(400, Math.min(1500, ((t.co2Level || 1000) + delta)));
+    t.co2Level = v;
+    document.getElementById('co2LevelVal').value = v;
+    await dbPut('tents', t);
+    update();
+  }
+  async function applyCo2Level(val) {
+    const t = tents[currentTent];
+    let v = parseInt(val, 10);
+    if (isNaN(v)) v = 1000;
+    v = Math.max(400, Math.min(1500, Math.round(v / 100) * 100));
+    t.co2Level = v;
+    document.getElementById('co2LevelVal').value = v;
+    await dbPut('tents', t);
+    update();
+  }
+
+  let refCo2 = false;
+  let refMedium = 'soil'; // 'soil' or 'hydro'
+  const phData = {
+    soil:  { clone:'6.0〜6.5', veg:'6.0〜6.5', flower_early:'6.0〜6.5', flower_late:'6.0〜6.5', flush:'6.0〜6.5', dry:'—', harvest:'—' },
+    hydro: { clone:'5.5〜6.0', veg:'5.8〜6.2', flower_early:'5.8〜6.2', flower_late:'5.8〜6.2', flush:'5.8〜6.2', dry:'—', harvest:'—' },
+  };
+  function toggleRefCo2() {
+    refCo2 = !refCo2;
+    const btn = document.getElementById('refCo2Btn');
+    if (btn) btn.textContent = refCo2 ? 'CO₂ ON' : 'CO₂ OFF';
+    if (btn) btn.style.color = refCo2 ? 'var(--accent)' : 'var(--text)';
+    if (btn) btn.style.borderColor = refCo2 ? 'var(--accent)' : 'var(--border)';
+    buildStageTable();
+  }
+  function toggleRefMedium() {
+    refMedium = refMedium === 'soil' ? 'hydro' : 'soil';
+    const btn = document.getElementById('refMediumBtn');
+    const note = document.getElementById('waterTempNote');
+    const isHydro = refMedium === 'hydro';
+    if (btn) btn.textContent = isHydro ? tr('ref.hydro') : tr('ref.soil');
+    if (btn) btn.style.color = isHydro ? 'var(--accent2)' : 'var(--text)';
+    if (btn) btn.style.borderColor = isHydro ? 'var(--accent2)' : 'var(--border)';
+    buildStageTable();
+  }
+  function buildStageTable() {
+    const vline = '1px solid rgba(255,255,255,0.5)';
+    const hdr = (t, i) => `<div style="font-size:0.7rem;font-weight:700;color:var(--text);opacity:0.6;text-align:center;border-left:${i===0?'none':vline};padding:0 2px;min-width:0;">${t}</div>`;
+    const cell = (t, i) => `<div style="font-size:0.7rem;color:var(--text);text-align:center;white-space:nowrap;border-left:${i===0?'none':vline};padding:0 2px;min-width:0;">${t}</div>`;
+    const fv = (n) => Number.isInteger(n) ? String(n) : n.toFixed(1);
+    const hdrs = ['°C','%RH','kPa',refCo2?'µmol*':'µmol','In EC','Out EC','pH'];
+    let html = `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div style="min-width:430px;">`;
+    html += `<div style="display:grid;grid-template-columns:56px 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;padding:4px 0 8px;border-bottom:1px solid rgba(255,255,255,0.2);">
+      <span></span>${hdrs.map((t,i) => hdr(t,i)).join('')}
+    </div>`;
+    Object.keys(stages).filter(k => k !== 'harvest').forEach((key, ri) => {
+      const s = stages[key];
+      const isDry = key === 'dry';
+      const zebra = ri % 2 === 1 ? 'background:rgba(255,255,255,0.04);border-radius:4px;' : '';
+      const vals = [
+        `${s.temp[0]}〜${s.temp[1]}`,
+        `${s.hum[0]}〜${s.hum[1]}`,
+        `${fv(s.vpd[0])}〜${fv(s.vpd[1])}`,
+        isDry ? '—' : (refCo2 ? `${s.ppfdCo2[0]}〜${s.ppfdCo2[1]}` : `${s.ppfd[0]}〜${s.ppfd[1]}`),
+        isDry ? '—' : `${s.ecInput[0].toFixed(1)}〜${s.ecInput[1].toFixed(1)}`,
+        isDry ? '—' : `${s.ecRunoff[0].toFixed(1)}〜${s.ecRunoff[1].toFixed(1)}`,
+        phData[refMedium][key] ?? '—',
+      ];
+      html += `<div style="display:grid;grid-template-columns:clamp(44px,14.5vw,56px) 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);${zebra}">
+        <div style="display:flex;align-items:center;gap:3px;">
+          <div style="width:3px;height:18px;background:${s.color};border-radius:2px;flex-shrink:0;"></div>
+          <span style="font-size:0.65rem;font-weight:700;color:${s.color};">${s.name}</span>
+        </div>
+        ${vals.map((v,i) => cell(v,i)).join('')}
+      </div>`;
+    });
+    html += `</div></div>`;
+    document.getElementById('stageTable').innerHTML = html;
+  }
+  /* === VPD マトリクス === */
+  function buildMatrix() {
+    const temps = [];
+    for (let t = 18; t <= 30; t++) temps.push(t); // 1°C刻み（18〜30°C）
+    const hums = [];
+    for (let h = 80; h >= 40; h -= 5) hums.push(h); // 5%刻み（80%→40%）
+    const cellTD = 'font-size:0.62rem;text-align:center;padding:4px 4px;color:#fff;';
+    const headTH = 'font-size:0.62rem;color:var(--text);padding:5px 5px;font-weight:700;background:var(--surface);';
+    const stickyTH = headTH + 'position:sticky;left:0;z-index:2;';
+    const stickyTD = 'font-size:0.62rem;color:var(--text);padding:4px 6px;font-weight:700;background:var(--surface);position:sticky;left:0;z-index:1;text-align:center;';
+    let html = '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">';
+    html += '<table style="border-collapse:collapse;white-space:nowrap;">';
+    // ヘッダー: RH\℃ + 温度列
+    html += `<tr><th style="${stickyTH}">RH\\℃</th>`;
+    html += temps.map(t => `<th style="${headTH}">${t}°</th>`).join('');
+    html += '</tr>';
+    // データ行
+    hums.forEach(h => {
+      html += `<tr><td style="${stickyTD}">${h}%</td>`;
+      temps.forEach(t => {
+        const v = calcVPD(t, h);
+        let bg;
+        if (v < 0.4)      bg = '#4a1e6b'; // purple - 低すぎ
+        else if (v < 0.8) bg = '#1a5c6b'; // blue - やや低
+        else if (v < 1.2) bg = '#2e8b3a'; // green - 理想
+        else if (v < 1.5) bg = '#8b8b2e'; // yellow-green - やや高
+        else if (v < 1.8) bg = '#a06a2e'; // orange - 高
+        else              bg = '#8b2e2e'; // red - 高すぎ
+        html += `<td style="background:${bg};${cellTD}">${v.toFixed(2)}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</table></div>';
+    document.getElementById('vpdMatrix').innerHTML = html;
+  }
+
+  /* === ログ機能 === */
+  let _photoSource = 'log'; // 'log' or 'gallery'
+  function triggerPhoto(type, source) {
+    _photoSource = source || 'log';
+    if (type === 'camera') {
+      document.getElementById('photoCamera').click();
+    } else {
+      document.getElementById('photoFile').click();
+    }
+  }
+  function compressPhoto(dataUrl, maxWidth = 800, quality = 0.75) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height, 1);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * ratio);
+        canvas.height = Math.round(img.height * ratio);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
+  function handlePhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async ev => {
+      const compressed = await compressPhoto(ev.target.result);
+      if (_photoSource === 'gallery') {
+        // GROW GALLERY: 写真のみのログを直接保存
+        const t = tents[currentTent];
+        const now = new Date();
+        const ts = now.toLocaleString('ja-JP');
+        const log = {
+          id: Date.now() + '-photo-' + t.id,
+          tentId: t.id, timestamp: ts, ts: Date.now(),
+          temp: t.temp, hum: t.hum, stage: t.stage,
+          dayNight: t.dayNight, leaf: t.leaf, co2: t.co2,
+          leafOffset: t.leafOffset,
+          ph: null, ec: null, runoffEc: null,
+          ppfd: String(t.ppfd), note: '',
+          photo: compressed, fertilizers: []
+        };
+        await dbPut('logs', log);
+        t.logs.push(log.id);
+        await dbPut('tents', t);
+        const allLogs = await dbGetAll('logs');
+        renderStageTimeline(allLogs);
+        _photoSource = 'log';
+      } else {
+        pendingPhoto = compressed;
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+  function clearPhoto() { pendingPhoto = null; }
+  async function saveLog() {
+    // 入力バリデーション
+    const phEl = document.getElementById('phInput');
+    const ecEl = document.getElementById('ecInput');
+    const runoffEl = document.getElementById('runoffEcInput');
+    [phEl, ecEl, runoffEl].forEach(el => el && (el.style.borderBottomColor = ''));
+    let valid = true;
+    if (phEl?.value) {
+      const v = parseFloat(phEl.value);
+      if (isNaN(v) || v < 3.5 || v > 9.0) { phEl.style.borderBottomColor = 'var(--danger)'; valid = false; }
+    }
+    if (ecEl?.value) {
+      const v = parseFloat(ecEl.value);
+      if (isNaN(v) || v < 0 || v > 10) { ecEl.style.borderBottomColor = 'var(--danger)'; valid = false; }
+    }
+    if (runoffEl?.value) {
+      const v = parseFloat(runoffEl.value);
+      if (isNaN(v) || v < 0 || v > 10) { runoffEl.style.borderBottomColor = 'var(--danger)'; valid = false; }
+    }
+    if (!valid) { showToast(tr('toast.input_error')); return; }
+
+    const t = tents[currentTent];
+    const id = Date.now() + '-' + tents[currentTent].id;
+    const log = {
+      id,
+      tentId: tents[currentTent].id,
+      timestamp: new Date().toLocaleString('ja-JP'),
+      ts: Date.now(),
+      temp: t.temp,
+      hum: t.hum,
+      stage: t.stage,
+      dayNight: t.dayNight,
+      leaf: t.leaf,
+      co2: t.co2,
+      leafOffset: t.leafOffset,
+      ph: (el => el?.value.trim() || el?.placeholder || null)(document.getElementById('phInput')),
+      ec: (el => el?.value.trim() || el?.placeholder || null)(document.getElementById('ecInput')),
+      runoffEc: (el => el?.value.trim() || el?.placeholder || null)(document.getElementById('runoffEcInput')),
+      waterTemp: (el => el?.value.trim() || el?.placeholder || null)(document.getElementById('waterTempInput')),
+      ppfd: String(t.ppfd || ''),
+      note: (document.getElementById('feedingNoteInput')?.value || '').trim(),
+      photo: pendingPhoto,
+      fertilizers: (t.fertilizerList || []).filter(f => f.name || f.amountMl)
+    };
+    t.logs.push(log.id);
+    // Save後も入力値をテントに紐付けて保持（タブ切替後も残る）
+    t.lastFeeding = {
+      ph: log.ph || '', ec: log.ec || '',
+      runoffEc: log.runoffEc || '', waterTemp: log.waterTemp || ''
+    };
+    await dbPut('logs', log);
+    await dbPut('tents', t);
+    saveModeInputs(); // modeInputCache を最新値に同期
+    const feedNoteEl = document.getElementById('feedingNoteInput');
+    if (feedNoteEl) feedNoteEl.value = '';
+    clearPhoto();
+    buildTentBar();
+    const fertNames = (log.fertilizers || []).map(f => esc(f.name)).filter(Boolean).join('、');
+    showSavePopup('Feeding Saved ✅', [
+      `📅 ${log.timestamp}`,
+      stages[log.stage] ? `🌱 ${stages[log.stage].name}` : '',
+      `🌡 Temp: ${log.temp}°C　💧 Humidity: ${log.hum}%`,
+      log.ph ? `💧 pH: ${log.ph}` : '',
+      log.waterTemp ? `🌡 Water: ${log.waterTemp}°C` : '',
+      log.ec ? `⚡ Input EC: ${log.ec} mS${log.runoffEc ? '　🔄 Runoff: ' + log.runoffEc + ' mS' : ''}` : '',
+      fertNames ? `🌿 ${fertNames}` : ''
+    ].filter(Boolean));
+  }
+
+  function adjustRunoffEc(delta) {
+    const input = document.getElementById('runoffEcInput');
+    let val = parseFloat(input.value || input.placeholder || '0');
+    if (isNaN(val)) val = 0;
+    val = Math.max(0, Math.round((val + delta) * 10) / 10);
+    input.value = val.toFixed(1);
+  }
+
+  async function clearLogs(skipConfirm = false) {
+    const tentName = tents[currentTent].name || `Tent ${currentTent + 1}`;
+    if (!skipConfirm && !(await customConfirm(tr('confirm.clear_logs').replace('${name}', tentName)))) return;
+    const logs = await dbGetAll('logs');
+    for (const l of logs) {
+      if (l.tentId === tents[currentTent].id) await dbDelete('logs', l.id);
+    }
+    tents[currentTent].logs = [];
+    tents[currentTent].temp = 24;
+    tents[currentTent].hum = 60;
+    tents[currentTent].ppfd = 300;
+    tents[currentTent].co2Level = 1000;
+    tents[currentTent].leafOffset = -2.0;
+    tents[currentTent].stageDates = {};
+    tents[currentTent].stageSpots = {};
+    recalculateStageEndDates(tents[currentTent]);
+    await dbPut('tents', tents[currentTent]);
+    loadTentToUI(currentTent);
+    buildTentBar();
+    const logs2 = await dbGetAll('logs');
+    renderStageTimeline(logs2);
+  }
+
+  /* === 入力調整関数 === */
+  function adjustPh(delta) {
+    const input = document.getElementById('phInput');
+    let val = parseFloat(input.value || input.placeholder || '0');
+    if (isNaN(val)) val = 0;
+    val = Math.max(0, Math.min(14, Math.round((val + delta) * 10) / 10));
+    input.value = val.toFixed(1);
+  }
+  function adjustEc(delta) {
+    const input = document.getElementById('ecInput');
+    let val = parseFloat(input.value || input.placeholder || '0');
+    if (isNaN(val)) val = 0;
+    val = Math.max(0, Math.round((val + delta) * 10) / 10);
+    input.value = val.toFixed(1);
+  }
+  function adjustWaterTemp(delta) {
+    const input = document.getElementById('waterTempInput');
+    let val = parseFloat(input.value || input.placeholder || '20');
+    if (isNaN(val)) val = 20;
+    val = Math.max(0, Math.min(40, Math.round((val + delta) * 10) / 10));
+    input.value = val.toFixed(1);
+  }
+
+  /* === Backup機能 === */
+  async function exportData() {
+    const tentsData = tents.slice();
+    const logs = await dbGetAll('logs');
+    const settingsKeys = ['appLang','vpdTheme','dayCountVisible','spotTolTemp','spotTolHum','spotTolPpfd','dryTemp','dryHum','dryVpd','showRunoffEc'];
+    const settings = {};
+    settingsKeys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) settings[k] = v; });
+    const data = { tents: tentsData, logs, settings };
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'vpd_backup.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  function importData() {
+    document.getElementById('importFile').click();
+  }
+  async function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    try {
+      const data = JSON.parse(text);
+      if (data.tents && data.logs) {
+        // Clear existing tents and logs
+        const existingTents = await dbGetAll('tents');
+        for (const t of existingTents) await dbDelete('tents', t.id);
+        const existingLogs = await dbGetAll('logs');
+        for (const l of existingLogs) {
+          await dbDelete('logs', l.id);
+        }
+        // Import tents
+        tents = [];
+        for (let i = 0; i < data.tents.length; i++) {
+          const t = data.tents[i];
+          await dbPut('tents', t);
+          tents.push(t);
+        }
+        if (tents.length === 0) {
+          const t = defaultTent(Date.now(), 'Tent 1');
+          await dbPut('tents', t);
+          tents.push(t);
+        }
+        // Import logs
+        for (const log of data.logs) {
+          await dbPut('logs', log);
+        }
+        // Restore settings from backup
+        if (data.settings && typeof data.settings === 'object') {
+          Object.entries(data.settings).forEach(([k, v]) => localStorage.setItem(k, v));
+          appLang = localStorage.getItem('appLang') || 'ja';
+          loadDrySettings();
+        }
+        currentTent = 0;
+        buildTentBar();
+        loadTentToUI(0);
+        buildStageTable();
+        update();
+        applyLang();
+        showToast(tr('toast.import_ok'));
+      } else {
+        showToast(tr('toast.import_bad_format'));
+      }
+    } catch(err) {
+      showToast(tr('toast.import_error') + err.message);
+    }
+    e.target.value = '';
+  }
+
+  function closeOverlay() {
+    document.getElementById('photoOverlay').style.display = 'none';
+  }
+
+  async function eraseAllData() {
+    if (!(await customConfirm(tr('confirm.erase_all')))) return;
+    // 全ログ削除
+    const allLogs = await dbGetAll('logs');
+    for (const l of allLogs) await dbDelete('logs', l.id);
+    // 全テントを削除してデフォルト3テントに戻す
+    for (const t of tents) await dbDelete('tents', t.id);
+    tents = [];
+    for (let i = 0; i < 3; i++) {
+      const t = defaultTent(Date.now() + i, `Tent ${i + 1}`);
+      await dbPut('tents', t);
+      tents.push(t);
+    }
+    currentTent = 0;
+    loadTentToUI(currentTent);
+    buildTentBar();
+    update();
+    buildStageTable();
+    renderStageTimeline([]);
+  }
+
+  /**
+   * 簡易的なAI診断とスケジュール生成
+   * 最新のRecord写真があれば、その色味から健康状態を推定し、
+   * 温度・湿度・ステージから簡単なスケジュールを提示する
+   */
+
+  function getLogDate(log) {
+    const t = log.ts || Date.parse(log.timestamp);
+    return Number.isFinite(t) ? new Date(t) : new Date();
+  }
+  
+function classifyVpd(vpd, lo, hi) {
+    if (vpd < lo || vpd > hi) return 'danger';
+    if (Math.abs(vpd - lo) < 0.1 || Math.abs(vpd - hi) < 0.1) return 'warning';
+    return 'ok';
+  }
+
+  function calcHumAdjust(high, low) {
+    const diff = Math.abs(high - low);
+    return Math.max(3, Math.round(diff * 10));
+  }
+
+  function calcPpfdAdjust(current, target) {
+    const diff = Math.abs(target - current);
+    return Math.max(50, Math.round(diff / 50) * 50);
+  }
+
+  function generateAction(vpd, vpdMin, vpdMax, temp, hum, ppfd, ppfdRange, inputEc, runoffEc) {
+    const priority = [];
+
+    if (vpd > vpdMax) {
+      priority.push({ rank: 1, text: `${tr('action.hum_up')}${calcHumAdjust(vpd, vpdMax)}%` });
+      priority.push({ rank: 1, text: tr('action.temp_down') });
+    } else if (vpd < vpdMin) {
+      priority.push({ rank: 1, text: `${tr('action.hum_down')}${calcHumAdjust(vpdMin, vpd)}%` });
+      priority.push({ rank: 1, text: tr('action.temp_up') });
+    }
+
+    const i = Number(inputEc);
+    const r = Number(runoffEc);
+    if (!Number.isNaN(i) && !Number.isNaN(r) && i > 0 && r > 0) {
+      const ecDiff = r - i;
+      if (ecDiff >= 0.5) {
+        priority.push({ rank: 2, text: "Water +20%" });
+        priority.push({ rank: 2, text: tr('action.flush') });
+      } else if (ecDiff <= -0.3) {
+        priority.push({ rank: 3, text: tr('action.ec_up') });
+      }
+    }
+
+    if (ppfdRange && Array.isArray(ppfdRange)) {
+      if (ppfd < ppfdRange[0]) {
+        priority.push({ rank: 3, text: `PPFD +${calcPpfdAdjust(ppfd, ppfdRange[0])}` });
+      } else if (ppfd > ppfdRange[1]) {
+        priority.push({ rank: 3, text: `PPFD -${calcPpfdAdjust(ppfdRange[1], ppfd)}` });
+      }
+    }
+
+    if (!priority.length) return tr('action.no_change');
+
+    const unique = [];
+    const seen = new Set();
+    for (const item of priority.sort((a, b) => a.rank - b.rank)) {
+      if (!seen.has(item.text)) {
+        seen.add(item.text);
+        unique.push(item);
+      }
+    }
+
+    return unique.slice(0, 3).map((x, i) => `${i + 1}. ${x.text}`).join("\n");
+  }
+
+  /* === Analysis 新機能 === */
+  function fmtTsParts(ts) {
+    if (!ts) return { time: '', date: '' };
+    const s = String(ts).replace(/^\d{4}\//, '');
+    const m = s.match(/^(\d{1,2}\/\d{1,2})\s+(\d{1,2}:\d{2})/);
+    return m ? { time: m[2], date: m[1] } : { time: '', date: s };
+  }
+  const _stagePages = {};
+  const LOGS_PER_PAGE = 6;
+  function stagePageNav(key, dir) {
+    const total = _stagePages[key]?.total || 1;
+    let page = (_stagePages[key]?.page || 0) + dir;
+    if (page < 0) page = 0;
+    if (page >= total) page = total - 1;
+    _stagePages[key].page = page;
+    const container = document.getElementById('slog-' + key);
+    if (!container) return;
+    const items = container.querySelectorAll('.slog-item');
+    items.forEach((el, i) => {
+      el.style.display = (i >= page * LOGS_PER_PAGE && i < (page + 1) * LOGS_PER_PAGE) ? '' : 'none';
+    });
+    const nav = container.querySelector('.slog-nav');
+    if (nav) nav.querySelector('.slog-page').textContent = `${page + 1}/${total}`;
+  }
+  async function renderStageTimeline(_logs) {
+    const el = document.getElementById('stageTimeline');
+    if (!el) return;
+    const t = tents[currentTent];
+    const order = STAGE_ORDER;
+    const allDates = order.map(k => t.stageDates && t.stageDates[k]).filter(Boolean);
+    const totalEl = document.getElementById('stageTotalDays');
+    if (totalEl && allDates.length > 0) {
+      const harvestDate = t.stageDates && t.stageDates['harvest'];
+      const endDate = harvestDate ? new Date(harvestDate) : new Date();
+      const totalDays = Math.round((endDate - new Date(allDates[0])) / (1000 * 60 * 60 * 24));
+      totalEl.textContent = `${tr('analysis.total_days')}${totalDays}${tr('analysis.days')}`;
+    } else if (totalEl) {
+      totalEl.textContent = '';
+    }
+    const allStageLogs = (_logs || (await dbGetAll('logs')))
+      .filter(l => l.tentId === t.id && (l.type === 'monitor' || l.fertilizers || l.photo))
+      .sort((a, b) => a.ts - b.ts);
+    const logsByStage = {};
+    allStageLogs.forEach(l => {
+      if (!logsByStage[l.stage]) logsByStage[l.stage] = [];
+      logsByStage[l.stage].push(l);
+    });
+    let html = '<div style="display:flex;flex-direction:column;gap:6px;">';
+    order.forEach((key, idx) => {
+      const s = stages[key];
+      const isCurrent = t.stage === key;
+      const dateStr = t.stageDates && t.stageDates[key];
+      const nextKey = order[idx + 1];
+      const nextDateStr = nextKey && t.stageDates && t.stageDates[nextKey];
+      let daysText = '';
+      if (dateStr && key !== 'harvest') {
+        // BUG-2 fix: Dry の起算点は自身の開始日（dateStr）に統一。Flush 込みにしない。
+        const start = new Date(dateStr);
+        // Dry の終了は harvest 日を優先。それ以外は「次に存在するステージ開始日」→「現在」へフォールバック。
+        const dryEnd = key === 'dry' && t.stageDates && t.stageDates['harvest']
+          ? t.stageDates['harvest'] : null;
+        // BUG-3 fix: スキップで nextDateStr が無い場合、STAGE_ORDER を先送りして次に stageDates がある key を探す。
+        let fallbackNext = nextDateStr;
+        if (!fallbackNext && t.stageDates) {
+          for (let j = idx + 1; j < order.length; j++) {
+            if (t.stageDates[order[j]]) { fallbackNext = t.stageDates[order[j]]; break; }
+          }
+        }
+        const end = dryEnd ? new Date(dryEnd) : (fallbackNext ? new Date(fallbackNext) : (isCurrent ? new Date() : null));
+        if (end) {
+          const days = Math.round((end - start) / (1000 * 60 * 60 * 24));
+          daysText = days > 0 ? `${days}${tr('analysis.days')}` : `0${tr('analysis.days')}`;
+        }
+      }
+      const color = s.color || '#888';
+      const opacity = dateStr ? '1' : '0.85';
+      const glow = isCurrent ? `box-shadow:0 0 10px ${color};` : '';
+      const border = isCurrent ? `border:1.5px solid ${color};` : 'border:1.5px solid transparent;';
+      const stageLogs = logsByStage[key] || [];
+      // 同日の写真ログをグループ化した表示アイテムを生成
+      const _seenPhotoDates = new Set();
+      const displayItems = [];
+      stageLogs.forEach(l => {
+        const _isPhoto = l.photo && l.type !== 'monitor' && (!l.fertilizers || l.fertilizers.length === 0);
+        if (_isPhoto) {
+          const d = getLogDate(l);
+          const dk = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+          if (!_seenPhotoDates.has(dk)) {
+            _seenPhotoDates.add(dk);
+            const groupPhotos = stageLogs.filter(p => {
+              if (!p.photo || p.type === 'monitor' || (p.fertilizers && p.fertilizers.length > 0)) return false;
+              const pd = getLogDate(p);
+              return pd.getFullYear() === d.getFullYear() && pd.getMonth() === d.getMonth() && pd.getDate() === d.getDate();
+            });
+            displayItems.push({ _photoGroup: true, date: d, photos: groupPhotos });
+          }
+        } else {
+          displayItems.push(l);
+        }
+      });
+      const totalPages = Math.ceil(displayItems.length / LOGS_PER_PAGE) || 1;
+      const curPage = Math.min((_stagePages[key]?.page || 0), totalPages - 1);
+      _stagePages[key] = { page: curPage, total: totalPages };
+      const logsHtml = displayItems.length > 0
+        ? displayItems.map((item, idx) => {
+            const hidden = idx >= (curPage + 1) * LOGS_PER_PAGE || idx < curPage * LOGS_PER_PAGE;
+            if (item._photoGroup) {
+              const { date: d, photos } = item;
+              const dateLabel = `${d.getMonth()+1}/${d.getDate()}`;
+              let photosHtml = '';
+              for (let i = 0; i < photos.length; i += 3) {
+                const row = photos.slice(i, i + 3);
+                photosHtml += `<div style="display:flex;gap:6px;margin-top:6px;">`;
+                row.forEach(p => {
+                  const pt = getLogDate(p);
+                  const tl = `${pt.getHours()}:${String(pt.getMinutes()).padStart(2,'0')}`;
+                  const pid = String(p.id).replace(/'/g, "\\'");
+                  const pNote = p.note ? `<div style="font-size:0.6rem;color:rgba(255,255,255,0.6);text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📝 ${esc(p.note)}</div>` : '';
+                  photosHtml += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;cursor:pointer;" onclick="event.stopPropagation();editLog('${pid}')"><img src="${p.photo}" style="width:88px;height:88px;object-fit:cover;border-radius:7px;" onclick="event.stopPropagation();(()=>{document.getElementById('overlayImg').src=this.src;document.getElementById('photoOverlay').style.display='flex';})()"><span style="font-size:0.6rem;opacity:0.7;">${tl}</span>${pNote}<button onclick="event.stopPropagation();deleteGalleryPhoto('${p.id}')" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(255,60,60,0.85);border:none;color:#fff;font-size:0.55rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>`;
+                });
+                photosHtml += `</div>`;
+              }
+              return `<div class="slog-item" style="${hidden ? 'display:none;' : ''}padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.15);font-size:0.72rem;color:var(--text);">
+                <span style="opacity:0.85;">📷 ${dateLabel}</span>${photosHtml}
+              </div>`;
+            }
+            const l = item;
+            const isPhotoOnly = false;
+            const isMonitor = l.type === 'monitor';
+            const details = isMonitor
+              ? [l.temp ? `${Math.round(l.temp * 10) / 10}°C` : '', l.hum ? `${Math.round(l.hum)}%` : '', l.leafVpd ? `VPD ${l.leafVpd}` : '', l.ppfd ? `PPFD ${l.ppfd}` : ''].filter(Boolean).join('　')
+              : [l.ph ? `pH ${l.ph}` : '', l.waterTemp ? `💧${l.waterTemp}°C` : '', l.ec ? `EC ${l.ec}` : '', l.runoffEc ? `→${l.runoffEc}` : ''].filter(Boolean).join('　');
+            const label = isMonitor ? '📊' : '💧';
+            const fertTags = !isMonitor && l.fertilizers && l.fertilizers.length
+              ? `<div style="display:flex;justify-content:flex-end;opacity:1;font-size:0.72rem;color:var(--text);margin-top:0;padding-right:0;width:100%;box-sizing:border-box;">${(l.fertilizers).map(f => `${esc(f.name) || '?'}${f.amountMl ? ' ' + f.amountMl + 'ml' : ''}`).join('　')}</div>`
+              : '';
+            const photoThumb = l.photo ? `<div style="margin-top:3px;"><img src="${l.photo}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;cursor:pointer;" onclick="(()=>{document.getElementById('overlayImg').src=this.src;document.getElementById('photoOverlay').style.display='flex';})()"></div>` : '';
+            const noteHtml = l.note ? `<div style="font-size:0.68rem;color:rgba(255,255,255,0.6);margin-top:2px;padding-left:2px;">📝 ${esc(l.note)}</div>` : '';
+            const logId = String(l.id).replace(/'/g, "\\'");
+            return `<div class="slog-item"
+                ondblclick="(async()=>{if(this._nt){clearTimeout(this._nt);this._nt=null;}if(await customConfirm(tr('confirm.delete_log')))deleteStageLog('${logId}','${key}')})()"
+                ontouchend="(function(el){var now=Date.now();if(el._dt&&now-el._dt<400){el._dt=null;if(el._nt){clearTimeout(el._nt);el._nt=null;}(async()=>{if(await customConfirm(tr('confirm.delete_log')))deleteStageLog('${logId}','${key}')})()}else{el._dt=now;el._nt=setTimeout(function(){el._nt=null;editLog('${logId}')},450)}})(this)"
+                onclick="event.stopPropagation();(function(el){if(el._nt)return;el._nt=setTimeout(function(){el._nt=null;editLog('${logId}')},300)})(this)"
+                style="${hidden ? 'display:none;' : ''}padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.15);font-size:0.72rem;color:var(--text);cursor:pointer;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="opacity:0.85;white-space:nowrap;margin-right:6px;">${fmtTsParts(l.timestamp).date} ${label} ${fmtTsParts(l.timestamp).time}</span>
+                <span style="text-align:right;opacity:1;flex:1;">${details}</span>
+              </div>${fertTags}${noteHtml}${photoThumb}
+            </div>`;
+          }).join('') + (totalPages > 1 ? `<div class="slog-nav" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:6px 0;font-size:0.72rem;">
+            <button onclick="event.stopPropagation();stagePageNav('${key}',-1)" style="background:none;border:1px solid var(--border);border-radius:4px;color:var(--accent);padding:2px 8px;cursor:pointer;font-size:0.72rem;">◀</button>
+            <span class="slog-page" style="color:var(--text);opacity:0.8;">${curPage + 1}/${totalPages}</span>
+            <button onclick="event.stopPropagation();stagePageNav('${key}',1)" style="background:none;border:1px solid var(--border);border-radius:4px;color:var(--accent);padding:2px 8px;cursor:pointer;font-size:0.72rem;">▶</button>
+          </div>` : '')
+        : `<div style="font-size:0.75rem;color:var(--text);opacity:0.7;padding:6px 0;text-align:center;">${tr('analysis.no_logs')}</div>`;
+      html += `<div style="opacity:${opacity};">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;${glow}"></div>
+          <div style="flex:1;background:${isCurrent ? color + '33' : 'rgba(255,255,255,0.07)'};border-radius:6px;padding:6px 10px;${border}${glow}">
+            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleStageLog('slog-${key}','sicon-${key}')" >
+              <span style="font-size:0.8rem;font-weight:${isCurrent ? '700' : '600'};color:${isCurrent ? color : 'var(--text)'};">${s.name}${isCurrent ? ' ◀' : ''}</span>
+              <span style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:0.72rem;color:var(--text);opacity:0.9;white-space:nowrap;">
+                  <span style="color:#fff;opacity:${isCurrent ? '0.9' : '0.4'};">${dateStr ? dateStr.replace(/-/g, '/') : (key === 'harvest' ? '' : '未設定')}</span>${daysText ? `　<span style="color:var(--accent);font-weight:700;opacity:${isCurrent ? '1' : '0.4'};">${daysText}</span>` : ''}
+                </span>
+                ${dateStr ? `<span id="sicon-${key}" style="font-size:0.65rem;color:var(--text);opacity:0.5;cursor:pointer;">▶</span>` : ''}
+              </span>
+            </div>
+            <div id="slog-${key}" style="display:none;margin-top:4px;border-top:1px solid rgba(255,255,255,0.08);padding-top:4px;">${logsHtml}</div>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+    el.innerHTML = html;
+  }
+  async function deleteStageLog(id, stageKey) {
+
+    const openStages = Array.from(document.querySelectorAll('[id^="slog-"]'))
+      .filter(el => el.style.display !== 'none').map(el => el.id);
+    const scrollY = window.scrollY;
+    const dbKey = /^\d+$/.test(id) ? Number(id) : id;
+    await dbDelete('logs', dbKey);
+    // BUG-1 fix: ログ削除はログ削除だけに留め、ステージ開始日 (stageDates) には触れない。
+    // stageDates を消したい場合は setStage() 側で行う。
+    const logs = await dbGetAll('logs');
+    renderStageTimeline(logs);
+    openStages.forEach(id => {
+      const el = document.getElementById(id);
+      const key = id.replace('slog-', '');
+      const ic = document.getElementById('sicon-' + key);
+      if (el) { el.style.display = ''; if (ic) ic.textContent = '▼'; }
+    });
+    window.scrollTo(0, scrollY);
+  }
+  /* === ログ編集（分析画面から全フィールドを編集可能に） === */
+  let _editingLogId = null;
+  let _editDeletePhoto = false;
+
+  async function editLog(id) {
+    const dbKey = /^\d+$/.test(id) ? Number(id) : id;
+    const log = await dbGet('logs', dbKey);
+    if (!log) return;
+    _editingLogId = dbKey;
+    _editDeletePhoto = false;
+
+    const body = document.getElementById('editLogBody');
+    const isMonitor = log.type === 'monitor';
+    const isPhotoOnly = log.photo && !isMonitor
+      && (!log.fertilizers || !log.fertilizers.length)
+      && !log.ph && !log.ec;
+
+    const row = (label, fid, val, unit, step='any') =>
+      `<div style="display:grid;grid-template-columns:96px 1fr 36px;gap:8px;align-items:center;margin-bottom:8px;">
+         <label style="font-size:0.75rem;color:var(--text);">${label}</label>
+         <input id="${fid}" type="number" step="${step}" value="${val ?? ''}"
+                style="background:transparent;border:none;border-bottom:1px solid var(--muted);color:var(--accent);font-size:0.95rem;outline:none;padding:4px 0;">
+         <span style="font-size:0.7rem;color:var(--text);opacity:0.7;">${unit}</span>
+       </div>`;
+
+    let rows = '';
+    // 日時編集
+    const _d = new Date(log.ts || Date.parse(log.timestamp) || Date.now());
+    const _pad = n => String(n).padStart(2,'0');
+    const _dateStr = `${_d.getFullYear()}-${_pad(_d.getMonth()+1)}-${_pad(_d.getDate())}`;
+    const _timeStr = `${_pad(_d.getHours())}:${_pad(_d.getMinutes())}`;
+    rows += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+      <input id="el_date" type="date" value="${_dateStr}"
+             style="background:transparent;border:none;border-bottom:1px solid var(--muted);color:var(--accent);font-size:0.9rem;outline:none;padding:4px 0;font-family:inherit;">
+      <input id="el_time" type="time" value="${_timeStr}"
+             style="background:transparent;border:none;border-bottom:1px solid var(--muted);color:var(--accent);font-size:0.9rem;outline:none;padding:4px 0;font-family:inherit;">
+    </div>`;
+    if (isMonitor) {
+      rows += row('🌡 Temp',     'el_temp',    log.temp,    '°C');
+      rows += row('💧 Humidity', 'el_hum',     log.hum,     '%');
+      rows += row('🌿 Leaf VPD', 'el_leafVpd', log.leafVpd, 'kPa');
+      rows += row('💡 PPFD',     'el_ppfd',    log.ppfd,    'µmol');
+      if (log.co2val || tents[currentTent]?.co2)
+        rows += row('💨 CO₂',    'el_co2val',  log.co2val,  'ppm');
+    } else if (!isPhotoOnly) {
+      rows += row('💧 pH',       'el_ph',       log.ph,       '');
+      rows += row('🌡 Water Temp','el_waterTemp', log.waterTemp,'°C', '1');
+      rows += row('⚡ EC',        'el_ec',       log.ec,       'mS');
+      rows += row('🔄 Runoff',   'el_runoffEc', log.runoffEc, 'mS');
+      if (log.fertilizers && log.fertilizers.length) {
+        rows += '<div style="font-size:0.7rem;color:var(--text);opacity:0.8;margin:10px 0 4px;">🌿 Fertilizers</div>';
+        log.fertilizers.forEach((f, i) => {
+          rows += `<div style="display:grid;grid-template-columns:1fr 70px 30px;gap:6px;align-items:center;margin-bottom:6px;">
+            <input id="el_fert_name_${i}" value="${esc(f.name || '')}" maxlength="24"
+                   style="background:transparent;border:none;border-bottom:1px solid var(--muted);color:var(--accent);font-size:0.85rem;outline:none;padding:3px 0;">
+            <input id="el_fert_amt_${i}" type="number" step="0.5" value="${f.amountMl || ''}"
+                   style="background:transparent;border:none;border-bottom:1px solid var(--muted);color:var(--accent);font-size:0.85rem;outline:none;padding:3px 0;text-align:right;">
+            <span style="font-size:0.65rem;color:var(--text);opacity:0.7;">ml</span>
+          </div>`;
+        });
+      }
+    }
+
+    rows += `<div style="margin-top:10px;">
+      <label style="font-size:0.75rem;color:var(--text);">📝 Note</label>
+      <textarea id="el_note" rows="2" maxlength="200"
+                style="width:100%;box-sizing:border-box;margin-top:4px;background:transparent;border:1px solid var(--muted);border-radius:6px;color:var(--text);font-size:0.85rem;padding:6px;outline:none;resize:none;font-family:inherit;">${esc(log.note || '')}</textarea>
+    </div>`;
+
+    if (log.photo) {
+      rows += `<div style="margin-top:10px;display:flex;align-items:center;gap:10px;">
+        <img src="${log.photo}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;">
+        <button type="button" onclick="_editDeletePhoto=true;this.textContent='🗑 Deleted';this.disabled=true;this.style.opacity='0.5';"
+                style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.75rem;padding:4px 10px;cursor:pointer;">🗑 Delete Photo</button>
+      </div>`;
+    }
+
+    body.innerHTML = rows;
+    document.getElementById('editLogModal').style.display = 'flex';
+  }
+
+  async function confirmEditLog() {
+    if (_editingLogId == null) { closeEditLogModal(); return; }
+    const log = await dbGet('logs', _editingLogId);
+    if (!log) { closeEditLogModal(); return; }
+    const vv  = fid => document.getElementById(fid)?.value ?? '';
+    const num = fid => { const x = parseFloat(vv(fid)); return isNaN(x) ? null : x; };
+
+    if (log.type === 'monitor') {
+      if (document.getElementById('el_temp'))    log.temp    = num('el_temp')    ?? log.temp;
+      if (document.getElementById('el_hum'))     log.hum     = num('el_hum')     ?? log.hum;
+      if (document.getElementById('el_leafVpd')) log.leafVpd = num('el_leafVpd') ?? log.leafVpd;
+      if (document.getElementById('el_ppfd'))    log.ppfd    = num('el_ppfd')    ?? log.ppfd;
+      if (document.getElementById('el_co2val'))  log.co2val  = num('el_co2val')  ?? log.co2val;
+    } else {
+      if (document.getElementById('el_ph'))       log.ph       = vv('el_ph')       || null;
+      if (document.getElementById('el_ec'))       log.ec       = vv('el_ec')       || null;
+      if (document.getElementById('el_runoffEc'))  log.runoffEc  = vv('el_runoffEc')  || null;
+      if (document.getElementById('el_waterTemp')) log.waterTemp = vv('el_waterTemp') || null;
+      if (log.fertilizers && log.fertilizers.length) {
+        log.fertilizers = log.fertilizers.map((f, i) => ({
+          ...f,
+          name:     (vv(`el_fert_name_${i}`) || '').trim() || f.name,
+          amountMl: num(`el_fert_amt_${i}`) ?? f.amountMl
+        }));
+      }
+    }
+    log.note = (vv('el_note') || '').trim();
+    // 日時更新
+    const _newDate = vv('el_date');
+    const _newTime = vv('el_time');
+    if (_newDate && _newTime) {
+      const _dt = new Date(`${_newDate}T${_newTime}`);
+      if (!isNaN(_dt.getTime())) {
+        log.ts = _dt.getTime();
+        log.timestamp = _dt.toLocaleString('ja-JP');
+      }
+    }
+    if (_editDeletePhoto) log.photo = null;
+
+    await dbPut('logs', log);
+    closeEditLogModal();
+
+    const openStages = Array.from(document.querySelectorAll('[id^="slog-"]'))
+      .filter(el => el.style.display !== 'none').map(el => el.id);
+    const scrollY = window.scrollY;
+    const logs = await dbGetAll('logs');
+    renderStageTimeline(logs);
+    openStages.forEach(sid => {
+      const el = document.getElementById(sid);
+      const key = sid.replace('slog-', '');
+      const ic = document.getElementById('sicon-' + key);
+      if (el) { el.style.display = ''; if (ic) ic.textContent = '▼'; }
+    });
+    window.scrollTo(0, scrollY);
+  }
+
+  function closeEditLogModal() {
+    document.getElementById('editLogModal').style.display = 'none';
+    _editingLogId = null;
+    _editDeletePhoto = false;
+  }
+
+  function toggleStageLog(bodyId, iconId) {
+    const el = document.getElementById(bodyId);
+    const ic = document.getElementById(iconId);
+    if (!el) return;
+    const open = el.style.display !== 'none';
+    el.style.display = open ? 'none' : '';
+    if (ic) ic.textContent = open ? '▶' : '▼';
+  }
+
+
+  async function deleteGalleryPhoto(id) {
+    if (!(await customConfirm(tr('confirm.delete_log')))) return;
+    const openStages = Array.from(document.querySelectorAll('[id^="slog-"]'))
+      .filter(el => el.style.display !== 'none').map(el => el.id);
+    const scrollY = window.scrollY;
+    const dbKey = /^\d+$/.test(id) ? Number(id) : id;
+    await dbDelete('logs', dbKey);
+    const t = tents[currentTent];
+    t.logs = (t.logs || []).filter(lid => lid !== id);
+    await dbPut('tents', t);
+    const allLogs = await dbGetAll('logs');
+    renderStageTimeline(allLogs);
+    openStages.forEach(sid => {
+      const el = document.getElementById(sid);
+      const key = sid.replace('slog-', '');
+      const ic = document.getElementById('sicon-' + key);
+      if (el) { el.style.display = ''; if (ic) ic.textContent = '▼'; }
+    });
+    window.scrollTo(0, scrollY);
+  }
+
+  /* === PIN Lock System === */
+  const _PIN_KEY    = 'vpdPin';
+  const _PIN_FAILS  = 'vpdPinFails';
+  const _PIN_LOCKED = 'vpdPinLocked';
+  const _PIN_MAX    = 3;
+  let _pinBuf  = '';
+  let _pinMode = '';   // unlock | setup1 | setup2 | change1 | change2 | change3 | remove1
+  let _pinTmp  = '';
+
+  const _pinEncode  = p  => btoa('vpd:' + p);
+  const _pinCheck   = p  => btoa('vpd:' + p) === localStorage.getItem(_PIN_KEY);
+  const _pinIsSet   = () => !!localStorage.getItem(_PIN_KEY);
+  const _pinFails   = () => parseInt(localStorage.getItem(_PIN_FAILS) || '0', 10);
+  const _pinLocked  = () => localStorage.getItem(_PIN_LOCKED) === 'true';
+
+  function pinInitCheck() {
+    if (_pinLocked())  { _showBlankScreen(); return; }
+    if (_pinIsSet())   { _showPinOverlay('unlock'); }
+  }
+
+  function _showPinOverlay(mode) {
+    _pinBuf = ''; _pinMode = mode;
+    // フロー開始時のみリセット（途中遷移では _pinTmp を保持する）
+    if (['setup1','change1','unlock','remove1'].includes(mode)) _pinTmp = '';
+    _updatePinDots();
+    const msg = document.getElementById('pinMessage');
+    const fi  = document.getElementById('pinFailInfo');
+    fi.textContent = '';
+    const labels = {
+      unlock:  'Enter PIN',
+      setup1:  'Set new PIN',
+      setup2:  'Confirm PIN',
+      change1: 'Current PIN',
+      change2: 'New PIN',
+      change3: 'Confirm new PIN',
+      remove1: 'Enter PIN to remove'
+    };
+    msg.textContent = labels[mode] || '';
+    if (mode === 'unlock') {
+      const f = _pinFails();
+      if (f > 0) fi.textContent = `⚠ ${f} / ${_PIN_MAX} attempts`;
+    }
+    document.getElementById('pinOverlay').style.display = 'flex';
+    _randomizePinKeypad();
+  }
+
+  function _hidePinOverlay() {
+    document.getElementById('pinOverlay').style.display = 'none';
+    _pinBuf = '';
+  }
+
+  async function _pinNukeAllData() {
+    try {
+      await new Promise(r => {
+        const req = indexedDB.deleteDatabase('VPD_FINAL_DB');
+        req.onsuccess = r; req.onerror = r;
+      });
+    } catch(e) {}
+    localStorage.clear();
+  }
+
+  function _showBlankScreen() {
+    const bs = document.getElementById('blankScreen');
+    bs.onclick = null;
+    bs.style.pointerEvents = 'none';
+    bs.style.display = 'block';
+  }
+
+  function _updatePinDots() {
+    for (let i = 0; i < 4; i++) {
+      const d = document.getElementById('pd' + i);
+      if (d) d.classList.toggle('filled', i < _pinBuf.length);
+    }
+  }
+
+  function pinPress(digit) {
+    if (_pinBuf.length >= 4) return;
+    _pinBuf += digit;
+    _updatePinDots();
+    if (_pinBuf.length === 4) setTimeout(_pinSubmit, 120);
+  }
+
+  function pinDelete() {
+    if (!_pinBuf.length) return;
+    _pinBuf = _pinBuf.slice(0, -1);
+    _updatePinDots();
+  }
+
+  function _pinSubmit() {
+    const buf = _pinBuf;
+    _pinBuf = ''; _updatePinDots();
+
+    if (_pinMode === 'unlock') {
+      if (_pinCheck(buf)) {
+        localStorage.setItem(_PIN_FAILS, '0');
+        _hidePinOverlay();
+        _updatePinSettingsUI();
+        if (localStorage.getItem('vpdIntruderPhoto')) {
+          setTimeout(() => showToast('⚠️ Wrong PIN attempt detected — check SECURITY settings'), 500);
+        }
+      } else {
+        const f = _pinFails() + 1;
+        localStorage.setItem(_PIN_FAILS, String(f));
+        if (f === 1) _pinCaptureIntruder();
+        if (f >= _PIN_MAX) {
+          // 3回目: 即ロック＋全データ削除
+          _hidePinOverlay();
+          _pinNukeAllData();
+          _showBlankScreen();
+        } else if (f === 2) {
+          // 2回目: 真っ黒画面のみ
+          _hidePinOverlay();
+          _showBlankScreen();
+        } else {
+          // 1回目
+          document.getElementById('pinFailInfo').textContent = `⚠ ${f} / ${_PIN_MAX} attempts`;
+          _pinShake();
+        }
+      }
+    } else if (_pinMode === 'setup1') {
+      _pinTmp = buf;
+      _showPinOverlay('setup2');
+    } else if (_pinMode === 'setup2') {
+      if (buf === _pinTmp) {
+        localStorage.setItem(_PIN_KEY, _pinEncode(buf));
+        localStorage.setItem(_PIN_FAILS, '0');
+        _hidePinOverlay();
+        showToast('🔒 PIN set');
+        _updatePinSettingsUI();
+      } else {
+        document.getElementById('pinMessage').textContent = 'Mismatch — try again';
+        _pinShake();
+        setTimeout(() => _showPinOverlay('setup1'), 900);
+      }
+    } else if (_pinMode === 'change1') {
+      if (_pinCheck(buf)) {
+        _showPinOverlay('change2');
+      } else {
+        document.getElementById('pinMessage').textContent = 'Wrong PIN';
+        _pinShake();
+        setTimeout(() => _showPinOverlay('change1'), 900);
+      }
+    } else if (_pinMode === 'change2') {
+      _pinTmp = buf;
+      _showPinOverlay('change3');
+    } else if (_pinMode === 'change3') {
+      if (buf === _pinTmp) {
+        localStorage.setItem(_PIN_KEY, _pinEncode(buf));
+        _hidePinOverlay();
+        showToast('🔒 PIN updated');
+      } else {
+        document.getElementById('pinMessage').textContent = 'Mismatch — try again';
+        _pinShake();
+        setTimeout(() => _showPinOverlay('change2'), 900);
+      }
+    } else if (_pinMode === 'remove1') {
+      if (_pinCheck(buf)) {
+        localStorage.removeItem(_PIN_KEY);
+        localStorage.setItem(_PIN_FAILS, '0');
+        _hidePinOverlay();
+        showToast('🔓 PIN removed');
+        _updatePinSettingsUI();
+      } else {
+        document.getElementById('pinMessage').textContent = 'Wrong PIN';
+        _pinShake();
+        setTimeout(() => _showPinOverlay('remove1'), 900);
+      }
+    }
+  }
+
+  function _pinShake() {
+    const el = document.getElementById('pinDots');
+    el.classList.remove('pin-shake');
+    void el.offsetWidth;
+    el.classList.add('pin-shake');
+    el.addEventListener('animationend', () => el.classList.remove('pin-shake'), { once: true });
+  }
+
+  function _randomizePinKeypad() {
+    // 0〜9 をシャッフル
+    const digits = ['0','1','2','3','4','5','6','7','8','9'];
+    for (let i = digits.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [digits[i], digits[j]] = [digits[j], digits[i]];
+    }
+    // 11スロット中のランダムな位置にブランクを挿入
+    const blankPos = Math.floor(Math.random() * 11);
+    digits.splice(blankPos, 0, '');
+
+    const cells = document.querySelectorAll('.pin-digit');
+    cells.forEach((cell, i) => {
+      const d = digits[i];
+      if (!d) {
+        cell.textContent = '';
+        cell.style.visibility = 'hidden';
+        cell.style.pointerEvents = 'none';
+        cell.onclick = null;
+      } else {
+        cell.textContent = d;
+        cell.style.visibility = '';
+        cell.style.pointerEvents = '';
+        cell.onclick = () => pinPress(d);
+      }
+    });
+  }
+
+  function setupPin() {
+    document.getElementById('settingsModal').classList.remove('open');
+    setTimeout(() => _showPinOverlay(_pinIsSet() ? 'change1' : 'setup1'), 200);
+  }
+
+  function removePin() {
+    document.getElementById('settingsModal').classList.remove('open');
+    setTimeout(() => _showPinOverlay('remove1'), 200);
+  }
+
+  async function _pinCaptureIntruder() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
+      const video  = document.createElement('video');
+      video.srcObject = stream;
+      video.setAttribute('playsinline','');
+      await new Promise(r => { video.onloadedmetadata = r; video.play(); });
+      await new Promise(r => setTimeout(r, 600));
+      const canvas = document.createElement('canvas');
+      canvas.width  = video.videoWidth  || 320;
+      canvas.height = video.videoHeight || 240;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      stream.getTracks().forEach(t => t.stop());
+      localStorage.setItem('vpdIntruderPhoto', canvas.toDataURL('image/jpeg', 0.6));
+      localStorage.setItem('vpdIntruderTime',  new Date().toLocaleString('ja-JP'));
+    } catch(e) { /* カメラ拒否またはデバイス非対応 — 無視 */ }
+  }
+
+  function clearIntruderPhoto() {
+    localStorage.removeItem('vpdIntruderPhoto');
+    localStorage.removeItem('vpdIntruderTime');
+    const el = document.getElementById('intruderSection');
+    if (el) el.style.display = 'none';
+  }
+
+  function _updatePinSettingsUI() {
+    const setup  = document.getElementById('pinSetupBtn');
+    const remove = document.getElementById('pinRemoveBtn');
+    if (!setup) return;
+    const set = _pinIsSet();
+    setup.textContent = set ? '🔑 CHANGE PIN' : '🔒 SET PIN';
+    if (remove) remove.style.display = set ? '' : 'none';
+    const photo = localStorage.getItem('vpdIntruderPhoto');
+    const sec   = document.getElementById('intruderSection');
+    if (sec) {
+      sec.style.display = photo ? '' : 'none';
+      if (photo) {
+        document.getElementById('intruderImg').src = photo;
+        document.getElementById('intruderTime').textContent =
+          '📸 ' + (localStorage.getItem('vpdIntruderTime') || '');
+      }
+    }
+  }
+
+  /* === 初期化 === */
+  async function init() {
+    await initDB();
+    // load tents
+    const oldJpNames = ['テント1','テント2','テント3','テント4','テント5','テント6'];
+    const oldEnNames = ['Tent 1','Tent 2','Tent 3','Tent 4','Tent 5','Tent 6'];
+    let allTents = await dbGetAll('tents');
+    allTents.sort((a, b) => (a.id < b.id ? -1 : 1));
+    if (allTents.length === 0) {
+      for (let i = 0; i < 3; i++) {
+        const t = defaultTent(i, `Tent ${i + 1}`);
+        await dbPut('tents', t);
+        allTents.push(t);
+      }
+    }
+    for (const t of allTents) {
+      const idx = oldJpNames.indexOf(t.name);
+      if (idx >= 0) { t.name = oldEnNames[idx]; await dbPut('tents', t); }
+    }
+    tents = allTents;
+    buildTentBar();
+    loadTentToUI(0);
+    restoreModeInputs(spotMode);
+    loadDrySettings();
+    buildStageTable();
+    buildMatrix();
+    update();
+    // restore theme
+    if (localStorage.getItem('vpdTheme') === 'light') {
+      document.body.classList.add('light-mode');
+      updateThemeToggleUI(true);
+    }
+    // restore language
+    applyLang();
+    // PIN lock check (must be last — overlays everything)
+    _updatePinSettingsUI();
+    pinInitCheck();
+  }
+  function updateThemeToggleUI(isLight) {
+    const thumb = document.getElementById('themeThumb');
+    const track = document.getElementById('themeToggle');
+    if (!thumb || !track) return;
+    const isDark = !isLight;
+    thumb.style.left = isDark ? '20px' : '2px';
+    track.style.background = isDark ? 'rgba(0,255,136,0.35)' : 'rgba(0,255,136,0.15)';
+  }
+  function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-mode');
+    updateThemeToggleUI(isLight);
+    localStorage.setItem('vpdTheme', isLight ? 'light' : 'dark');
+  }
+  function customConfirm(message) {
+    return new Promise(resolve => {
+      let m = document.getElementById('customConfirmModal');
+      if (!m) {
+        m = document.createElement('div');
+        m.id = 'customConfirmModal';
+        m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:9999;';
+        m.innerHTML = `<div style="background:var(--surface,#1a1a1a);border:1px solid var(--border,#333);border-radius:12px;padding:20px;max-width:320px;width:85%;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+          <div id="ccMsg" style="font-size:0.9rem;color:var(--text,#fff);margin-bottom:18px;line-height:1.5;text-align:center;white-space:pre-line;"></div>
+          <div style="display:flex;gap:10px;">
+            <button id="ccCancel" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border,#444);background:transparent;color:var(--text,#fff);font-size:0.85rem;cursor:pointer;">キャンセル</button>
+            <button id="ccOk" style="flex:1;padding:10px;border-radius:8px;border:1px solid #ef4444;background:rgba(239,68,68,0.15);color:#ef4444;font-size:0.85rem;font-weight:700;cursor:pointer;">削除</button>
+          </div>
+        </div>`;
+        document.body.appendChild(m);
+      }
+      m.querySelector('#ccMsg').textContent = message;
+      m.querySelector('#ccCancel').textContent = tr('confirm.cancel_btn');
+      m.querySelector('#ccOk').textContent = tr('confirm.ok_btn');
+      m.style.display = 'flex';
+      const ok = m.querySelector('#ccOk');
+      const cancel = m.querySelector('#ccCancel');
+      const cleanup = (val) => { m.style.display = 'none'; ok.onclick = null; cancel.onclick = null; resolve(val); };
+      ok.onclick = () => cleanup(true);
+      cancel.onclick = () => cleanup(false);
+    });
+  }
+  function applyLang() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = tr(el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      el.placeholder = tr(el.getAttribute('data-i18n-placeholder'));
+    });
+    const jaBtn = document.getElementById('langJA');
+    const enBtn = document.getElementById('langEN');
+    if (jaBtn) { jaBtn.style.background = appLang === 'ja' ? 'var(--accent)' : 'transparent'; jaBtn.style.color = appLang === 'ja' ? '#000' : 'var(--text)'; }
+    if (enBtn) { enBtn.style.background = appLang === 'en' ? 'var(--accent)' : 'transparent'; enBtn.style.color = appLang === 'en' ? '#000' : 'var(--text)'; }
+    document.documentElement.lang = appLang;
+  }
+  function setLang(lang) {
+    appLang = lang;
+    localStorage.setItem('appLang', lang);
+    applyLang();
+    update();
+    buildStageTable();
+  }
+  function openSettings() {
+    document.getElementById('settingsModal').classList.add('open');
+    updateThemeToggleUI(document.body.classList.contains('light-mode'));
+    document.getElementById('tolTemp').value = spotTolTemp;
+    document.getElementById('tolHum').value  = spotTolHum;
+    document.getElementById('tolPpfd').value = spotTolPpfd;
+    document.getElementById('dayCountThumb').style.left = dayCountVisible ? '22px' : '2px';
+  }
+  function toggleDayCount() {
+    dayCountVisible = !dayCountVisible;
+    localStorage.setItem('dayCountVisible', dayCountVisible);
+    const thumb = document.getElementById('dayCountThumb');
+    if (thumb) thumb.style.left = dayCountVisible ? '22px' : '2px';
+    updateFeedingHeader();
+  }
+  function saveSpotTol() {
+    spotTolTemp = parseFloat(document.getElementById('tolTemp').value) || 1;
+    spotTolHum  = parseFloat(document.getElementById('tolHum').value)  || 3;
+    spotTolPpfd = parseFloat(document.getElementById('tolPpfd').value) || 50;
+    localStorage.setItem('spotTolTemp', spotTolTemp);
+    localStorage.setItem('spotTolHum',  spotTolHum);
+    localStorage.setItem('spotTolPpfd', spotTolPpfd);
+    update();
+  }
+  function loadDrySettings() {
+    stages.dry.temp = JSON.parse(localStorage.getItem('dryTemp') || '[15,16]');
+    stages.dry.hum  = JSON.parse(localStorage.getItem('dryHum')  || '[58,62]');
+    stages.dry.vpd  = JSON.parse(localStorage.getItem('dryVpd')  || '[0.6,0.8]');
+  }
+  function closeSettings(e) {
+    if (e.target === document.getElementById('settingsModal')) {
+      document.getElementById('settingsModal').classList.remove('open');
+    }
+  }
+// tab switching
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.onclick = () => {
+      const target = tab.getAttribute('data-tab');
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('tab-' + target).classList.add('active');
+      if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); }
+      if (target === 'analysis') { dbGetAll('logs').then(logs => { renderStageTimeline(logs); }); }
+    };
+  });
+  window.addEventListener('load', init);
+
+  /* === iOS ダブルタップ拡大防止（Safari 保険） === */
+  (() => {
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 350) {
+        // tent-btn / fert-tab-btn は独自ダブルタップで名前変更するため除外
+        if (!e.target.closest('.tent-btn') && !e.target.closest('.fert-tab-btn')) {
+          e.preventDefault();
+        }
+      }
+      lastTouchEnd = now;
+    }, { passive: false });
+    // ピンチ防止
+    document.addEventListener('gesturestart', (e) => e.preventDefault());
+    document.addEventListener('gesturechange', (e) => e.preventDefault());
+    document.addEventListener('gestureend', (e) => e.preventDefault());
+  })();
+
+  /* === Runoff EC 表示/非表示（Input ECラベル長押し） === */
+  (() => {
+    function applyRunoffEcVisibility() {
+      const show = localStorage.getItem('showRunoffEc') !== 'false';
+      const row = document.getElementById('runoffEcRow');
+      if (row) row.style.display = show ? 'flex' : 'none';
+    }
+
+    function toggleRunoffEc() {
+      const current = localStorage.getItem('showRunoffEc') !== 'false';
+      localStorage.setItem('showRunoffEc', current ? 'false' : 'true');
+      applyRunoffEcVisibility();
+      showToast(current ? 'Runoff EC hidden' : 'Runoff EC shown');
+    }
+
+    applyRunoffEcVisibility();
+
+    const label = document.getElementById('inputEcLabel');
+    if (!label) return;
+    let timer = null;
+    label.addEventListener('touchstart', e => {
+      timer = setTimeout(() => { timer = null; toggleRunoffEc(); }, 600);
+    }, { passive: true });
+    label.addEventListener('touchend', () => { if (timer) { clearTimeout(timer); timer = null; } });
+    label.addEventListener('touchmove', () => { if (timer) { clearTimeout(timer); timer = null; } }, { passive: true });
+    label.addEventListener('mousedown', () => {
+      timer = setTimeout(() => { timer = null; toggleRunoffEc(); }, 600);
+    });
+    label.addEventListener('mouseup', () => { if (timer) { clearTimeout(timer); timer = null; } });
+    label.addEventListener('mouseleave', () => { if (timer) { clearTimeout(timer); timer = null; } });
+  })();
+
+  /* === 長押しセーブ === */
+  let saveHoldTimer = null;
+  let saveHoldFired = false;
+  function startSaveHold(type, btn) {
+    saveHoldFired = false;
+    btn.classList.add('holding');
+    saveHoldTimer = setTimeout(async () => {
+      saveHoldFired = true;
+      saveHoldTimer = null;
+      btn.classList.remove('holding');
+      if (type === 'monitor') {
+        await saveMonitorLog();
+      } else {
+        await saveLog();
+      }
+    }, 600);
+  }
+  function cancelSaveHold(btn) {
+    if (saveHoldTimer) {
+      clearTimeout(saveHoldTimer);
+      saveHoldTimer = null;
+      btn.classList.remove('holding');
+    }
+  }
+  function showSavePopup(title, lines) {
+    document.getElementById('savePopupTitle').textContent = title;
+    document.getElementById('savePopupBody').innerHTML = lines.map(l => `<div>${l}</div>`).join('');
+    document.getElementById('savePopup').classList.add('show');
+    setTimeout(() => document.getElementById('savePopup').classList.remove('show'), 3000);
+  }
+
+  /* === Monitor ログ保存 === */
+  async function saveMonitorLog() {
+    const t = tents[currentTent];
+    const temp = parseFloat(document.getElementById('tempVal').value) || 0;
+    const hum  = parseFloat(document.getElementById('humVal').value)  || 0;
+    const ppfd = parseFloat(document.getElementById('ppfdVal').value) || 0;
+    const co2valEl = document.getElementById('co2LevelVal');
+    const co2val = t.co2 && co2valEl ? (parseFloat(co2valEl.value) || 0) : 0;
+    const leafVpdEl = document.getElementById('vpdLeaf');
+    const leafVpd = leafVpdEl ? (parseFloat(leafVpdEl.textContent) || 0) : 0;
+    const now = new Date();
+    const noteEl = document.getElementById('monitorNoteInput');
+    const note = noteEl ? noteEl.value.trim() : '';
+    const log = {
+      // BUG-4 fix: tentId をサフィックスに付けて同ミリ秒衝突を回避（給水ログと同じ方式）。
+      id: Date.now() + '-' + t.id,
+      type: 'monitor',
+      tentId: t.id,
+      stage: t.stage,
+      timestamp: now.toLocaleString('ja-JP'),
+      ts: now.getTime(),
+      temp, hum, ppfd, co2val, leafVpd, note
+    };
+    await dbPut('logs', log);
+    if (noteEl) noteEl.value = '';
+    showSavePopup('Monitor Saved ✅', [
+      `📅 ${log.timestamp}`,
+      `🌡 Temp: ${log.temp}°C　💧 Humidity: ${log.hum}%`,
+      `🌿 Leaf VPD: ${log.leafVpd} kPa`,
+      `💡 PPFD: ${log.ppfd} µmol`,
+      log.co2val ? `💨 CO₂: ${log.co2val} ppm` : ''
+    ].filter(Boolean));
+  }
+
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW registration failed:', err));
+    }
+  </script>
+</body>
+</html>
