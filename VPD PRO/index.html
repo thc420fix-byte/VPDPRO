@@ -443,9 +443,9 @@
   position:fixed;top:0;left:0;width:100%;height:100%;z-index:10001;
   background:var(--bg,#090d0b);display:none;
 }
-.pin-dots { display:flex;gap:18px; }
+.pin-dots { display:flex;gap:11px;flex-wrap:wrap;justify-content:center;max-width:300px; }
 .pin-dot {
-  width:15px;height:15px;border-radius:50%;
+  width:13px;height:13px;border-radius:50%;
   border:2px solid var(--accent);background:transparent;
   transition:background 0.12s;
 }
@@ -476,12 +476,7 @@
   <div id="pinOverlay" style="display:none;">
     <div style="font-size:1.4rem;font-weight:700;color:var(--accent);letter-spacing:0.15em;">VPD PRO</div>
     <div id="pinMessage" style="font-size:0.88rem;color:var(--text);opacity:0.75;min-height:20px;text-align:center;"></div>
-    <div class="pin-dots" id="pinDots">
-      <div class="pin-dot" id="pd0"></div>
-      <div class="pin-dot" id="pd1"></div>
-      <div class="pin-dot" id="pd2"></div>
-      <div class="pin-dot" id="pd3"></div>
-    </div>
+    <div class="pin-dots" id="pinDots"></div>
     <div class="pin-keypad">
       <div class="pin-key pin-digit"></div>
       <div class="pin-key pin-digit"></div>
@@ -493,8 +488,8 @@
       <div class="pin-key pin-digit"></div>
       <div class="pin-key pin-digit"></div>
       <div class="pin-key pin-digit"></div>
-      <div class="pin-key pin-digit"></div>
       <div class="pin-key" data-pin-del="1" onclick="pinDelete()" style="font-size:1.1rem;">⌫</div>
+      <div class="pin-key" data-pin-ok="1" onclick="pinConfirm()" style="font-size:1.2rem;color:var(--accent);">✓</div>
     </div>
     <div id="pinFailInfo" style="font-size:0.73rem;color:var(--danger);min-height:18px;text-align:center;"></div>
   </div>
@@ -1022,7 +1017,63 @@
   harvest:      { name: 'Harvest',    vpd: [0.6,0.9],  ppfd: [0,0],      ppfdCo2: [0,0],      color: '#f5c842', co2: [0.6,0.9], ecInput: [0,0],      ecRunoff: [0,0],      temp: null,    hum: null    }
   };
 
-  /* === IndexedDB === */
+  /* === Crypto (AES-256-GCM, PIN-derived key) ===
+     データは PIN から導出した鍵で暗号化して保存する。
+     鍵はメモリ上の _cryptoKey のみに存在し、ディスクには一切書かない。
+     PIN が未設定のときは平文保存（従来動作）。 */
+  const _PBKDF2_ITER = 210000;
+  const _SALT_KEY    = 'vpdCryptoSalt';
+  const _ENC_STORES  = ['tents', 'logs'];
+  let _cryptoKey = null;   // AES-GCM CryptoKey — null = ロック中／PIN未設定
+
+  const _b64   = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  const _unb64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
+
+  function _getSalt() {
+    let s = localStorage.getItem(_SALT_KEY);
+    if (!s) {
+      s = _b64(crypto.getRandomValues(new Uint8Array(16)));
+      localStorage.setItem(_SALT_KEY, s);
+    }
+    return _unb64(s);
+  }
+  async function _deriveKey(pin, saltB64) {
+    const salt = saltB64 ? _unb64(saltB64) : _getSalt();
+    const mat = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name:'PBKDF2', salt, iterations:_PBKDF2_ITER, hash:'SHA-256' },
+      mat, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']);
+  }
+  async function _pinVerifier(pin) {
+    // PIN 正誤判定用の検証トークン（鍵とは別の入力で導出 → PIN は復元不可）
+    const mat = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode('verify:' + pin), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits(
+      { name:'PBKDF2', salt:_getSalt(), iterations:_PBKDF2_ITER, hash:'SHA-256' }, mat, 256);
+    return 'v2:' + _b64(bits);
+  }
+  async function _encJSON(obj, key) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt(
+      { name:'AES-GCM', iv }, key || _cryptoKey, new TextEncoder().encode(JSON.stringify(obj)));
+    return _b64(iv) + ':' + _b64(ct);
+  }
+  async function _decJSON(blob, key) {
+    const [ivb, ctb] = blob.split(':');
+    const pt = await crypto.subtle.decrypt(
+      { name:'AES-GCM', iv:_unb64(ivb) }, key || _cryptoKey, _unb64(ctb));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+  async function _decRec(rec) {
+    if (rec && rec._enc) {
+      if (!_cryptoKey) return null;            // ロック中は復号不能
+      try { return await _decJSON(rec._enc); } catch(e) { return null; }
+    }
+    return rec;                                 // 平文／レガシーレコード
+  }
+
+  /* === IndexedDB（暗号化透過層） === */
   let db;
   async function initDB() {
     return new Promise((resolve,reject) => {
@@ -1036,10 +1087,14 @@
       req.onerror = () => { reject(); };
     });
   }
-  function dbPut(store, value) {
+  async function dbPut(store, value) {
+    let rec = value;
+    if (_cryptoKey && _ENC_STORES.includes(store)) {
+      rec = { id: value.id, _enc: await _encJSON(value) };   // id だけ平文（インデックス用）
+    }
     return new Promise((resolve) => {
       const tx = db.transaction(store, 'readwrite');
-      tx.objectStore(store).put(value);
+      tx.objectStore(store).put(rec);
       tx.oncomplete = resolve;
     });
   }
@@ -1047,7 +1102,7 @@
     return new Promise((resolve) => {
       const tx = db.transaction(store, 'readonly');
       const req = tx.objectStore(store).get(key);
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => { _decRec(req.result).then(resolve); };
       req.onerror   = () => resolve(null);
     });
   }
@@ -1055,8 +1110,12 @@
     return new Promise((resolve) => {
       const tx = db.transaction(store, 'readonly');
       const req = tx.objectStore(store).getAll();
-      req.onsuccess = () => resolve(req.result);
-      req.onerror   = () => resolve([]);
+      req.onsuccess = async () => {
+        const out = [];
+        for (const r of req.result) { const d = await _decRec(r); if (d) out.push(d); }
+        resolve(out);
+      };
+      req.onerror = () => resolve([]);
     });
   }
   function dbDelete(store, key) {
@@ -1065,6 +1124,33 @@
       tx.objectStore(store).delete(key);
       tx.oncomplete = resolve;
     });
+  }
+  /* 既存の平文レコードを現在の鍵で暗号化（PIN設定時・レガシー解除時） */
+  async function _encryptExistingData() {
+    for (const store of _ENC_STORES) {
+      const all = await new Promise(res => {
+        const tx = db.transaction(store, 'readonly');
+        const r = tx.objectStore(store).getAll();
+        r.onsuccess = () => res(r.result); r.onerror = () => res([]);
+      });
+      for (const rec of all) { if (!rec._enc) await dbPut(store, rec); }
+    }
+  }
+  /* 全レコードを平文へ戻す（PIN削除時）。呼び出し前は _cryptoKey が有効であること */
+  async function _decryptExistingData() {
+    const data = {};
+    for (const store of _ENC_STORES) data[store] = await dbGetAll(store);  // 復号（鍵あり）
+    _cryptoKey = null;                                                     // 以降は平文書き込み
+    for (const store of _ENC_STORES)
+      for (const rec of data[store]) await dbPut(store, rec);
+  }
+  /* 鍵を新PINで張り替え、全レコードを再暗号化（PIN変更時） */
+  async function _rekeyExistingData(newPin) {
+    const data = {};
+    for (const store of _ENC_STORES) data[store] = await dbGetAll(store);  // 旧鍵で復号
+    _cryptoKey = await _deriveKey(newPin);                                 // 新鍵に切替
+    for (const store of _ENC_STORES)
+      for (const rec of data[store]) await dbPut(store, rec);              // 新鍵で暗号化
   }
 
   /* === ユーティリティ === */
@@ -2550,13 +2636,21 @@
     const settingsKeys = ['appLang','vpdTheme','dayCountVisible','spotTolTemp','spotTolHum','spotTolPpfd','dryTemp','dryHum','dryVpd','showRunoffEc'];
     const settings = {};
     settingsKeys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) settings[k] = v; });
-    const data = { tents: tentsData, logs, settings };
-    const json = JSON.stringify(data, null, 2);
+    const payload = { tents: tentsData, logs, settings };
+    let out;
+    if (_cryptoKey) {
+      // PIN設定時：バックアップも AES-256-GCM で暗号化（現在のPINの鍵＋saltを同梱）
+      const blobEnc = await _encJSON(payload, _cryptoKey);
+      out = { vpdEnc: 1, salt: localStorage.getItem(_SALT_KEY), blob: blobEnc };
+    } else {
+      out = payload;   // PIN未設定：従来どおり平文
+    }
+    const json = JSON.stringify(out, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'vpd_backup.json';
+    a.download = _cryptoKey ? 'vpd_backup_encrypted.json' : 'vpd_backup.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -2570,7 +2664,23 @@
     if (!file) return;
     const text = await file.text();
     try {
-      const data = JSON.parse(text);
+      let data = JSON.parse(text);
+      // 暗号化バックアップの復号
+      if (data && data.vpdEnc) {
+        let key = _cryptoKey;
+        // 同一端末・同一saltなら現在の鍵で復号可。違えばPINを聞いて鍵を導出
+        if (!key || localStorage.getItem(_SALT_KEY) !== data.salt) {
+          const pin = window.prompt('このバックアップを作成したときのPINを入力してください');
+          if (!pin) { showToast('インポートを中止しました'); e.target.value=''; return; }
+          key = await _deriveKey(pin, data.salt);
+        }
+        try {
+          data = await _decJSON(data.blob, key);
+        } catch(err) {
+          showToast('PINが違うか、データが破損しています');
+          e.target.value=''; return;
+        }
+      }
       if (data.tents && data.logs) {
         // Clear existing tents and logs
         const existingTents = await dbGetAll('tents');
@@ -3088,12 +3198,18 @@ function classifyVpd(vpd, lo, hi) {
   const _PIN_FAILS  = 'vpdPinFails';
   const _PIN_LOCKED = 'vpdPinLocked';
   const _PIN_MAX    = 3;
+  const _PIN_LEN    = 9;   // PIN桁数（9桁＝10億通り。レガシー旧PINは桁数不問で解錠可）
   let _pinBuf  = '';
   let _pinMode = '';   // unlock | setup1 | setup2 | change1 | change2 | change3 | remove1
   let _pinTmp  = '';
 
-  const _pinEncode  = p  => btoa('vpd:' + p);
-  const _pinCheck   = p  => btoa('vpd:' + p) === localStorage.getItem(_PIN_KEY);
+  async function _pinStore(p) { localStorage.setItem(_PIN_KEY, await _pinVerifier(p)); }
+  async function _pinCheck(p)  {
+    const stored = localStorage.getItem(_PIN_KEY);
+    if (!stored) return false;
+    if (stored.startsWith('v2:')) return (await _pinVerifier(p)) === stored;
+    return btoa('vpd:' + p) === stored;   // レガシー（旧Base64）形式
+  }
   const _pinIsSet   = () => !!localStorage.getItem(_PIN_KEY);
   const _pinFails   = () => parseInt(localStorage.getItem(_PIN_FAILS) || '0', 10);
   const _pinLocked  = () => localStorage.getItem(_PIN_LOCKED) === 'true';
@@ -3113,10 +3229,10 @@ function classifyVpd(vpd, lo, hi) {
     fi.textContent = '';
     const labels = {
       unlock:  'Enter PIN',
-      setup1:  'Set new PIN',
+      setup1:  'Set new PIN (9 digits)',
       setup2:  'Confirm PIN',
       change1: 'Current PIN',
-      change2: 'New PIN',
+      change2: 'New PIN (9 digits)',
       change3: 'Confirm new PIN',
       remove1: 'Enter PIN to remove'
     };
@@ -3141,6 +3257,7 @@ function classifyVpd(vpd, lo, hi) {
         req.onsuccess = r; req.onerror = r;
       });
     } catch(e) {}
+    _cryptoKey = null;
     localStorage.clear();
   }
 
@@ -3151,18 +3268,28 @@ function classifyVpd(vpd, lo, hi) {
     bs.style.display = 'block';
   }
 
+  // 入力済みの桁数ぶんドットを描画（可変長対応：旧4桁PINも新9桁PINも自然に表示）
   function _updatePinDots() {
-    for (let i = 0; i < 4; i++) {
-      const d = document.getElementById('pd' + i);
-      if (d) d.classList.toggle('filled', i < _pinBuf.length);
+    const box = document.getElementById('pinDots');
+    if (!box) return;
+    const n = Math.max(_pinBuf.length, 0);
+    box.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+      const d = document.createElement('div');
+      d.className = 'pin-dot filled';
+      box.appendChild(d);
     }
   }
 
+  // 新規PINを設定する手順（9桁固定を要求）
+  const _NEW_PIN_MODES = ['setup1','setup2','change2','change3'];
+
   function pinPress(digit) {
-    if (_pinBuf.length >= 4) return;
+    if (_pinBuf.length >= _PIN_LEN) return;
     _pinBuf += digit;
     _updatePinDots();
-    if (_pinBuf.length === 4) setTimeout(_pinSubmit, 120);
+    // 9桁に達したら自動送信
+    if (_pinBuf.length === _PIN_LEN) setTimeout(_pinSubmit, 120);
   }
 
   function pinDelete() {
@@ -3171,14 +3298,35 @@ function classifyVpd(vpd, lo, hi) {
     _updatePinDots();
   }
 
-  function _pinSubmit() {
+  // ✓ ボタン：手動で確定（旧4桁PINでの解錠など、9桁未満の送信に使う）
+  function pinConfirm() {
+    if (!_pinBuf.length) return;
+    // 新規PIN設定の手順では9桁を強制
+    if (_NEW_PIN_MODES.includes(_pinMode) && _pinBuf.length !== _PIN_LEN) {
+      document.getElementById('pinMessage').textContent = `${_PIN_LEN}桁で入力してください`;
+      _pinShake();
+      return;
+    }
+    _pinSubmit();
+  }
+
+  async function _pinSubmit() {
     const buf = _pinBuf;
     _pinBuf = ''; _updatePinDots();
 
     if (_pinMode === 'unlock') {
-      if (_pinCheck(buf)) {
+      if (await _pinCheck(buf)) {
         localStorage.setItem(_PIN_FAILS, '0');
+        // PIN から復号鍵を導出（メモリ上のみ）
+        _cryptoKey = await _deriveKey(buf);
+        // レガシー（旧Base64 PIN・未暗号化データ）からの自動移行
+        if (!localStorage.getItem(_PIN_KEY).startsWith('v2:')) await _pinStore(buf);
+        if (localStorage.getItem('vpdEncMigrated') !== 'true') {
+          await _encryptExistingData();
+          localStorage.setItem('vpdEncMigrated', 'true');
+        }
         _hidePinOverlay();
+        await bootData();              // 復号後にデータを読み込んで描画
         _updatePinSettingsUI();
         if (localStorage.getItem('vpdIntruderPhoto')) {
           setTimeout(() => showToast('⚠️ Wrong PIN attempt detected — check SECURITY settings'), 500);
@@ -3207,10 +3355,14 @@ function classifyVpd(vpd, lo, hi) {
       _showPinOverlay('setup2');
     } else if (_pinMode === 'setup2') {
       if (buf === _pinTmp) {
-        localStorage.setItem(_PIN_KEY, _pinEncode(buf));
+        await _pinStore(buf);
         localStorage.setItem(_PIN_FAILS, '0');
+        // 既存の平文データを暗号化
+        _cryptoKey = await _deriveKey(buf);
+        await _encryptExistingData();
+        localStorage.setItem('vpdEncMigrated', 'true');
         _hidePinOverlay();
-        showToast('🔒 PIN set');
+        showToast('🔒 PIN set — data encrypted');
         _updatePinSettingsUI();
       } else {
         document.getElementById('pinMessage').textContent = 'Mismatch — try again';
@@ -3218,7 +3370,7 @@ function classifyVpd(vpd, lo, hi) {
         setTimeout(() => _showPinOverlay('setup1'), 900);
       }
     } else if (_pinMode === 'change1') {
-      if (_pinCheck(buf)) {
+      if (await _pinCheck(buf)) {
         _showPinOverlay('change2');
       } else {
         document.getElementById('pinMessage').textContent = 'Wrong PIN';
@@ -3230,7 +3382,8 @@ function classifyVpd(vpd, lo, hi) {
       _showPinOverlay('change3');
     } else if (_pinMode === 'change3') {
       if (buf === _pinTmp) {
-        localStorage.setItem(_PIN_KEY, _pinEncode(buf));
+        await _pinStore(buf);
+        await _rekeyExistingData(buf);   // 新PINの鍵で全データを再暗号化
         _hidePinOverlay();
         showToast('🔒 PIN updated');
       } else {
@@ -3239,11 +3392,14 @@ function classifyVpd(vpd, lo, hi) {
         setTimeout(() => _showPinOverlay('change2'), 900);
       }
     } else if (_pinMode === 'remove1') {
-      if (_pinCheck(buf)) {
+      if (await _pinCheck(buf)) {
+        await _decryptExistingData();    // 平文に戻す（_cryptoKey も null になる）
         localStorage.removeItem(_PIN_KEY);
+        localStorage.removeItem(_SALT_KEY);
+        localStorage.removeItem('vpdEncMigrated');
         localStorage.setItem(_PIN_FAILS, '0');
         _hidePinOverlay();
-        showToast('🔓 PIN removed');
+        showToast('🔓 PIN removed — data no longer encrypted');
         _updatePinSettingsUI();
       } else {
         document.getElementById('pinMessage').textContent = 'Wrong PIN';
@@ -3262,20 +3418,16 @@ function classifyVpd(vpd, lo, hi) {
   }
 
   function _randomizePinKeypad() {
-    // 0〜9 をシャッフル
+    // 0〜9 をシャッフル（覗き見対策）
     const digits = ['0','1','2','3','4','5','6','7','8','9'];
     for (let i = digits.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [digits[i], digits[j]] = [digits[j], digits[i]];
     }
-    // 11スロット中のランダムな位置にブランクを挿入
-    const blankPos = Math.floor(Math.random() * 11);
-    digits.splice(blankPos, 0, '');
-
     const cells = document.querySelectorAll('.pin-digit');
     cells.forEach((cell, i) => {
       const d = digits[i];
-      if (!d) {
+      if (d === undefined) {
         cell.textContent = '';
         cell.style.visibility = 'hidden';
         cell.style.pointerEvents = 'none';
@@ -3344,9 +3496,8 @@ function classifyVpd(vpd, lo, hi) {
   }
 
   /* === 初期化 === */
-  async function init() {
-    await initDB();
-    // load tents
+  // データ読み込み＋描画（PIN解除後 or PIN未設定時に呼ぶ）
+  async function bootData() {
     const oldJpNames = ['テント1','テント2','テント3','テント4','テント5','テント6'];
     const oldEnNames = ['Tent 1','Tent 2','Tent 3','Tent 4','Tent 5','Tent 6'];
     let allTents = await dbGetAll('tents');
@@ -3370,6 +3521,10 @@ function classifyVpd(vpd, lo, hi) {
     buildStageTable();
     buildMatrix();
     update();
+  }
+
+  async function init() {
+    await initDB();
     // restore theme
     if (localStorage.getItem('vpdTheme') === 'light') {
       document.body.classList.add('light-mode');
@@ -3377,9 +3532,14 @@ function classifyVpd(vpd, lo, hi) {
     }
     // restore language
     applyLang();
-    // PIN lock check (must be last — overlays everything)
     _updatePinSettingsUI();
-    pinInitCheck();
+    if (_pinIsSet()) {
+      // PIN 設定済み: 解除するまでデータを読み込まない（暗号文のみメモリ外に保つ）
+      pinInitCheck();
+    } else {
+      // PIN 未設定: 従来どおり平文で即読み込み
+      await bootData();
+    }
   }
   function updateThemeToggleUI(isLight) {
     const thumb = document.getElementById('themeThumb');
