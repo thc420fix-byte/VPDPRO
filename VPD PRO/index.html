@@ -326,6 +326,36 @@
       color: var(--text);
       min-width: 40px;
     }
+    /* VPD zone bar: current value vs stage target range at a glance */
+    .vpd-zonebar-wrap { width: 100%; margin: 8px 0 4px; padding: 0 4px; box-sizing: border-box; }
+    .vpd-zonebar {
+      position: relative;
+      height: 12px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, rgba(0,153,255,0.25) 0%, rgba(0,255,136,0.18) 35%, rgba(255,204,0,0.18) 70%, rgba(255,68,68,0.25) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .vpd-zone-target {
+      position: absolute; top: -1px; bottom: -1px;
+      background: rgba(0,255,136,0.30);
+      border: 1px solid rgba(0,255,136,0.85);
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    .vpd-zone-marker {
+      position: absolute; top: -5px;
+      width: 3px; height: 22px;
+      border-radius: 2px;
+      background: #fff;
+      box-shadow: 0 0 6px rgba(255,255,255,0.7);
+      transform: translateX(-50%);
+      transition: left 0.3s ease, background 0.3s;
+    }
+    .vpd-zonebar-scale {
+      display: flex; justify-content: space-between;
+      font-size: 0.58rem; color: var(--text); opacity: 0.55;
+      margin-top: 3px; padding: 0 1px;
+    }
     /* compact mode: Leaf VPD or CO2 row added → shrink all rows */
     .stepper-rows.compact .stepper-row { padding: 3px 0; }
     .stepper-rows.compact .stepper-btn { width: 30px; height: 30px; font-size: 1.2rem; }
@@ -611,6 +641,9 @@
       <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
       <!-- セキュリティ -->
       <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">SECURITY</div>
+      <div style="font-size:0.68rem;color:var(--text);opacity:0.85;line-height:1.6;margin-bottom:10px;padding:8px 10px;background:rgba(0,255,136,0.05);border:1px solid var(--border);border-radius:8px;">
+        🔒 100% OFFLINE — アカウント不要・サーバー送信ゼロ。<br>データはこの端末だけに保存され、あなたのもの。
+      </div>
       <button id="pinSetupBtn" class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="setupPin()">🔒 SET PIN</button>
       <button id="pinRemoveBtn" class="small-btn" style="width:100%;display:none;border-color:var(--danger);color:var(--danger);font-size:0.78rem;" onclick="removePin()">🗑 REMOVE PIN</button>
       <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
@@ -627,6 +660,25 @@
         <span style="font-size:0.8rem;color:var(--text);">PPFD ±µmol</span>
         <input type="number" id="tolPpfd" min="10" max="200" step="10" value="50" style="width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 8px;font-size:0.85rem;text-align:center;" onchange="saveSpotTol()">
       </div>
+    </div>
+  </div>
+  <!-- lux→PPFD 変換モーダル -->
+  <div id="luxModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeLuxConverter()">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px 18px;width:280px;box-sizing:border-box;">
+      <div style="font-size:0.9rem;font-weight:700;color:var(--accent);margin-bottom:4px;">LUX → PPFD</div>
+      <div style="font-size:0.65rem;color:var(--text);opacity:0.7;line-height:1.5;margin-bottom:12px;">Photoneや照度計のlux値を貼るだけで換算。係数は光源別の目安。</div>
+      <input id="luxInput" type="text" inputmode="numeric" placeholder="lux 値" oninput="convertLux()" style="width:100%;box-sizing:border-box;padding:8px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-size:1.1rem;font-weight:700;text-align:center;outline:none;font-family:'Rajdhani',sans-serif;margin-bottom:8px;">
+      <select id="luxSource" onchange="convertLux()" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8rem;outline:none;margin-bottom:10px;">
+        <option value="0.015" selected>LED フルスペクトラム</option>
+        <option value="0.0122">HPS</option>
+        <option value="0.0141">MH</option>
+        <option value="0.0154">CMH</option>
+        <option value="0.0135">蛍光灯 / CFL</option>
+        <option value="0.0185">太陽光</option>
+      </select>
+      <div style="text-align:center;font-size:0.85rem;color:var(--text);margin-bottom:14px;">→ <span id="luxResult" style="color:var(--accent);font-size:1.3rem;font-weight:700;font-family:'Rajdhani',sans-serif;">—</span> µmol/m²/s</div>
+      <button class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.85rem;padding:8px;" onclick="applyLuxResult()">✓ PPFDに反映</button>
+      <button class="small-btn" style="width:100%;font-size:0.78rem;opacity:0.7;" onclick="closeLuxConverter()">閉じる</button>
     </div>
   </div>
   <h1>VPD PRO</h1>
@@ -709,6 +761,12 @@
           </div>
           <button class="stepper-btn" onclick="adjustCurrentPpfd(10)">+</button>
         </div>
+        <!-- DLI + Light tools -->
+        <div class="stepper-row" id="dliRow" style="gap:10px;flex-wrap:wrap;">
+          <span style="font-size:0.78rem;color:var(--text);white-space:nowrap;">☀️ DLI <span id="dliVal" style="color:var(--accent);font-weight:700;font-size:0.95rem;font-family:'Rajdhani',sans-serif;">—</span> <span style="opacity:0.65;">mol/m²/d</span><span id="dliTarget" style="opacity:0.65;"></span></span>
+          <span onclick="cyclePhotoperiod()" style="cursor:pointer;font-size:0.75rem;color:var(--accent);border:1px solid var(--border);border-radius:6px;padding:2px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;">⏱ <span id="photoperiodLabel">18</span>h</span>
+          <span onclick="openLuxConverter()" style="cursor:pointer;font-size:0.75rem;color:var(--accent);border:1px solid var(--border);border-radius:6px;padding:2px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;">lux→PPFD</span>
+        </div>
         <!-- Theory reference (Theory mode only) -->
         <div id="monitorTheoryRef" style="display:none;border-top:1px solid rgba(255,255,255,0.06);padding:5px 0;font-size:0.68rem;color:var(--text);opacity:0.8;text-align:center;line-height:1.7;"></div>
         <div style="padding:4px 8px 0;">
@@ -774,6 +832,13 @@
           <div class="vpd-num" id="vpdLeaf" style="color:var(--leaf)">—</div>
           <div style="font-size:0.7rem;color:var(--text);">kPa</div>
         </div>
+      </div>
+      <div class="vpd-zonebar-wrap">
+        <div class="vpd-zonebar">
+          <div id="vpdZoneTarget" class="vpd-zone-target"></div>
+          <div id="vpdZoneMarker" class="vpd-zone-marker"></div>
+        </div>
+        <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
       </div>
       <div id="statusBadge" class="status-badge status-ok">—</div>
       <!-- VPDの状態と推奨アクション -->
@@ -1244,6 +1309,7 @@
       co2: false,
       co2Level: 1000,
       ppfd: 300,
+      photoperiod: 18,
       stageSpots: {},
       logs: []
     };
@@ -2225,6 +2291,64 @@
     infoEl.innerHTML = `${tr('spot.label')}${spot.temp}°C / ${spot.hum}% / ${spot.ppfd}µmol &nbsp;|&nbsp; ${fmt(parseFloat(dT),1,'°C')} ${fmt(dH,3,'%')} ${fmt(dP,50,'µmol')}`;
   }
 
+  /* === DLI & lux→PPFD 変換 === */
+  function updateDli() {
+    const t = tents[currentTent];
+    const h = t.photoperiod || 18;
+    const lbl = document.getElementById('photoperiodLabel');
+    if (lbl) lbl.textContent = h;
+    const el = document.getElementById('dliVal');
+    const tgtEl = document.getElementById('dliTarget');
+    if (!el) return;
+    const dli = (Number(t.ppfd) || 0) * h * 3600 / 1e6;
+    el.textContent = dli.toFixed(1);
+    const range = getPpfdRange(t.stage, t.co2);
+    if (tgtEl) {
+      if (range && range[1] > 0) {
+        const lo = Math.round(range[0] * h * 3600 / 1e6);
+        const hi = Math.round(range[1] * h * 3600 / 1e6);
+        tgtEl.textContent = `（目標 ${lo}〜${hi}）`;
+      } else {
+        tgtEl.textContent = '';
+      }
+    }
+  }
+  async function cyclePhotoperiod() {
+    const t = tents[currentTent];
+    const opts = [12, 18, 20, 24];
+    const cur = opts.indexOf(t.photoperiod || 18);
+    t.photoperiod = opts[(cur + 1) % opts.length];
+    await dbPut('tents', t);
+    updateDli();
+  }
+  function openLuxConverter() {
+    document.getElementById('luxModal').style.display = 'flex';
+    const inp = document.getElementById('luxInput');
+    if (inp) { inp.value = ''; convertLux(); setTimeout(() => inp.focus(), 50); }
+  }
+  function closeLuxConverter() {
+    document.getElementById('luxModal').style.display = 'none';
+  }
+  function convertLux() {
+    const lux = parseFloat(document.getElementById('luxInput').value) || 0;
+    const f = parseFloat(document.getElementById('luxSource').value);
+    const ppfd = Math.round(lux * f);
+    document.getElementById('luxResult').textContent = lux > 0 ? ppfd : '—';
+    return lux > 0 ? ppfd : 0;
+  }
+  async function applyLuxResult() {
+    const ppfd = convertLux();
+    closeLuxConverter();
+    if (!ppfd) return;
+    const t = tents[currentTent];
+    t.ppfd = ppfd;
+    const inp = document.getElementById('ppfdVal');
+    if (inp) inp.value = ppfd;
+    await dbPut('tents', t);
+    update();
+    showToast(`☀️ PPFD ${ppfd} µmol を反映`);
+  }
+
   /* === VPD計算および表示 === */
   function update() {
     const t = tents[currentTent];
@@ -2242,6 +2366,18 @@
     const badge = document.getElementById('statusBadge');
     const recEl= document.getElementById('rec');
     const state = classifyVpd(check, lo, hi);
+    // ゾーンバー: 目標レンジと現在値マーカーを 0〜2.0 kPa スケールに配置
+    const zoneTarget = document.getElementById('vpdZoneTarget');
+    const zoneMarker = document.getElementById('vpdZoneMarker');
+    if (zoneTarget && zoneMarker) {
+      const ZONE_MAX = 2.0;
+      const pct = v => Math.max(0, Math.min(100, v / ZONE_MAX * 100));
+      zoneTarget.style.left = pct(lo) + '%';
+      zoneTarget.style.width = Math.max(0, pct(hi) - pct(lo)) + '%';
+      zoneMarker.style.left = pct(check) + '%';
+      zoneMarker.style.background = state === 'danger' ? 'var(--danger)' : state === 'warning' ? '#ff9500' : '#fff';
+    }
+    updateDli();
     badge.className = 'status-badge';
     if (state === 'danger') {
       badge.classList.add('status-danger','pulse');
