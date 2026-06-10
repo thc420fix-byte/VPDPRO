@@ -779,9 +779,7 @@
         <div class="stage-row">
           <div class="stage-btn" data-s="clone" onclick="setStage('clone')">Clone</div>
           <div class="stage-btn" data-s="veg" onclick="setStage('veg')">Veg</div>
-          <div class="stage-btn" data-s="flower_early" onclick="setStage('flower_early')">Flower Early</div>
-          <div class="stage-btn" data-s="flower_late" onclick="setStage('flower_late')">Flower Late</div>
-          <div class="stage-btn" data-s="flush" onclick="setStage('flush')">Flush</div>
+          <div class="stage-btn" data-s="flower" onclick="setStage('flower')">Flower</div>
           <div class="stage-btn" data-s="dry" onclick="setStage('dry')">Dry</div>
           <div class="stage-btn" data-s="harvest" onclick="setStage('harvest')">Harvest</div>
         </div>
@@ -1184,7 +1182,7 @@
   let currentTent = 0;
   let pendingPhoto = null;
 
-  const STAGE_ORDER = ['clone','veg','flower_early','flower_late','flush','dry','harvest'];
+  const STAGE_ORDER = ['clone','veg','flower','dry','harvest'];
 
   // 全ステージの終了日を開始日から自動計算する（次ステージ開始日 − 1日）
   function recalculateStageEndDates(t) {
@@ -1211,9 +1209,7 @@
   const stages = {
     clone:        { name: 'Clone',      vpd: [0.4,0.8],  ppfd: [100,200],  ppfdCo2: [150,250],  color: '#00c8ff', co2: [0.4,0.9], ecInput: [0.5,0.8],  ecRunoff: [0.5,1.0],  temp: [22,26], hum: [70,80] },
     veg:          { name: 'Veg',        vpd: [0.8,1.1],  ppfd: [300,500],  ppfdCo2: [500,700],  color: '#39d67a', co2: [0.9,1.3], ecInput: [1.0,1.4],  ecRunoff: [1.0,1.6],  temp: [22,28], hum: [50,70] },
-    flower_early: { name: 'Flower Early',vpd: [0.8,1.2],  ppfd: [500,700],  ppfdCo2: [700,900],  color: '#ffaa00', co2: [0.9,1.4], ecInput: [1.4,1.8],  ecRunoff: [1.4,2.0],  temp: [20,26], hum: [50,60] },
-    flower_late:  { name: 'Flower Late',vpd: [1.2,1.5],  ppfd: [700,900],  ppfdCo2: [900,1100], color: '#ff6644', co2: [1.3,1.7], ecInput: [1.6,2.0],  ecRunoff: [1.6,2.2],  temp: [18,24], hum: [40,50] },
-    flush:        { name: 'Flush',      vpd: [1.0,1.2],  ppfd: [400,600],  ppfdCo2: [500,700],  color: '#cc88ff', co2: [1.0,1.3], ecInput: [0.1,0.3],  ecRunoff: [0.1,0.5],  temp: [18,24], hum: [45,55] },
+    flower:       { name: 'Flower',     vpd: [0.8,1.5],  ppfd: [500,900],  ppfdCo2: [700,1100], color: '#ffaa00', co2: [0.9,1.7], ecInput: [1.4,2.0],  ecRunoff: [1.4,2.2],  temp: [18,26], hum: [40,60] },
     dry:          { name: 'Dry',        vpd: [0.6,0.8],  ppfd: [0,0],      ppfdCo2: [0,0],      color: '#aaaaaa', co2: [0.6,0.8], ecInput: [0,0],      ecRunoff: [0,0],      temp: [15,16], hum: [58,62] },
   harvest:      { name: 'Harvest',    vpd: [0.6,0.9],  ppfd: [0,0],      ppfdCo2: [0,0],      color: '#f5c842', co2: [0.6,0.9], ecInput: [0,0],      ecRunoff: [0,0],      temp: null,    hum: null    }
   };
@@ -1577,7 +1573,7 @@
 
   // 3-stage grouping: Growth (Clone, Veg) | Flower (Flower Early, Flower Late, Flush) | Dry (Dry) | Harvest (Harvest)
   const GROWTH_LINKED  = ['clone', 'veg'];
-  const FLOWER_LINKED  = ['flower_early', 'flower_late', 'flush'];
+  const FLOWER_LINKED  = ['flower'];
   const DRY_LINKED     = ['dry'];
   const HARVEST_LINKED = ['harvest'];
 
@@ -1593,7 +1589,7 @@
   // Get the start stage for each group
   function getGroupStartStage(group) {
     if (group === 'growth') return 'clone';
-    if (group === 'flower') return 'flower_early';
+    if (group === 'flower') return 'flower';
     if (group === 'dry') return 'dry';
     if (group === 'harvest') return 'harvest';
     return null;
@@ -1618,7 +1614,7 @@
   }
 
   /* === ステージ＆モードSettings === */
-  const stageLabelMap = { clone:'Clone', veg:'Veg', flower_early:'Flower Early', flower_late:'Flower Late', flush:'Flush', dry:'Dry', harvest:'Harvest' };
+  const stageLabelMap = { clone:'Clone', veg:'Veg', flower:'Flower', dry:'Dry', harvest:'Harvest' };
 
   function toggleStageDropdown() {
     const d = document.getElementById('stageDropdown');
@@ -2734,8 +2730,8 @@
   let refCo2 = false;
   let refMedium = 'soil'; // 'soil' or 'hydro'
   const phData = {
-    soil:  { clone:'6.0〜6.5', veg:'6.0〜6.5', flower_early:'6.0〜6.5', flower_late:'6.0〜6.5', flush:'6.0〜6.5', dry:'—', harvest:'—' },
-    hydro: { clone:'5.5〜6.0', veg:'5.8〜6.2', flower_early:'5.8〜6.2', flower_late:'5.8〜6.2', flush:'5.8〜6.2', dry:'—', harvest:'—' },
+    soil:  { clone:'6.0〜6.5', veg:'6.0〜6.5', flower:'6.0〜6.5', dry:'—', harvest:'—' },
+    hydro: { clone:'5.5〜6.0', veg:'5.8〜6.2', flower:'5.8〜6.2', dry:'—', harvest:'—' },
   };
   function toggleRefCo2() {
     refCo2 = !refCo2;
@@ -3844,6 +3840,25 @@ function classifyVpd(vpd, lo, hi) {
     for (const t of allTents) {
       const idx = oldJpNames.indexOf(t.name);
       if (idx >= 0) { t.name = oldEnNames[idx]; await dbPut('tents', t); }
+      // migrate removed stages → nearest equivalent
+      let dirty = false;
+      if (t.stage === 'flower_early' || t.stage === 'flower_late' || t.stage === 'flush') {
+        t.stage = 'flower'; dirty = true;
+      }
+      ['flower_early','flower_late','flush'].forEach(old => {
+        if (t.stageDates && t.stageDates[old]) {
+          t.stageDates['flower'] = t.stageDates['flower'] || t.stageDates[old];
+          delete t.stageDates[old]; dirty = true;
+        }
+        if (t.stageEndDates && t.stageEndDates[old]) {
+          delete t.stageEndDates[old]; dirty = true;
+        }
+        if (t.stageSpots && t.stageSpots[old]) {
+          t.stageSpots['flower'] = t.stageSpots['flower'] || t.stageSpots[old];
+          delete t.stageSpots[old]; dirty = true;
+        }
+      });
+      if (dirty) await dbPut('tents', t);
     }
     tents = allTents;
     buildTentBar();
