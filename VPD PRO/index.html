@@ -662,6 +662,73 @@
       </div>
     </div>
   </div>
+  <!-- ライトメーター（カメラ計測）モーダル -->
+  <div id="lightMeterModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:10000;flex-direction:column;align-items:stretch;">
+    <!-- ヘッダー -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:max(14px,env(safe-area-inset-top)) 16px 12px;background:rgba(0,0,0,0.85);flex-shrink:0;">
+      <div>
+        <div style="font-size:1rem;font-weight:700;color:var(--accent);letter-spacing:0.08em;">☀️ LIGHT METER</div>
+        <div style="font-size:0.62rem;color:rgba(255,255,255,0.5);margin-top:1px;">カメラで光量をリアルタイム測定</div>
+      </div>
+      <button onclick="closeLightMeter()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:0.85rem;padding:6px 14px;cursor:pointer;">✕ 閉じる</button>
+    </div>
+    <!-- カメラビュー -->
+    <div style="position:relative;flex:1;min-height:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <video id="lmVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
+      <canvas id="lmCanvas" style="display:none;"></canvas>
+      <!-- 中央計測ゾーン表示 -->
+      <div style="position:absolute;pointer-events:none;width:120px;height:120px;border:2px solid rgba(0,255,136,0.7);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,0.35);"></div>
+      <!-- 計測値オーバーレイ -->
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:16px;background:linear-gradient(transparent,rgba(0,0,0,0.85));">
+        <div style="text-align:center;">
+          <div style="font-size:0.68rem;color:rgba(255,255,255,0.6);letter-spacing:0.12em;margin-bottom:2px;">PPFD</div>
+          <div id="lmPpfd" style="font-size:3.2rem;font-weight:700;color:var(--accent);font-family:'Rajdhani',sans-serif;line-height:1;">—</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.55);">µmol/m²/s</div>
+          <div style="margin-top:6px;font-size:0.72rem;color:rgba(255,255,255,0.5);">≈ <span id="lmLux">—</span> lux</div>
+        </div>
+        <!-- ステージ目標との比較バー -->
+        <div id="lmZoneWrap" style="margin-top:12px;display:none;">
+          <div style="font-size:0.6rem;color:rgba(255,255,255,0.45);text-align:center;margin-bottom:4px;">ステージ目標 <span id="lmRangeLabel"></span> µmol</div>
+          <div style="position:relative;height:8px;border-radius:4px;background:rgba(255,255,255,0.1);">
+            <div id="lmZoneTarget" style="position:absolute;top:-1px;bottom:-1px;background:rgba(0,255,136,0.3);border:1px solid rgba(0,255,136,0.7);border-radius:4px;"></div>
+            <div id="lmZoneMarker" style="position:absolute;top:-4px;width:3px;height:16px;border-radius:2px;background:#fff;transform:translateX(-50%);transition:left 0.3s;"></div>
+          </div>
+        </div>
+      </div>
+      <!-- 計測不可メッセージ -->
+      <div id="lmError" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center;padding:24px;">
+        <div style="font-size:2rem;">📷</div>
+        <div style="color:#fff;font-size:0.85rem;line-height:1.6;" id="lmErrorMsg">カメラにアクセスできません</div>
+        <button onclick="startLightMeter()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.5);border-radius:8px;color:var(--accent);font-size:0.85rem;padding:8px 20px;cursor:pointer;">再試行</button>
+      </div>
+    </div>
+    <!-- 下部コントロール -->
+    <div style="padding:14px 16px max(16px,env(safe-area-inset-bottom));background:rgba(10,20,14,0.97);border-top:1px solid var(--border);flex-shrink:0;">
+      <!-- 光源選択 -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-size:0.72rem;color:rgba(255,255,255,0.5);white-space:nowrap;flex-shrink:0;">光源</span>
+        <select id="lmSource" onchange="lmUpdateSource()" style="flex:1;padding:6px 10px;background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.78rem;outline:none;">
+          <option value="0.015" selected>LED フルスペクトラム</option>
+          <option value="0.0122">HPS</option>
+          <option value="0.0141">MH</option>
+          <option value="0.0154">CMH</option>
+          <option value="0.0135">蛍光灯 / CFL</option>
+          <option value="0.0185">太陽光</option>
+        </select>
+      </div>
+      <!-- キャリブレーション -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="font-size:0.72rem;color:rgba(255,255,255,0.5);white-space:nowrap;flex-shrink:0;">補正 ×</span>
+        <input id="lmCalib" type="range" min="0.2" max="5" step="0.05" value="1" oninput="lmOnCalibChange()" style="flex:1;accent-color:var(--accent);">
+        <span id="lmCalibVal" style="font-size:0.78rem;color:var(--accent);font-family:'Rajdhani',sans-serif;min-width:32px;text-align:right;">1.00</span>
+        <button onclick="lmResetCalib()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:rgba(255,255,255,0.5);font-size:0.65rem;padding:3px 7px;cursor:pointer;white-space:nowrap;">リセット</button>
+      </div>
+      <div style="font-size:0.6rem;color:rgba(255,255,255,0.32);text-align:center;margin-bottom:10px;line-height:1.5;">精度はカメラ・環境に依存します。Photoneのlux値と比較して補正係数を調整してください。</div>
+      <!-- アクションボタン -->
+      <button id="lmApplyBtn" onclick="lmApply()" style="width:100%;padding:12px;background:rgba(0,255,136,0.15);border:2px solid rgba(0,255,136,0.6);border-radius:12px;color:var(--accent);font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;">✓ この値をPPFDに反映</button>
+    </div>
+  </div>
+
   <!-- lux→PPFD 変換モーダル -->
   <div id="luxModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeLuxConverter()">
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px 18px;width:280px;box-sizing:border-box;">
@@ -766,6 +833,7 @@
           <span style="font-size:0.78rem;color:var(--text);white-space:nowrap;">☀️ DLI <span id="dliVal" style="color:var(--accent);font-weight:700;font-size:0.95rem;font-family:'Rajdhani',sans-serif;">—</span> <span style="opacity:0.65;">mol/m²/d</span><span id="dliTarget" style="opacity:0.65;"></span></span>
           <span onclick="cyclePhotoperiod()" style="cursor:pointer;font-size:0.75rem;color:var(--accent);border:1px solid var(--border);border-radius:6px;padding:2px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;">⏱ <span id="photoperiodLabel">18</span>h</span>
           <span onclick="openLuxConverter()" style="cursor:pointer;font-size:0.75rem;color:var(--accent);border:1px solid var(--border);border-radius:6px;padding:2px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;">lux→PPFD</span>
+          <span onclick="openLightMeter()" style="cursor:pointer;font-size:0.75rem;color:#000;background:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:2px 8px;font-weight:700;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;">📷 MEASURE</span>
         </div>
         <!-- Theory reference (Theory mode only) -->
         <div id="monitorTheoryRef" style="display:none;border-top:1px solid rgba(255,255,255,0.06);padding:5px 0;font-size:0.68rem;color:var(--text);opacity:0.8;text-align:center;line-height:1.7;"></div>
@@ -2347,6 +2415,142 @@
     await dbPut('tents', t);
     update();
     showToast(`☀️ PPFD ${ppfd} µmol を反映`);
+  }
+
+  /* === ライトメーター（カメラ輝度計測） === */
+  let _lmStream = null;
+  let _lmRaf = null;
+  let _lmCalib = parseFloat(localStorage.getItem('lmCalib') || '1');
+  let _lmLastPpfd = 0;
+
+  function openLightMeter() {
+    document.getElementById('lightMeterModal').style.display = 'flex';
+    document.getElementById('lmCalib').value = _lmCalib;
+    document.getElementById('lmCalibVal').textContent = _lmCalib.toFixed(2);
+    startLightMeter();
+  }
+
+  async function startLightMeter() {
+    const errEl = document.getElementById('lmError');
+    const errMsg = document.getElementById('lmErrorMsg');
+    errEl.style.display = 'none';
+    stopLightMeter();
+    try {
+      _lmStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
+      });
+      const video = document.getElementById('lmVideo');
+      video.srcObject = _lmStream;
+      await video.play();
+      _lmRaf = requestAnimationFrame(_lmMeasureLoop);
+    } catch(e) {
+      errEl.style.display = 'flex';
+      if (e.name === 'NotAllowedError') {
+        errMsg.textContent = 'カメラの使用を許可してください。\nブラウザの設定からカメラアクセスをオンにしてください。';
+      } else if (e.name === 'NotFoundError') {
+        errMsg.textContent = 'カメラが見つかりません。';
+      } else {
+        errMsg.textContent = 'カメラにアクセスできません。\n' + e.message;
+      }
+    }
+  }
+
+  function _lmMeasureLoop() {
+    const video = document.getElementById('lmVideo');
+    const canvas = document.getElementById('lmCanvas');
+    if (!video || !canvas || !_lmStream) return;
+    if (video.readyState < 2) { _lmRaf = requestAnimationFrame(_lmMeasureLoop); return; }
+
+    // 中央の正方形サンプル領域 (映像の中央 1/4)
+    const vw = video.videoWidth  || 320;
+    const vh = video.videoHeight || 240;
+    const sz = Math.floor(Math.min(vw, vh) / 3);
+    const sx = Math.floor((vw - sz) / 2);
+    const sy = Math.floor((vh - sz) / 2);
+    canvas.width = sz;
+    canvas.height = sz;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, sx, sy, sz, sz, 0, 0, sz, sz);
+    const data = ctx.getImageData(0, 0, sz, sz).data;
+
+    // 輝度を ITU-R BT.709 で計算
+    let sum = 0;
+    const pixels = sz * sz;
+    for (let i = 0; i < data.length; i += 4) {
+      sum += 0.2126 * data[i] + 0.7152 * data[i+1] + 0.0722 * data[i+2];
+    }
+    const avgLum = sum / pixels / 255; // 0〜1
+
+    // 輝度 → lux 推定（経験的モデル: 中央値カメラの auto-exposure での近似）
+    // avgLum ≈ 0.5 付近が ~1000 lux になるよう基準化
+    const rawLux = Math.round(Math.pow(avgLum / 0.5, 2.2) * 1000 * _lmCalib);
+    const f = parseFloat(document.getElementById('lmSource').value);
+    const ppfd = Math.round(rawLux * f);
+    _lmLastPpfd = ppfd;
+
+    // UI更新
+    document.getElementById('lmPpfd').textContent = ppfd > 0 ? ppfd : '—';
+    document.getElementById('lmLux').textContent  = rawLux > 0 ? rawLux.toLocaleString() : '—';
+    _lmUpdateZoneBar(ppfd);
+
+    _lmRaf = requestAnimationFrame(_lmMeasureLoop);
+  }
+
+  function _lmUpdateZoneBar(ppfd) {
+    const t = tents[currentTent];
+    const range = getPpfdRange(t.stage, t.co2);
+    const wrap = document.getElementById('lmZoneWrap');
+    if (!wrap || !range || range[1] === 0) { if (wrap) wrap.style.display = 'none'; return; }
+    wrap.style.display = '';
+    const MAX = Math.max(range[1] * 1.6, ppfd * 1.2, 200);
+    const pct = v => Math.max(0, Math.min(100, v / MAX * 100));
+    document.getElementById('lmRangeLabel').textContent = `${range[0]}〜${range[1]}`;
+    document.getElementById('lmZoneTarget').style.left  = pct(range[0]) + '%';
+    document.getElementById('lmZoneTarget').style.width = Math.max(0, pct(range[1]) - pct(range[0])) + '%';
+    document.getElementById('lmZoneMarker').style.left  = pct(ppfd) + '%';
+    const ok = ppfd >= range[0] && ppfd <= range[1];
+    const low = ppfd < range[0];
+    document.getElementById('lmZoneMarker').style.background = ok ? '#fff' : (low ? '#4af' : 'var(--danger)');
+  }
+
+  function lmUpdateSource() { /* 次フレームで自動反映 */ }
+
+  function lmOnCalibChange() {
+    _lmCalib = parseFloat(document.getElementById('lmCalib').value);
+    document.getElementById('lmCalibVal').textContent = _lmCalib.toFixed(2);
+    localStorage.setItem('lmCalib', _lmCalib);
+  }
+
+  function lmResetCalib() {
+    _lmCalib = 1;
+    document.getElementById('lmCalib').value = 1;
+    document.getElementById('lmCalibVal').textContent = '1.00';
+    localStorage.setItem('lmCalib', '1');
+  }
+
+  async function lmApply() {
+    const ppfd = _lmLastPpfd;
+    closeLightMeter();
+    if (!ppfd) return;
+    const t = tents[currentTent];
+    t.ppfd = ppfd;
+    const inp = document.getElementById('ppfdVal');
+    if (inp) inp.value = ppfd;
+    await dbPut('tents', t);
+    update();
+    showToast(`☀️ PPFD ${ppfd} µmol を反映`);
+  }
+
+  function stopLightMeter() {
+    if (_lmRaf) { cancelAnimationFrame(_lmRaf); _lmRaf = null; }
+    if (_lmStream) { _lmStream.getTracks().forEach(t => t.stop()); _lmStream = null; }
+    const video = document.getElementById('lmVideo');
+    if (video) { video.srcObject = null; }
+  }
+
+  function closeLightMeter() {
+    stopLightMeter();
+    document.getElementById('lightMeterModal').style.display = 'none';
   }
 
   /* === VPD計算および表示 === */
