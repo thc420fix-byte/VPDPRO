@@ -259,6 +259,81 @@
       cursor: pointer;
     }
 
+    /* ── Unified Stepper ── */
+    .stepper-rows {
+      display: flex;
+      flex-direction: column;
+      margin: 4px 0;
+      width: 100%;
+    }
+    .stepper-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .stepper-row:last-child { border-bottom: none; }
+    .stepper-btn {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(0,255,136,0.06);
+      color: var(--accent);
+      font-size: 1.5rem;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .stepper-btn:active { background: rgba(0,255,136,0.18); }
+    .stepper-center {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      width: 200px;
+      justify-content: center;
+    }
+    .stepper-label {
+      font-size: 1rem;
+      color: var(--text);
+      font-weight: 500;
+      min-width: 80px;
+      text-align: right;
+    }
+    .stepper-val {
+      width: 60px;
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: transparent;
+      color: var(--accent);
+      -webkit-text-fill-color: var(--accent);
+      border: none;
+      outline: none;
+      text-align: center;
+      font-family: 'Rajdhani', -apple-system, sans-serif;
+      padding: 0;
+    }
+    .stepper-unit {
+      font-size: 0.9rem;
+      color: var(--text);
+      min-width: 40px;
+    }
+    /* compact mode: Leaf VPD or CO2 row added → shrink all rows */
+    .stepper-rows.compact .stepper-row { padding: 3px 0; }
+    .stepper-rows.compact .stepper-btn { width: 30px; height: 30px; font-size: 1.2rem; }
+    .stepper-rows.compact .stepper-val { font-size: 1.2rem; width: 44px; }
+    .stepper-rows.compact #co2LevelVal { width: 58px; }
+    .stepper-rows.compact .stepper-label { font-size: 0.85rem; }
+    .stepper-rows.compact .stepper-unit { font-size: 0.78rem; }
+
     /* iPhone optimization */
     @media (max-width: 600px) {
       .small-btn {
@@ -538,13 +613,6 @@
       <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">SECURITY</div>
       <button id="pinSetupBtn" class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="setupPin()">🔒 SET PIN</button>
       <button id="pinRemoveBtn" class="small-btn" style="width:100%;display:none;border-color:var(--danger);color:var(--danger);font-size:0.78rem;" onclick="removePin()">🗑 REMOVE PIN</button>
-      <!-- 侵入者写真 -->
-      <div id="intruderSection" style="display:none;margin-top:12px;">
-        <div style="font-size:0.68rem;color:var(--danger);font-weight:700;margin-bottom:6px;">⚠ UNAUTHORIZED ACCESS DETECTED</div>
-        <div id="intruderTime" style="font-size:0.68rem;color:var(--text-dim);margin-bottom:6px;"></div>
-        <img id="intruderImg" src="" style="width:100%;border-radius:8px;border:1px solid var(--danger);" />
-        <button class="small-btn" style="width:100%;margin-top:8px;font-size:0.75rem;border-color:var(--danger);color:var(--danger);" onclick="clearIntruderPhoto()">🗑 CLEAR PHOTO</button>
-      </div>
       <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
       <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">MY SPOT TOLERANCE</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -610,36 +678,36 @@
         <div class="toggle-btn" id="btnLeaf" role="button" aria-pressed="false" onclick="toggleLeaf()">🌿 Leaf VPD</div>
         <div class="toggle-btn" id="btnCO2" role="button" aria-pressed="false" onclick="toggleCO2()">💨 CO₂</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:4px;margin:6px 0;width:100%;">
+      <div class="stepper-rows">
         <!-- Temp -->
-        <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-          <button class="small-btn" onclick="adjustTemp(-1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
-          <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
-            <span style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">Temp</span>
-            <input id="tempVal" type="text" inputmode="decimal" value="24" onfocus="this.select()" onchange="applyInlineVal('temp', this.value)" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
-            <span id="tempUnitLabel" onclick="toggleTempUnit()" style="font-size:1.1rem;color:var(--text);cursor:pointer;user-select:none;min-width:45px;">℃</span>
+        <div class="stepper-row">
+          <button class="stepper-btn" onclick="adjustTemp(-1)">−</button>
+          <div class="stepper-center">
+            <span class="stepper-label">Temp</span>
+            <input id="tempVal" class="stepper-val" type="text" inputmode="decimal" value="24" onfocus="this.select()" onchange="applyInlineVal('temp', this.value)">
+            <span id="tempUnitLabel" class="stepper-unit" onclick="toggleTempUnit()" style="cursor:pointer;user-select:none;">℃</span>
           </div>
-          <button class="small-btn" onclick="adjustTemp(1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+          <button class="stepper-btn" onclick="adjustTemp(1)">+</button>
         </div>
         <!-- Humidity -->
-        <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-          <button class="small-btn" onclick="adjustHum(-1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
-          <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
-            <span style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">Humidity</span>
-            <input id="humVal" type="text" inputmode="decimal" value="60" onfocus="this.select()" onchange="applyInlineVal('hum', this.value)" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
-            <span style="font-size:1.1rem;color:var(--text);min-width:45px;">%RH</span>
+        <div class="stepper-row">
+          <button class="stepper-btn" onclick="adjustHum(-1)">−</button>
+          <div class="stepper-center">
+            <span class="stepper-label">Humidity</span>
+            <input id="humVal" class="stepper-val" type="text" inputmode="decimal" value="60" onfocus="this.select()" onchange="applyInlineVal('hum', this.value)">
+            <span class="stepper-unit">%RH</span>
           </div>
-          <button class="small-btn" onclick="adjustHum(1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+          <button class="stepper-btn" onclick="adjustHum(1)">+</button>
         </div>
         <!-- PPFD -->
-        <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;">
-          <button class="small-btn" onclick="adjustCurrentPpfd(-10)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
-          <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
-            <span style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">PPFD</span>
-            <input id="ppfdVal" type="text" inputmode="decimal" value="300" onfocus="this.select()" onchange="applyInlineVal('ppfd', this.value)" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
-            <span style="font-size:1.1rem;color:var(--text);min-width:45px;">µmol</span>
+        <div class="stepper-row">
+          <button class="stepper-btn" onclick="adjustCurrentPpfd(-10)">−</button>
+          <div class="stepper-center">
+            <span class="stepper-label">PPFD</span>
+            <input id="ppfdVal" class="stepper-val" type="text" inputmode="decimal" value="300" onfocus="this.select()" onchange="applyInlineVal('ppfd', this.value)">
+            <span class="stepper-unit">µmol</span>
           </div>
-          <button class="small-btn" onclick="adjustCurrentPpfd(10)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+          <button class="stepper-btn" onclick="adjustCurrentPpfd(10)">+</button>
         </div>
         <!-- Theory reference (Theory mode only) -->
         <div id="monitorTheoryRef" style="display:none;border-top:1px solid rgba(255,255,255,0.06);padding:5px 0;font-size:0.68rem;color:var(--text);opacity:0.8;text-align:center;line-height:1.7;"></div>
@@ -654,28 +722,28 @@
         </div>
         <!-- CO2 Level (shown when CO2 is ON) -->
         <div id="co2LevelCard" style="display:none; border-top:1px solid rgba(255,255,255,0.06);">
-          <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;">
-            <button class="small-btn" onclick="adjustCo2Level(-100)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
-            <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
-              <span style="font-size:1.1rem;color:var(--text);font-weight:500;">CO₂</span>
-              <input id="co2LevelVal" type="text" inputmode="decimal" value="1000" onfocus="this.select()" onchange="applyCo2Level(this.value)" style="width:92px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
-              <span style="font-size:1.1rem;color:var(--text);">ppm</span>
+          <div class="stepper-row" style="border-bottom:none;">
+            <button class="stepper-btn" onclick="adjustCo2Level(-100)">−</button>
+            <div class="stepper-center">
+              <span class="stepper-label">CO₂</span>
+              <input id="co2LevelVal" class="stepper-val" style="width:70px;" type="text" inputmode="decimal" value="1000" onfocus="this.select()" onchange="applyCo2Level(this.value)">
+              <span class="stepper-unit">ppm</span>
             </div>
-            <button class="small-btn" onclick="adjustCo2Level(100)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+            <button class="stepper-btn" onclick="adjustCo2Level(100)">+</button>
           </div>
         </div>
         <!-- Leaf offset -->
         <div id="leafOffsetCard" style="display:none; border-top:1px solid rgba(255,255,255,0.06);">
-          <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;">
-            <button class="small-btn" onclick="adjustLeafOffset(-0.5)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
-            <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
-              <span style="font-size:1.1rem;color:var(--text);font-weight:500;">Leaf Offset</span>
-              <input id="leafOffsetInput" type="text" inputmode="decimal" value="-2.0" onfocus="this.select()" onchange="applyLeafOffset(this.value)" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
-              <span id="leafUnitLabel" onclick="toggleTempUnit()" style="font-size:1.1rem;color:var(--text);cursor:pointer;user-select:none;">℃</span>
+          <div class="stepper-row" style="border-bottom:none;">
+            <button class="stepper-btn" onclick="adjustLeafOffset(-0.5)">−</button>
+            <div class="stepper-center">
+              <span class="stepper-label">Leaf ΔT</span>
+              <input id="leafOffsetInput" class="stepper-val" type="text" inputmode="decimal" value="-2.0" onfocus="this.select()" onchange="applyLeafOffset(this.value)">
+              <span id="leafUnitLabel" class="stepper-unit" onclick="toggleTempUnit()" style="cursor:pointer;user-select:none;">℃</span>
             </div>
-            <button class="small-btn" onclick="adjustLeafOffset(0.5)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+            <button class="stepper-btn" onclick="adjustLeafOffset(0.5)">+</button>
           </div>
-          <div style="font-size:0.6rem;color:var(--text);text-align:center;">Leaf Temp = Air Temp + Offset</div>
+          <div style="font-size:0.6rem;color:var(--text);text-align:center;padding-bottom:4px;">Leaf Temp = Air Temp + Offset</div>
         </div>
       </div>
       <!-- Sweet Spot Bar -->
@@ -764,46 +832,46 @@
       <!-- タブコンテンツ -->
       <div id="fertTabContent" style="display:none;"></div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:4px;margin:6px 0;width:100%;">
+    <div class="stepper-rows">
       <!-- pH -->
-      <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-        <button class="small-btn" onclick="adjustPh(-0.1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
-        <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
-          <span style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">pH</span>
-          <input id="phInput" type="text" inputmode="decimal" placeholder="6.0" onfocus="this.select()" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
-          <span style="font-size:1.1rem;color:var(--text);min-width:45px;"></span>
+      <div class="stepper-row">
+        <button class="stepper-btn" onclick="adjustPh(-0.1)">−</button>
+        <div class="stepper-center">
+          <span class="stepper-label">pH</span>
+          <input id="phInput" class="stepper-val" type="text" inputmode="decimal" placeholder="6.0" onfocus="this.select()">
+          <span class="stepper-unit"></span>
         </div>
-        <button class="small-btn" onclick="adjustPh(0.1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+        <button class="stepper-btn" onclick="adjustPh(0.1)">+</button>
       </div>
       <!-- Water Temp -->
-      <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-        <button class="small-btn" onclick="adjustWaterTemp(-0.5)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
-        <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
-          <span style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">Water</span>
-          <input id="waterTempInput" type="text" inputmode="numeric" placeholder="20" onfocus="this.select()" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
-          <span style="font-size:1.1rem;color:var(--text);min-width:45px;">°C</span>
+      <div class="stepper-row">
+        <button class="stepper-btn" onclick="adjustWaterTemp(-0.5)">−</button>
+        <div class="stepper-center">
+          <span class="stepper-label">Water</span>
+          <input id="waterTempInput" class="stepper-val" type="text" inputmode="numeric" placeholder="20" onfocus="this.select()">
+          <span class="stepper-unit">°C</span>
         </div>
-        <button class="small-btn" onclick="adjustWaterTemp(0.5)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+        <button class="stepper-btn" onclick="adjustWaterTemp(0.5)">+</button>
       </div>
       <!-- Input EC -->
-      <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-        <button class="small-btn" onclick="adjustEc(-0.1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
-        <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
-          <span id="inputEcLabel" style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">Input EC</span>
-          <input id="ecInput" type="text" inputmode="decimal" placeholder="1.5" onfocus="this.select()" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
-          <span style="font-size:1.1rem;color:var(--text);min-width:45px;">mS</span>
+      <div class="stepper-row">
+        <button class="stepper-btn" onclick="adjustEc(-0.1)">−</button>
+        <div class="stepper-center">
+          <span id="inputEcLabel" class="stepper-label">Input EC</span>
+          <input id="ecInput" class="stepper-val" type="text" inputmode="decimal" placeholder="1.5" onfocus="this.select()">
+          <span class="stepper-unit">mS</span>
         </div>
-        <button class="small-btn" onclick="adjustEc(0.1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+        <button class="stepper-btn" onclick="adjustEc(0.1)">+</button>
       </div>
       <!-- Runoff EC -->
-      <div id="runoffEcRow" style="display:flex;align-items:center;justify-content:center;gap:16px;padding:5px 0;">
-        <button class="small-btn" onclick="adjustRunoffEc(-0.1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">−</button>
-        <div style="display:flex;align-items:baseline;gap:5px;width:210px;justify-content:center;">
-          <span style="font-size:1.1rem;color:var(--text);font-weight:500;min-width:80px;text-align:right;">Runoff EC</span>
-          <input id="runoffEcInput" type="text" inputmode="decimal" placeholder="1.8" onfocus="this.select()" style="width:52px;font-size:1.6rem;font-weight:700;background:transparent;color:var(--accent);border:none;outline:none;text-align:center;">
-          <span style="font-size:1.1rem;color:var(--text);min-width:45px;">mS</span>
+      <div id="runoffEcRow" class="stepper-row">
+        <button class="stepper-btn" onclick="adjustRunoffEc(-0.1)">−</button>
+        <div class="stepper-center">
+          <span class="stepper-label">Runoff EC</span>
+          <input id="runoffEcInput" class="stepper-val" type="text" inputmode="decimal" placeholder="1.8" onfocus="this.select()">
+          <span class="stepper-unit">mS</span>
         </div>
-        <button class="small-btn" onclick="adjustRunoffEc(0.1)" style="width:36px;height:36px;font-size:1.2rem;flex-shrink:0;">+</button>
+        <button class="stepper-btn" onclick="adjustRunoffEc(0.1)">+</button>
       </div>
     </div>
     <!-- EC Theory reference (Theory mode only) -->
@@ -1392,7 +1460,7 @@
   function getGroupStartStage(group) {
     if (group === 'growth') return 'clone';
     if (group === 'flower') return 'flower_early';
-    if (group === 'dry') return 'flush';
+    if (group === 'dry') return 'dry';
     if (group === 'harvest') return 'harvest';
     return null;
   }
@@ -1596,36 +1664,8 @@
   }
   function updateCompactMode() {
     const t = tents[currentTent];
-    const compact = t.leaf || t.co2;
-    const valSize = compact ? '1.2rem' : '1.6rem';
-    const valWidth = compact ? '44px' : '52px';
-    const labelSize = compact ? '0.9rem' : '1.1rem';
-    const btnSize = compact ? '28px' : '36px';
-    const padding = compact ? '2px 0' : '5px 0';
-    const gap = compact ? '8px' : '16px';
-    document.querySelectorAll('#tab-monitor .card > div > div[style*="flex-direction:column"] > div').forEach(row => {
-      if (!row.style.display || row.style.display !== 'none') {
-        const inner = row.querySelector('div[style*="flex-direction:column"]') ? null : row;
-        if (inner) {
-          inner.style.padding = padding;
-          inner.style.gap = gap;
-        }
-      }
-    });
-    ['tempVal','humVal','ppfdVal','co2LevelVal','leafOffsetInput'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.style.fontSize = valSize;
-        // co2LevelVal は4桁(1000-1500ppm)表示のため広めに確保
-        el.style.width = (id === 'co2LevelVal') ? (compact ? '72px' : '92px') : valWidth;
-      }
-    });
-    document.querySelectorAll('#tab-monitor .card span[style*="1.1rem"], #tab-monitor .card span[style*="0.9rem"]').forEach(el => {
-      if ((!el.id || !el.id.includes('selector')) && !el.closest('.card-title')) el.style.fontSize = labelSize;
-    });
-    document.querySelectorAll('#tab-monitor .card button.small-btn[style*="36px"], #tab-monitor .card button.small-btn[style*="28px"]').forEach(btn => {
-      btn.style.width = btnSize; btn.style.height = btnSize;
-    });
+    const rows = document.querySelector('#tab-monitor .stepper-rows');
+    if (rows) rows.classList.toggle('compact', !!(t.leaf || t.co2));
   }
 
   async function toggleLeaf() {
@@ -2541,10 +2581,10 @@
       leaf: t.leaf,
       co2: t.co2,
       leafOffset: t.leafOffset,
-      ph: (el => el?.value.trim() || el?.placeholder || null)(document.getElementById('phInput')),
-      ec: (el => el?.value.trim() || el?.placeholder || null)(document.getElementById('ecInput')),
-      runoffEc: (el => el?.value.trim() || el?.placeholder || null)(document.getElementById('runoffEcInput')),
-      waterTemp: (el => el?.value.trim() || el?.placeholder || null)(document.getElementById('waterTempInput')),
+      ph:        (el => el?.value.trim() || null)(document.getElementById('phInput')),
+      ec:        (el => el?.value.trim() || null)(document.getElementById('ecInput')),
+      runoffEc:  (el => el?.value.trim() || null)(document.getElementById('runoffEcInput')),
+      waterTemp: (el => el?.value.trim() || null)(document.getElementById('waterTempInput')),
       ppfd: String(t.ppfd || ''),
       note: (document.getElementById('feedingNoteInput')?.value || '').trim(),
       photo: pendingPhoto,
@@ -2601,6 +2641,8 @@
     recalculateStageEndDates(tents[currentTent]);
     await dbPut('tents', tents[currentTent]);
     loadTentToUI(currentTent);
+    update();
+    buildStageTable();
     buildTentBar();
     const logs2 = await dbGetAll('logs');
     renderStageTimeline(logs2);
@@ -2788,18 +2830,6 @@ function classifyVpd(vpd, lo, hi) {
     } else if (vpd < vpdMin) {
       priority.push({ rank: 1, text: `${tr('action.hum_down')}${calcHumAdjust(vpdMin, vpd)}%` });
       priority.push({ rank: 1, text: tr('action.temp_up') });
-    }
-
-    const i = Number(inputEc);
-    const r = Number(runoffEc);
-    if (!Number.isNaN(i) && !Number.isNaN(r) && i > 0 && r > 0) {
-      const ecDiff = r - i;
-      if (ecDiff >= 0.5) {
-        priority.push({ rank: 2, text: "Water +20%" });
-        priority.push({ rank: 2, text: tr('action.flush') });
-      } else if (ecDiff <= -0.3) {
-        priority.push({ rank: 3, text: tr('action.ec_up') });
-      }
     }
 
     if (ppfdRange && Array.isArray(ppfdRange)) {
@@ -3328,13 +3358,10 @@ function classifyVpd(vpd, lo, hi) {
         _hidePinOverlay();
         await bootData();              // 復号後にデータを読み込んで描画
         _updatePinSettingsUI();
-        if (localStorage.getItem('vpdIntruderPhoto')) {
-          setTimeout(() => showToast('⚠️ Wrong PIN attempt detected — check SECURITY settings'), 500);
-        }
+
       } else {
         const f = _pinFails() + 1;
         localStorage.setItem(_PIN_FAILS, String(f));
-        if (f === 1) _pinCaptureIntruder();
         if (f >= _PIN_MAX) {
           // 3回目: 即ロック＋全データ削除
           _hidePinOverlay();
@@ -3451,31 +3478,6 @@ function classifyVpd(vpd, lo, hi) {
     setTimeout(() => _showPinOverlay('remove1'), 200);
   }
 
-  async function _pinCaptureIntruder() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
-      const video  = document.createElement('video');
-      video.srcObject = stream;
-      video.setAttribute('playsinline','');
-      await new Promise(r => { video.onloadedmetadata = r; video.play(); });
-      await new Promise(r => setTimeout(r, 600));
-      const canvas = document.createElement('canvas');
-      canvas.width  = video.videoWidth  || 320;
-      canvas.height = video.videoHeight || 240;
-      canvas.getContext('2d').drawImage(video, 0, 0);
-      stream.getTracks().forEach(t => t.stop());
-      localStorage.setItem('vpdIntruderPhoto', canvas.toDataURL('image/jpeg', 0.6));
-      localStorage.setItem('vpdIntruderTime',  new Date().toLocaleString('ja-JP'));
-    } catch(e) { /* カメラ拒否またはデバイス非対応 — 無視 */ }
-  }
-
-  function clearIntruderPhoto() {
-    localStorage.removeItem('vpdIntruderPhoto');
-    localStorage.removeItem('vpdIntruderTime');
-    const el = document.getElementById('intruderSection');
-    if (el) el.style.display = 'none';
-  }
-
   function _updatePinSettingsUI() {
     const setup  = document.getElementById('pinSetupBtn');
     const remove = document.getElementById('pinRemoveBtn');
@@ -3483,16 +3485,6 @@ function classifyVpd(vpd, lo, hi) {
     const set = _pinIsSet();
     setup.textContent = set ? '🔑 CHANGE PIN' : '🔒 SET PIN';
     if (remove) remove.style.display = set ? '' : 'none';
-    const photo = localStorage.getItem('vpdIntruderPhoto');
-    const sec   = document.getElementById('intruderSection');
-    if (sec) {
-      sec.style.display = photo ? '' : 'none';
-      if (photo) {
-        document.getElementById('intruderImg').src = photo;
-        document.getElementById('intruderTime').textContent =
-          '📸 ' + (localStorage.getItem('vpdIntruderTime') || '');
-      }
-    }
   }
 
   /* === 初期化 === */
@@ -3615,6 +3607,8 @@ function classifyVpd(vpd, lo, hi) {
     const thumb = document.getElementById('dayCountThumb');
     if (thumb) thumb.style.left = dayCountVisible ? '22px' : '2px';
     updateFeedingHeader();
+    const dc = document.getElementById('stageDayCount');
+    if (dc && dc.textContent) dc.style.display = dayCountVisible ? '' : 'none';
   }
   function saveSpotTol() {
     spotTolTemp = parseFloat(document.getElementById('tolTemp').value) || 1;
@@ -3734,7 +3728,8 @@ function classifyVpd(vpd, lo, hi) {
   /* === Monitor ログ保存 === */
   async function saveMonitorLog() {
     const t = tents[currentTent];
-    const temp = parseFloat(document.getElementById('tempVal').value) || 0;
+    let temp = parseFloat(document.getElementById('tempVal').value) || 0;
+    if (useFahrenheit) temp = Math.round((temp - 32) * 5 / 9 * 10) / 10;
     const hum  = parseFloat(document.getElementById('humVal').value)  || 0;
     const ppfd = parseFloat(document.getElementById('ppfdVal').value) || 0;
     const co2valEl = document.getElementById('co2LevelVal');
