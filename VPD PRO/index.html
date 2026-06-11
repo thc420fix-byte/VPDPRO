@@ -79,12 +79,13 @@
     }
     #settingsModal.open { display: flex; }
     #settingsPanel {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 0 0 0 14px;
-      padding: 20px 18px 24px;
-      min-width: 220px;
-      max-width: 280px;
+      background: var(--surface);
+      border-radius: 0 0 0 16px;
+      padding: 20px 16px 32px;
+      min-width: 240px;
+      max-width: 290px;
+      max-height: 100vh;
+      overflow-y: auto;
       margin-top: max(0px, env(safe-area-inset-top));
     }
 
@@ -628,65 +629,101 @@
   <!-- Settings Modal -->
   <div id="settingsModal" role="dialog" aria-modal="true" onclick="closeSettings(event)">
     <div id="settingsPanel">
-      <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:14px;">SETTINGS</div>
-      <!-- テーマ -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <span style="font-size:0.8rem;font-weight:500;color:var(--text);">DARK MODE</span>
-        <div id="themeToggle" onclick="toggleTheme()" style="width:42px;height:24px;border-radius:12px;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.4);cursor:pointer;position:relative;transition:background 0.2s;">
-          <div id="themeThumb" style="width:18px;height:18px;border-radius:50%;background:var(--accent);position:absolute;top:2px;left:2px;transition:left 0.2s;"></div>
+      <div style="font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">Settings</div>
+
+      <!-- General -->
+      <div style="background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
+          <span style="font-size:0.88rem;color:var(--text);">Dark Mode</span>
+          <div id="themeToggle" onclick="toggleTheme()" style="width:42px;height:26px;border-radius:13px;background:var(--accent);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;">
+            <div id="themeThumb" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+          </div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:0 14px;"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
+          <span style="font-size:0.88rem;color:var(--text);">Week / Day count</span>
+          <div id="dayCountToggle" onclick="toggleDayCount()" style="width:42px;height:26px;border-radius:13px;background:var(--accent);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;">
+            <div id="dayCountThumb" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+          </div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:0 14px;"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
+          <span style="font-size:0.88rem;color:var(--text);">Language</span>
+          <div style="display:flex;background:var(--surface);border-radius:16px;overflow:hidden;">
+            <div id="langJA" onclick="setLang('ja')" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">JA</div>
+            <div id="langEN" onclick="setLang('en')" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">EN</div>
+          </div>
         </div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <span style="font-size:0.8rem;font-weight:500;color:var(--text);">WEEK / DAY</span>
-        <div id="dayCountToggle" onclick="toggleDayCount()" style="width:42px;height:24px;border-radius:12px;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.4);cursor:pointer;position:relative;transition:background 0.2s;">
-          <div id="dayCountThumb" style="width:18px;height:18px;border-radius:50%;background:var(--accent);position:absolute;top:2px;left:2px;transition:left 0.2s;"></div>
+
+      <!-- Backup -->
+      <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;">Backup</div>
+      <div style="background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:8px;">
+        <div onclick="exportData()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;">
+          <span style="font-size:0.88rem;color:var(--accent);">Export JSON</span>
+          <span style="font-size:0.75rem;color:var(--text2);">›</span>
+        </div>
+        <div style="height:1px;background:var(--border);margin:0 14px;"></div>
+        <div onclick="exportCsv()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;">
+          <span style="font-size:0.88rem;color:var(--accent);">Export CSV</span>
+          <span style="font-size:0.75rem;color:var(--text2);">›</span>
+        </div>
+        <div style="height:1px;background:var(--border);margin:0 14px;"></div>
+        <div onclick="importData()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;">
+          <span style="font-size:0.88rem;color:var(--accent);">Import JSON</span>
+          <span style="font-size:0.75rem;color:var(--text2);">›</span>
         </div>
       </div>
-      <!-- 言語切替 -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <span style="font-size:0.8rem;font-weight:500;color:var(--text);">LANGUAGE</span>
-        <div style="display:flex;border:1px solid var(--border);border-radius:20px;overflow:hidden;">
-          <div id="langJA" onclick="setLang('ja')" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">🇯🇵 JA</div>
-          <div id="langEN" onclick="setLang('en')" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">🇺🇸 EN</div>
-        </div>
-      </div>
-      <div style="border-top:1px solid var(--border);margin-bottom:16px;"></div>
-      <!-- バックアップ -->
-      <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">BACKUP</div>
-      <button class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="exportData()">⬆ EXPORT JSON</button>
-      <button class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="exportCsv()">📊 EXPORT CSV</button>
-      <button class="small-btn" style="width:100%;margin-bottom:16px;font-size:0.78rem;" onclick="importData()">⬇ IMPORT JSON</button>
       <input type="file" accept="application/json" id="importFile" style="display:none" onchange="handleImport(event)">
-      <div style="border-top:1px solid var(--border);margin-bottom:16px;"></div>
-      <!-- データ操作 -->
-      <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">DATA</div>
-      <button class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="startNewCycle()">🌱 NEW CYCLE</button>
-      <button class="small-btn" style="width:100%;margin-bottom:8px;border-color:var(--danger);color:var(--danger);font-size:0.78rem;" onclick="clearLogs()">🗑 CLEAR LOG</button>
-      <button class="small-btn" style="width:100%;border-color:var(--danger);color:var(--danger);font-size:0.78rem;" onclick="eraseAllData()">🗑 ERASE ALL</button>
-      <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
-      <!-- セキュリティ -->
-      <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">SECURITY</div>
-      <div style="font-size:0.68rem;color:var(--text);opacity:0.85;line-height:1.6;margin-bottom:10px;padding:8px 10px;background:rgba(0,255,136,0.05);border:1px solid var(--border);border-radius:8px;">
-        🔒 100% OFFLINE — アカウント不要・サーバー送信ゼロ。<br>データはこの端末だけに保存され、あなたのもの。
+
+      <!-- Data -->
+      <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;">Data</div>
+      <div style="background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:8px;">
+        <div onclick="startNewCycle()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;">
+          <span style="font-size:0.88rem;color:var(--accent);">New Cycle</span>
+          <span style="font-size:0.75rem;color:var(--text2);">›</span>
+        </div>
+        <div style="height:1px;background:var(--border);margin:0 14px;"></div>
+        <div onclick="clearLogs()" style="padding:11px 14px;cursor:pointer;">
+          <span style="font-size:0.88rem;color:var(--danger);">Clear Log</span>
+        </div>
+        <div style="height:1px;background:var(--border);margin:0 14px;"></div>
+        <div onclick="eraseAllData()" style="padding:11px 14px;cursor:pointer;">
+          <span style="font-size:0.88rem;color:var(--danger);">Erase All Data</span>
+        </div>
       </div>
-      <button id="pinSetupBtn" class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="setupPin()">🔒 SET PIN</button>
-      <button id="pinRemoveBtn" class="small-btn" style="width:100%;display:none;border-color:var(--danger);color:var(--danger);font-size:0.78rem;" onclick="removePin()">🗑 REMOVE PIN</button>
+
+      <!-- Security -->
+      <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;">Security</div>
+      <div style="background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:4px;">
+        <div id="pinSetupBtn" onclick="setupPin()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;">
+          <span style="font-size:0.88rem;color:var(--accent);">Set PIN</span>
+          <span style="font-size:0.75rem;color:var(--text2);">›</span>
+        </div>
+        <div id="pinRemoveBtn" onclick="removePin()" style="display:none;height:1px;background:var(--border);margin:0 14px;"></div>
+        <div id="pinRemoveRow" onclick="removePin()" style="display:none;padding:11px 14px;cursor:pointer;">
+          <span style="font-size:0.88rem;color:var(--danger);">Remove PIN</span>
+        </div>
+        <div style="height:1px;background:var(--border);margin:0 14px;"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
+          <span style="font-size:0.88rem;color:var(--text);">Decoy Screen</span>
+          <div id="decoyToggle" onclick="toggleDecoyMode()" style="width:42px;height:26px;border-radius:13px;background:rgba(255,255,255,0.15);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;">
+            <div id="decoyThumb" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:0.65rem;color:var(--muted);line-height:1.5;padding:0 4px;margin-bottom:6px;">100% offline — no account, no server.</div>
+
       <!-- PIN 3回失敗時の動作 -->
-      <div id="pinFailModeSection" style="display:none;margin-top:10px;">
-        <div style="font-size:0.72rem;color:var(--text);opacity:0.8;margin-bottom:6px;">PIN 3回失敗時の動作</div>
-        <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
-          <div id="failModeLock" onclick="setPinFailMode('lock')" style="flex:1;padding:7px 4px;text-align:center;font-size:0.72rem;cursor:pointer;color:var(--text);">🔒 24時間ロック</div>
-          <div id="failModeWipe" onclick="setPinFailMode('wipe')" style="flex:1;padding:7px 4px;text-align:center;font-size:0.72rem;cursor:pointer;color:var(--text);border-left:1px solid var(--border);">💥 全データ消去</div>
+      <div id="pinFailModeSection" style="display:none;margin-top:8px;">
+        <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;">PIN Fail Action</div>
+        <div style="background:var(--surface2);border-radius:12px;overflow:hidden;">
+          <div id="failModeLock" onclick="setPinFailMode('lock')" style="padding:10px 14px;cursor:pointer;font-size:0.82rem;color:var(--text);">Lock 24h</div>
+          <div style="height:1px;background:var(--border);margin:0 14px;"></div>
+          <div id="failModeWipe" onclick="setPinFailMode('wipe')" style="padding:10px 14px;cursor:pointer;font-size:0.82rem;color:var(--danger);">Wipe All Data</div>
         </div>
-        <div id="failModeNote" style="font-size:0.62rem;color:var(--text);opacity:0.6;line-height:1.5;margin-top:6px;"></div>
+        <div id="failModeNote" style="font-size:0.62rem;color:var(--muted);line-height:1.5;margin-top:4px;padding:0 4px;"></div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
-        <span style="font-size:0.8rem;color:var(--text);">🔦 デコイ起動画面</span>
-        <div id="decoyToggle" onclick="toggleDecoyMode()" style="width:42px;height:24px;border-radius:12px;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.4);cursor:pointer;position:relative;transition:background 0.2s;">
-          <div id="decoyThumb" style="width:18px;height:18px;border-radius:50%;background:var(--accent);position:absolute;top:2px;left:2px;transition:left 0.2s;"></div>
-        </div>
-      </div>
-      <div style="font-size:0.62rem;color:var(--text);opacity:0.6;line-height:1.5;margin-top:6px;">ONにすると起動時にライトアプリの画面を表示。電源ボタンを2秒長押しで本体へ。</div>
     </div>
   </div>
   <!-- ライトメーター（カメラ計測）モーダル -->
@@ -4000,8 +4037,11 @@ function classifyVpd(vpd, lo, hi) {
     const remove = document.getElementById('pinRemoveBtn');
     if (!setup) return;
     const set = _pinIsSet();
-    setup.textContent = set ? '🔑 CHANGE PIN' : '🔒 SET PIN';
+    const lbl = setup.querySelector('span');
+    if (lbl) lbl.textContent = set ? 'Change PIN' : 'Set PIN';
+    const removeRow = document.getElementById('pinRemoveRow');
     if (remove) remove.style.display = set ? '' : 'none';
+    if (removeRow) removeRow.style.display = set ? '' : 'none';
     // 失敗時動作セレクタ（PIN設定時のみ表示）
     const sec = document.getElementById('pinFailModeSection');
     if (sec) {
