@@ -94,9 +94,9 @@
       font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding: 8px;
-      padding-top: max(10px, env(safe-area-inset-top));
-      padding-bottom: calc(70px + env(safe-area-inset-bottom));
+      padding: 6px 6px;
+      padding-top: max(8px, env(safe-area-inset-top));
+      padding-bottom: calc(66px + env(safe-area-inset-bottom));
       /* iOS ダブルタップズーム / ピンチズーム抑止（アプリ的UIで固定） */
       touch-action: manipulation;
       -webkit-touch-callout: none;
@@ -104,47 +104,47 @@
     }
     html { touch-action: manipulation; }
     h1 {
-      font-size: 1.1rem;
+      font-size: 0.9rem;
       font-weight: 700;
       text-align: center;
       color: var(--accent);
-      margin: 0 0 4px 0;
-      letter-spacing: 3px;
+      margin: 0 0 2px 0;
+      letter-spacing: 4px;
     }
     .subtitle { display: none; }
     /* テントバー */
     .tent-bar {
       display: flex;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       background: var(--surface2);
-      border-radius: 12px;
+      border-radius: 10px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      padding: 3px;
+      padding: 2px;
       gap: 2px;
     }
     .tent-bar::-webkit-scrollbar { display: none; }
     .tent-btn {
       flex: 1 0 auto;
-      min-width: 56px;
-      max-width: 90px;
-      padding: 7px 6px;
+      min-width: 52px;
+      max-width: 86px;
+      padding: 5px 4px;
       background: transparent;
       border: none;
       color: var(--text2);
-      font-size: 0.78rem;
+      font-size: 0.72rem;
       font-weight: 600;
       text-align: center;
       cursor: pointer;
       white-space: pre-line;
       font-family: inherit;
-      border-radius: 9px;
+      border-radius: 8px;
       transition: background 0.15s, color 0.15s;
     }
     .tent-btn.solo { max-width: none; }
-    .tent-btn:first-child { border-radius: 9px; }
-    .tent-btn:last-child  { border-radius: 9px; }
+    .tent-btn:first-child { border-radius: 8px; }
+    .tent-btn:last-child  { border-radius: 8px; }
     .tent-btn.active {
       background: var(--surface);
       color: var(--accent);
@@ -197,9 +197,9 @@
     /* カード */
     .card {
       background: var(--surface);
-      border-radius: 16px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
     }
     .card-title {
       font-size: 0.68rem;
@@ -281,27 +281,27 @@
     .stepper-rows {
       display: flex;
       flex-direction: column;
-      margin: 4px 0;
+      margin: 2px 0;
       width: 100%;
     }
     .stepper-row {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      padding: 7px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
     .stepper-row:last-child { border-bottom: none; }
     .stepper-btn {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       flex-shrink: 0;
       border-radius: 50%;
       border: none;
       background: var(--surface2);
       color: var(--accent);
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: 400;
       display: flex;
       align-items: center;
@@ -316,20 +316,20 @@
     .stepper-center {
       display: flex;
       align-items: baseline;
-      gap: 6px;
-      width: 200px;
+      gap: 5px;
+      width: 178px;
       justify-content: center;
     }
     .stepper-label {
-      font-size: 1rem;
-      color: var(--text);
+      font-size: 0.88rem;
+      color: var(--text2);
       font-weight: 500;
-      min-width: 80px;
+      min-width: 70px;
       text-align: right;
     }
     .stepper-val {
-      width: 60px;
-      font-size: 1.6rem;
+      width: 54px;
+      font-size: 1.5rem;
       font-weight: 700;
       background: transparent;
       color: var(--accent);
@@ -341,9 +341,9 @@
       padding: 0;
     }
     .stepper-unit {
-      font-size: 0.9rem;
-      color: var(--text);
-      min-width: 40px;
+      font-size: 0.8rem;
+      color: var(--text2);
+      min-width: 34px;
     }
     /* VPD zone bar: current value vs stage target range at a glance */
     .vpd-zonebar-wrap { width: 100%; margin: 8px 0 4px; padding: 0 4px; box-sizing: border-box; }
@@ -376,12 +376,12 @@
       margin-top: 3px; padding: 0 1px;
     }
     /* compact mode: Leaf VPD or CO2 row added → shrink all rows */
-    .stepper-rows.compact .stepper-row { padding: 3px 0; }
-    .stepper-rows.compact .stepper-btn { width: 30px; height: 30px; font-size: 1.2rem; }
-    .stepper-rows.compact .stepper-val { font-size: 1.2rem; width: 44px; }
-    .stepper-rows.compact #co2LevelVal { width: 58px; }
-    .stepper-rows.compact .stepper-label { font-size: 0.85rem; }
-    .stepper-rows.compact .stepper-unit { font-size: 0.78rem; }
+    .stepper-rows.compact .stepper-row { padding: 2px 0; }
+    .stepper-rows.compact .stepper-btn { width: 32px; height: 32px; font-size: 1.1rem; }
+    .stepper-rows.compact .stepper-val { font-size: 1.2rem; width: 42px; }
+    .stepper-rows.compact #co2LevelVal { width: 54px; }
+    .stepper-rows.compact .stepper-label { font-size: 0.78rem; }
+    .stepper-rows.compact .stepper-unit { font-size: 0.7rem; }
 
     /* iPhone optimization */
     @media (max-width: 600px) {
@@ -402,58 +402,62 @@
     .vpd-row {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 6px;
-      margin-top: -4px;
+      margin-bottom: 4px;
+      margin-top: 0;
     }
     .vpd-block {
       flex: 1;
       text-align: center;
     }
     .vpd-label {
-      font-size: 0.62rem;
-      color: var(--text2);
-      letter-spacing: 0.06em;
+      font-size: 0.58rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
       text-transform: uppercase;
+      margin-bottom: 1px;
     }
     .vpd-num {
       font-family: 'Rajdhani', -apple-system, sans-serif;
-      font-size: 3.2rem;
+      font-size: 3.4rem;
       font-weight: 700;
       line-height: 1;
     }
     .status-badge {
       display: inline-block;
-      padding: 4px 14px;
-      border-radius: 20px;
-      font-size: 0.75rem;
+      padding: 3px 12px;
+      border-radius: 16px;
+      font-size: 0.68rem;
       font-weight: 700;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       text-transform: none;
       letter-spacing: 0.2px;
     }
     .status-ok {
-      background: rgba(0, 255, 136, 0.15);
+      background: rgba(52,199,89,0.15);
       color: var(--ok);
-      border: 1px solid var(--ok);
+      border: 1px solid rgba(52,199,89,0.3);
     }
     .toggle-row {
       display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
+      gap: 5px;
+      flex-wrap: nowrap;
+      margin-bottom: 6px;
     }
     .toggle-btn {
       flex: 1;
-      padding: 6px 3px;
+      padding: 5px 3px;
       border: none;
-      border-radius: 10px;
-      font-size: 0.65rem;
+      border-radius: 8px;
+      font-size: 0.62rem;
       font-weight: 600;
       background: var(--surface2);
       color: var(--text2);
       cursor: pointer;
       text-align: center;
       transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .toggle-btn.active-day {
       background: rgba(52,199,89,0.18);
@@ -832,20 +836,20 @@
       </div>
     </div>
     <div class="card">
-      <div class="card-title" style="display:flex;align-items:center;">
-        <span style="flex:1;font-size:0.95rem;font-weight:700;color:var(--text);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">ENVIRONMENT LOG</span>
-        <div style="flex-shrink:0;display:flex;border:1px solid rgba(0,255,136,0.35);border-radius:20px;overflow:hidden;">
+      <div style="display:flex;align-items:center;margin-bottom:8px;">
+        <span style="flex:1;font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;">Environment</span>
+        <div style="flex-shrink:0;display:flex;background:var(--surface2);border-radius:16px;overflow:hidden;">
           <div id="modeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')">Theory</div>
-          <div id="modeMySpot" class="mode-pill" onclick="setSpotMode('myspot')">📌 My Spot</div>
+          <div id="modeMySpot" class="mode-pill" onclick="setSpotMode('myspot')">My Spot</div>
         </div>
       </div>
-      <div style="width:100%;padding:6px 14px;background:rgba(0,255,136,0.07);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2px;box-sizing:border-box;overflow:hidden;">
-        <button id="stageSelectorBtn" onclick="toggleStageDropdown()" style="min-width:0;padding:0;background:transparent;border:none;color:var(--text);font-weight:600;display:flex;align-items:center;cursor:pointer;gap:6px;overflow:hidden;font-family:inherit;font-size:inherit;line-height:inherit;">
-          <span style="color:var(--text);font-size:0.82rem;flex-shrink:0;text-transform:uppercase;letter-spacing:0.05em;">Stage ：</span>
-          <span id="stageSelectorLabel" style="color:var(--accent);font-size:0.95rem;font-weight:700;flex-shrink:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Clone</span>
-          <span id="stageDropArrow" style="font-size:0.85rem;color:var(--accent);flex-shrink:0;">▾</span>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <button id="stageSelectorBtn" onclick="toggleStageDropdown()" style="flex:1;min-width:0;padding:6px 12px;background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.25);border-radius:8px;color:var(--text);font-weight:600;display:flex;align-items:center;cursor:pointer;gap:5px;overflow:hidden;font-family:inherit;font-size:inherit;line-height:inherit;">
+          <span style="color:var(--text2);font-size:0.68rem;flex-shrink:0;text-transform:uppercase;letter-spacing:0.06em;">Stage</span>
+          <span id="stageSelectorLabel" style="color:var(--accent);font-size:0.88rem;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;">Clone</span>
+          <span id="stageDropArrow" style="font-size:0.75rem;color:var(--text2);flex-shrink:0;">▾</span>
         </button>
-        <div id="stageDayCount" style="display:none;flex-shrink:0;font-size:0.85rem;color:var(--text);font-weight:600;white-space:nowrap;"></div>
+        <div id="stageDayCount" style="display:none;flex-shrink:0;font-size:0.78rem;color:var(--text2);font-weight:600;white-space:nowrap;"></div>
       </div>
       <div id="stageDropdown" style="display:none;margin-bottom:2px;">
         <div class="stage-row">
@@ -856,10 +860,10 @@
           <div class="stage-btn" data-s="harvest" onclick="setStage('harvest')">Harvest</div>
         </div>
       </div>
-      <div class="input-row" style="margin-top:2px;margin-bottom:2px; align-items:center; gap:8px; justify-content:center;">
-        <label style="font-size:0.95rem;color:var(--text);font-weight:700;flex-shrink:0;height:28px;display:flex;align-items:center;transform:translateY(-2px);">Start Date</label>
-        <input id="stageStartDate" type="date" style="width:120px;flex-shrink:0;font-size:0.95rem;height:28px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(0,255,136,0.4);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
-        <button id="clearDateBtn" oncontextmenu="return false;" style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.85rem;width:28px;height:28px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;">🗑</button>
+      <div class="input-row" style="margin-top:0;margin-bottom:4px; align-items:center; gap:6px; justify-content:center;">
+        <label style="font-size:0.72rem;color:var(--text2);font-weight:600;flex-shrink:0;">Start</label>
+        <input id="stageStartDate" type="date" style="width:110px;flex-shrink:0;font-size:0.78rem;height:24px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(52,199,89,0.3);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
+        <button id="clearDateBtn" oncontextmenu="return false;" style="background:transparent;border:none;color:rgba(255,120,120,0.6);font-size:0.7rem;width:22px;height:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
       </div>
       <!-- 収量記録 (Harvestステージのみ) -->
       <div id="yieldRow" class="input-row" style="display:none;margin-bottom:2px;align-items:center;gap:8px;justify-content:center;">
@@ -904,22 +908,22 @@
           <button class="stepper-btn" onclick="adjustCurrentPpfd(10)">+</button>
         </div>
         <!-- DLI + Light tools -->
-        <div class="stepper-row" id="dliRow" style="gap:10px;flex-wrap:wrap;">
-          <span style="font-size:0.78rem;color:var(--text);white-space:nowrap;">☀️ DLI <span id="dliVal" style="color:var(--accent);font-weight:700;font-size:0.95rem;font-family:'Rajdhani',sans-serif;">—</span> <span style="opacity:0.65;">mol/m²/d</span><span id="dliTarget" style="opacity:0.65;"></span></span>
-          <span onclick="cyclePhotoperiod()" style="cursor:pointer;font-size:0.75rem;color:var(--accent);border:1px solid var(--border);border-radius:6px;padding:2px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;">⏱ <span id="photoperiodLabel">18</span>h</span>
-          <span onclick="openLuxConverter()" style="cursor:pointer;font-size:0.75rem;color:var(--accent);border:1px solid var(--border);border-radius:6px;padding:2px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;">lux→PPFD</span>
-          <span onclick="openLightMeter()" style="cursor:pointer;font-size:0.75rem;color:#000;background:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:2px 8px;font-weight:700;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;">📷 MEASURE</span>
+        <div class="stepper-row" id="dliRow" style="gap:6px;flex-wrap:nowrap;justify-content:flex-start;padding:4px 2px;">
+          <span style="font-size:0.7rem;color:var(--text2);white-space:nowrap;flex:1;">DLI <span id="dliVal" style="color:var(--accent);font-weight:700;font-size:0.85rem;font-family:'Rajdhani',sans-serif;">—</span> <span style="opacity:0.6;font-size:0.65rem;">mol/m²/d</span><span id="dliTarget" style="opacity:0.6;font-size:0.65rem;"></span></span>
+          <span onclick="cyclePhotoperiod()" style="cursor:pointer;font-size:0.68rem;color:var(--text2);background:var(--surface2);border-radius:6px;padding:3px 7px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;"><span id="photoperiodLabel">18</span>h</span>
+          <span onclick="openLuxConverter()" style="cursor:pointer;font-size:0.68rem;color:var(--text2);background:var(--surface2);border-radius:6px;padding:3px 7px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;">lux</span>
+          <span onclick="openLightMeter()" style="cursor:pointer;font-size:0.68rem;color:var(--accent);background:rgba(52,199,89,0.12);border-radius:6px;padding:3px 7px;font-weight:700;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;">Meter</span>
         </div>
         <!-- Theory reference (Theory mode only) -->
         <div id="monitorTheoryRef" style="display:none;border-top:1px solid rgba(255,255,255,0.06);padding:5px 0;font-size:0.68rem;color:var(--text);opacity:0.8;text-align:center;line-height:1.7;"></div>
-        <div style="padding:4px 8px 0;">
-          <input id="monitorNoteInput" type="text" placeholder="📝 メモ（任意）" maxlength="100" style="width:100%;box-sizing:border-box;padding:6px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:var(--text);font-size:0.78rem;outline:none;margin-bottom:4px;">
+        <div style="padding:3px 0 0;">
+          <input id="monitorNoteInput" type="text" placeholder="メモ（任意）" maxlength="100" style="width:100%;box-sizing:border-box;padding:5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
         </div>
-        <div style="padding:4px 8px 2px;">
+        <div style="padding:4px 0 2px;">
           <button id="monitorSaveBtn" class="save-btn"
             onmousedown="startSaveHold('monitor',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
             ontouchstart="startSaveHold('monitor',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
-            style="width:100%;padding:8px;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.4);border-radius:10px;color:var(--accent);font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;">Save</button>
+            style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;">Save</button>
         </div>
         <!-- CO2 Level (shown when CO2 is ON) -->
         <div id="co2LevelCard" style="display:none; border-top:1px solid rgba(255,255,255,0.06);">
