@@ -979,26 +979,24 @@
 <div class="tab-content" id="tab-log">
   <div class="card">
     <!-- Header: Feeding Log + Theory / My Spot -->
-    <div class="card-title" style="display:flex;align-items:center;">
-      <span style="flex:1;font-size:0.95rem;font-weight:700;color:var(--text);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">NUTRIENT LOG</span>
-      <div style="flex-shrink:0;display:flex;border:1px solid rgba(0,255,136,0.35);border-radius:20px;overflow:hidden;">
+    <div style="display:flex;align-items:center;margin-bottom:8px;">
+      <span style="flex:1;font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;">Nutrient Log</span>
+      <div style="flex-shrink:0;display:flex;background:var(--surface2);border-radius:16px;overflow:hidden;">
         <div id="feedModeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')">Theory</div>
-        <div id="feedModeMySpot" class="mode-pill" onclick="setSpotMode('myspot')">📌 My Spot</div>
+        <div id="feedModeMySpot" class="mode-pill" onclick="setSpotMode('myspot')">My Spot</div>
       </div>
     </div>
-    <!-- Stage badge (read-only) -->
-    <div style="width:100%;padding:6px 14px;background:rgba(0,255,136,0.07);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2px;box-sizing:border-box;overflow:hidden;">
-      <div style="min-width:0;padding:0;background:transparent;border:none;color:var(--text);font-weight:600;display:flex;align-items:center;gap:6px;overflow:hidden;">
-        <span style="color:var(--text);font-size:0.82rem;font-weight:600;flex-shrink:0;text-transform:uppercase;letter-spacing:0.05em;">Stage ：</span>
-        <span id="feedingStageName" style="color:var(--accent);font-size:0.95rem;font-weight:700;flex-shrink:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
-        <span style="font-size:0.85rem;color:var(--accent);flex-shrink:0;">▾</span>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <div style="flex:1;padding:6px 12px;background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.25);border-radius:8px;display:flex;align-items:center;gap:5px;">
+        <span style="color:var(--text2);font-size:0.68rem;flex-shrink:0;text-transform:uppercase;letter-spacing:0.06em;">Stage</span>
+        <span id="feedingStageName" style="color:var(--accent);font-size:0.88rem;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
       </div>
-      <div id="feedingDayCount" style="display:none;flex-shrink:0;font-size:0.85rem;color:var(--text);font-weight:600;white-space:nowrap;"></div>
+      <div id="feedingDayCount" style="display:none;flex-shrink:0;font-size:0.78rem;color:var(--text2);font-weight:600;white-space:nowrap;"></div>
     </div>
     <!-- Fertilizer管理 -->
     <div style="border-top:1px solid rgba(0,255,136,0.12);padding-top:8px;margin:6px 0 4px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <span style="font-size:0.95rem;color:#ffffff;font-weight:700;letter-spacing:0.03em;">💧 NUTRIENT</span>
+        <span style="font-size:0.65rem;color:var(--text2);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">Nutrient</span>
         <button onclick="addFertilizer()" style="width:22px;height:22px;border-radius:50%;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);color:var(--accent);font-size:1rem;line-height:1;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
       </div>
       <!-- タブバー -->
@@ -1051,13 +1049,13 @@
     <!-- EC Theory reference (Theory mode only) -->
     <div id="feedingRef" style="font-size:0.68rem;color:var(--text);text-align:center;opacity:0.8;border-top:1px solid rgba(255,255,255,0.06);padding:5px 0;line-height:1.7;"></div>
     <div style="padding:4px 8px 0;">
-      <input id="feedingNoteInput" type="text" placeholder="📝 メモ（任意）" maxlength="100" style="width:100%;box-sizing:border-box;padding:6px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:var(--text);font-size:0.78rem;outline:none;margin-bottom:4px;">
+      <input id="feedingNoteInput" type="text" placeholder="メモ（任意）" maxlength="100" style="width:100%;box-sizing:border-box;padding:5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
     </div>
     <div style="padding:4px 8px 2px;">
       <button id="feedingSaveBtn" class="save-btn"
         onmousedown="startSaveHold('feeding',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
         ontouchstart="startSaveHold('feeding',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
-        style="width:100%;padding:8px;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.4);border-radius:10px;color:var(--accent);font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;">Save</button>
+        style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;">Save</button>
     </div>
     <!-- Feeding Sweet Spot Bar -->
     <div id="feedingSpotBar" style="display:none;flex-direction:column;gap:2px;padding:4px 2px;border-top:1px solid rgba(0,255,136,0.15);margin-top:2px;">
