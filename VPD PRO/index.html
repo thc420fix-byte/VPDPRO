@@ -3730,8 +3730,8 @@ function classifyVpd(vpd, lo, hi) {
     _pinBuf = '';
   }
 
-  // PIN 3回失敗時の動作: 'lock'（24時間ロック・デフォルト） or 'wipe'（全データ消去）
-  const _pinFailMode = () => localStorage.getItem('vpdPinFailMode') === 'wipe' ? 'wipe' : 'lock';
+  // PIN 3回失敗時の動作: 'wipe'（全データ消去・デフォルト） or 'lock'（24時間ロック）
+  const _pinFailMode = () => localStorage.getItem('vpdPinFailMode') === 'lock' ? 'lock' : 'wipe';
 
   async function _pinNukeAllData() {
     try {
