@@ -648,6 +648,15 @@
       </div>
       <button id="pinSetupBtn" class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="setupPin()">🔒 SET PIN</button>
       <button id="pinRemoveBtn" class="small-btn" style="width:100%;display:none;border-color:var(--danger);color:var(--danger);font-size:0.78rem;" onclick="removePin()">🗑 REMOVE PIN</button>
+      <!-- PIN 3回失敗時の動作 -->
+      <div id="pinFailModeSection" style="display:none;margin-top:10px;">
+        <div style="font-size:0.72rem;color:var(--text);opacity:0.8;margin-bottom:6px;">PIN 3回失敗時の動作</div>
+        <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+          <div id="failModeLock" onclick="setPinFailMode('lock')" style="flex:1;padding:7px 4px;text-align:center;font-size:0.72rem;cursor:pointer;color:var(--text);">🔒 24時間ロック</div>
+          <div id="failModeWipe" onclick="setPinFailMode('wipe')" style="flex:1;padding:7px 4px;text-align:center;font-size:0.72rem;cursor:pointer;color:var(--text);border-left:1px solid var(--border);">💥 全データ消去</div>
+        </div>
+        <div id="failModeNote" style="font-size:0.62rem;color:var(--text);opacity:0.6;line-height:1.5;margin-top:6px;"></div>
+      </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
         <span style="font-size:0.8rem;color:var(--text);">🔦 デコイ起動画面</span>
         <div id="decoyToggle" onclick="toggleDecoyMode()" style="width:42px;height:24px;border-radius:12px;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.4);cursor:pointer;position:relative;transition:background 0.2s;">
@@ -3721,6 +3730,27 @@ function classifyVpd(vpd, lo, hi) {
     _pinBuf = '';
   }
 
+  // PIN 3回失敗時の動作: 'lock'（24時間ロック・デフォルト） or 'wipe'（全データ消去）
+  const _pinFailMode = () => localStorage.getItem('vpdPinFailMode') === 'wipe' ? 'wipe' : 'lock';
+
+  async function _pinNukeAllData() {
+    try {
+      await new Promise(r => {
+        const req = indexedDB.deleteDatabase('VPD_FINAL_DB');
+        req.onsuccess = r; req.onerror = r;
+      });
+    } catch(e) {}
+    _cryptoKey = null;
+    localStorage.clear();
+  }
+
+  function _showBlankScreen() {
+    const bs = document.getElementById('blankScreen');
+    bs.onclick = null;
+    bs.style.pointerEvents = 'none';
+    bs.style.display = 'block';
+  }
+
   // 24時間ロック画面（データは保持。残り時間を表示して毎分更新）
   function _showLockScreen() {
     const bs = document.getElementById('blankScreen');
@@ -3810,10 +3840,17 @@ function classifyVpd(vpd, lo, hi) {
         const f = _pinFails() + 1;
         localStorage.setItem(_PIN_FAILS, String(f));
         if (f >= _PIN_MAX) {
-          // 3回目: 24時間ロック（データは消さない）
-          localStorage.setItem(_PIN_LOCK_UNTIL, String(Date.now() + 24 * 60 * 60 * 1000));
-          _hidePinOverlay();
-          _showLockScreen();
+          if (_pinFailMode() === 'wipe') {
+            // 3回目: 全データ消去（復元不可）→ 何事もなかったような真っ黒画面
+            _hidePinOverlay();
+            await _pinNukeAllData();
+            _showBlankScreen();
+          } else {
+            // 3回目: 24時間ロック（データは消さない）
+            localStorage.setItem(_PIN_LOCK_UNTIL, String(Date.now() + 24 * 60 * 60 * 1000));
+            _hidePinOverlay();
+            _showLockScreen();
+          }
         } else {
           document.getElementById('pinFailInfo').textContent = `⚠ ${f} / ${_PIN_MAX} attempts`;
           _pinShake();
@@ -3927,6 +3964,36 @@ function classifyVpd(vpd, lo, hi) {
     const set = _pinIsSet();
     setup.textContent = set ? '🔑 CHANGE PIN' : '🔒 SET PIN';
     if (remove) remove.style.display = set ? '' : 'none';
+    // 失敗時動作セレクタ（PIN設定時のみ表示）
+    const sec = document.getElementById('pinFailModeSection');
+    if (sec) {
+      sec.style.display = set ? '' : 'none';
+      if (set) _updateFailModeUI();
+    }
+  }
+
+  function _updateFailModeUI() {
+    const mode = _pinFailMode();
+    const lock = document.getElementById('failModeLock');
+    const wipe = document.getElementById('failModeWipe');
+    const note = document.getElementById('failModeNote');
+    if (!lock || !wipe) return;
+    const on  = 'background:rgba(0,255,136,0.18);color:var(--accent);font-weight:700;';
+    const off = 'background:transparent;color:var(--text);font-weight:400;';
+    lock.style.cssText = 'flex:1;padding:7px 4px;text-align:center;font-size:0.72rem;cursor:pointer;' + (mode === 'lock' ? on : off);
+    wipe.style.cssText = 'flex:1;padding:7px 4px;text-align:center;font-size:0.72rem;cursor:pointer;border-left:1px solid var(--border);' + (mode === 'wipe' ? 'background:rgba(255,68,68,0.18);color:var(--danger);font-weight:700;' : off);
+    if (note) note.textContent = mode === 'wipe'
+      ? '⚠ 3回失敗で全データが復元不可能な形で消去されます。バックアップ（EXPORT JSON）を定期的に。'
+      : 'データを保持したまま24時間入力できなくなります。';
+  }
+
+  async function setPinFailMode(mode) {
+    if (mode === 'wipe' && _pinFailMode() !== 'wipe') {
+      if (!(await customConfirm('PIN 3回失敗で全データを消去するモードに切り替えますか？\n誤入力でもデータは戻りません。'))) return;
+    }
+    localStorage.setItem('vpdPinFailMode', mode);
+    _updateFailModeUI();
+    showToast(mode === 'wipe' ? '💥 3回失敗で全データ消去に設定' : '🔒 3回失敗で24時間ロックに設定');
   }
 
   /* === 初期化 === */
