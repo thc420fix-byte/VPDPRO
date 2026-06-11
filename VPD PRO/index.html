@@ -787,7 +787,7 @@
         <span id="lmCalibVal" style="font-size:0.78rem;color:var(--accent);font-family:'Rajdhani',sans-serif;min-width:32px;text-align:right;">1.00</span>
         <button onclick="lmResetCalib()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:rgba(255,255,255,0.5);font-size:0.65rem;padding:3px 7px;cursor:pointer;white-space:nowrap;">リセット</button>
       </div>
-      <div style="font-size:0.6rem;color:rgba(255,255,255,0.32);text-align:center;margin-bottom:10px;line-height:1.5;">精度はカメラ・環境に依存します。Photoneのlux値と比較して補正係数を調整してください。</div>
+      <div style="font-size:0.6rem;color:rgba(255,255,255,0.32);text-align:center;margin-bottom:10px;line-height:1.5;">Accuracy depends on your camera. Compare against Photone readings to calibrate the correction factor.</div>
       <!-- アクションボタン -->
       <button id="lmApplyBtn" onclick="lmApply()" style="width:100%;padding:12px;background:rgba(0,255,136,0.15);border:2px solid rgba(0,255,136,0.6);border-radius:12px;color:var(--accent);font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;">✓ この値をPPFDに反映</button>
     </div>
@@ -949,7 +949,7 @@
           <span onclick="openLightMeter()" style="cursor:pointer;font-size:0.68rem;color:var(--accent);background:rgba(52,199,89,0.12);border-radius:6px;padding:3px 7px;font-weight:700;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;">Meter</span>
         </div>
         <div style="padding:3px 0 0;">
-          <input id="monitorNoteInput" type="text" placeholder="メモ（任意）" maxlength="100" style="width:100%;box-sizing:border-box;padding:5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
+          <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" style="width:100%;box-sizing:border-box;padding:5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
         </div>
         <!-- CO2 Level (shown when CO2 is ON) -->
         <div id="co2LevelCard" style="display:none; border-top:1px solid rgba(255,255,255,0.06);">
@@ -1086,7 +1086,7 @@
     <!-- EC Theory reference (Theory mode only) -->
     <div id="feedingRef" style="font-size:0.68rem;color:var(--text);text-align:center;opacity:0.8;border-top:1px solid rgba(255,255,255,0.06);padding:5px 0;line-height:1.7;"></div>
     <div style="padding:4px 8px 0;">
-      <input id="feedingNoteInput" type="text" placeholder="メモ（任意）" maxlength="100" style="width:100%;box-sizing:border-box;padding:5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
+      <input id="feedingNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" style="width:100%;box-sizing:border-box;padding:5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
     </div>
     <div style="padding:4px 8px 2px;">
       <button id="feedingSaveBtn" class="save-btn"
@@ -1124,7 +1124,7 @@
     <div id="stageTimeline"></div>
     <div id="analysisEmptyState" style="display:none;text-align:center;padding:24px 16px;">
       <div style="font-size:2rem;margin-bottom:8px;">📊</div>
-      <div style="font-size:0.85rem;color:var(--text2);line-height:1.6;">まだデータがありません。<br>環境タブで値を入力して<br>Save してください。</div>
+      <div style="font-size:0.85rem;color:var(--text2);line-height:1.6;" data-i18n="analysis.empty">No data yet.<br>Enter values in the Environ tab<br>and press Save.</div>
     </div>
   </div>
 </div>
@@ -1135,19 +1135,19 @@
 <nav class="bottom-nav" id="bottomNav">
   <div class="bnav-item active" data-tab="monitor" onclick="switchBottomNav(this,'monitor')">
     <div class="bnav-icon">📊</div>
-    <div class="bnav-label">環境</div>
+    <div class="bnav-label" data-i18n="bnav.monitor">Environ</div>
   </div>
   <div class="bnav-item" data-tab="log" onclick="switchBottomNav(this,'log')">
     <div class="bnav-icon">💧</div>
-    <div class="bnav-label">給水</div>
+    <div class="bnav-label" data-i18n="bnav.log">Feeding</div>
   </div>
   <div class="bnav-item" data-tab="analysis" onclick="switchBottomNav(this,'analysis')">
     <div class="bnav-icon">📈</div>
-    <div class="bnav-label">分析</div>
+    <div class="bnav-label" data-i18n="bnav.analysis">Analysis</div>
   </div>
   <div class="bnav-item" data-tab="table" onclick="switchBottomNav(this,'table')">
     <div class="bnav-icon">📋</div>
-    <div class="bnav-label">参考</div>
+    <div class="bnav-label" data-i18n="bnav.table">Reference</div>
   </div>
 </nav>
 
@@ -1212,10 +1212,11 @@
 
   <script>
   /* === 多言語対応 === */
-  let appLang = localStorage.getItem('appLang') || 'ja';
+  let appLang = localStorage.getItem('appLang') || 'en';
   const STRINGS = {
     ja: {
       'tab.monitor':'📊 環境','tab.log':'💧 給水','tab.analysis':'📈 分析','tab.table':'📋 参考',
+      'bnav.monitor':'環境','bnav.log':'給水','bnav.analysis':'分析','bnav.table':'参考',
       'settings.tolTemp':'温度 ±°C','settings.tolHum':'湿度 ±%RH',
       'monitor.target_hum':'目標湿度:','monitor.ppfd_now':'現在PPFD:','monitor.ppfd_target':'/ 目標:',
       'vpd.too_low':'⚠ 低すぎ','vpd.too_high':'⚠ 高すぎ','vpd.warning':'注意','vpd.ok':'適正',
@@ -1228,6 +1229,7 @@
       'ref.water_temp':'💧 水温目安: 18〜22°C（根の健康・溶存酸素量の観点から）',
       'analysis.stage_progress':'STAGE PROGRESS',
       'analysis.no_logs':'記録なし',
+      'analysis.empty':'まだデータがありません。<br>環境タブで値を入力して<br>Save してください。',
       'analysis.total_days':'合計: ','analysis.days':'日',
       'toast.last_tent':'最後のテントは削除できません','toast.input_error':'⚠ 入力値を確認してください',
       'toast.import_ok':'インポート完了 ✓',
@@ -1243,9 +1245,11 @@
       'popup.tap_to_close':'タップして閉じる',
       'ppfd.high':'⚠ PPFD 高 / ','ppfd.low':'PPFD 低 / ',
       'ppfd.raise':'光量を上げてください（目安 ','ppfd.lower':'光量を下げてください（目安 ','ppfd.diff':'（差 ',
+      'memo.placeholder':'メモ（任意）',
     },
     en: {
       'tab.monitor':'📊 Monitor','tab.log':'💧 Feeding','tab.analysis':'📈 Analysis','tab.table':'📋 Reference',
+      'bnav.monitor':'Environ','bnav.log':'Feeding','bnav.analysis':'Analysis','bnav.table':'Reference',
       'settings.tolTemp':'Temp ±°C','settings.tolHum':'Humidity ±%RH',
       'monitor.target_hum':'Target RH:','monitor.ppfd_now':'PPFD:','monitor.ppfd_target':'/ Target:',
       'vpd.too_low':'⚠ Too Low','vpd.too_high':'⚠ Too High','vpd.warning':'Caution','vpd.ok':'Optimal',
@@ -1258,6 +1262,7 @@
       'ref.water_temp':'💧 Water temp: 18–22°C (for root health & dissolved oxygen)',
       'analysis.stage_progress':'STAGE PROGRESS',
       'analysis.no_logs':'No records',
+      'analysis.empty':'No data yet.<br>Enter values in the Environ tab<br>and press Save.',
       'analysis.total_days':'Total: ','analysis.days':' days',
       'toast.last_tent':'Cannot delete the last tent','toast.input_error':'⚠ Please check your input values',
       'toast.import_ok':'Import complete ✓',
@@ -1273,6 +1278,7 @@
       'popup.tap_to_close':'Tap to close',
       'ppfd.high':'⚠ PPFD High / ','ppfd.low':'PPFD Low / ',
       'ppfd.raise':'Increase light (est. ','ppfd.lower':'Decrease light (est. ','ppfd.diff':'(diff ',
+      'memo.placeholder':'Note (optional)',
     }
   };
   const tr = k => (STRINGS[appLang]?.[k]) ?? (STRINGS.ja[k] ?? k);
@@ -2646,7 +2652,7 @@
     wrap.style.display = '';
     const MAX = Math.max(range[1] * 1.6, ppfd * 1.2, 200);
     const pct = v => Math.max(0, Math.min(100, v / MAX * 100));
-    document.getElementById('lmRangeLabel').textContent = `${range[0]}〜${range[1]}`;
+    document.getElementById('lmRangeLabel').textContent = `${range[0]}–${range[1]}`;
     document.getElementById('lmZoneTarget').style.left  = pct(range[0]) + '%';
     document.getElementById('lmZoneTarget').style.width = Math.max(0, pct(range[1]) - pct(range[0])) + '%';
     document.getElementById('lmZoneMarker').style.left  = pct(ppfd) + '%';
@@ -2824,8 +2830,8 @@
     const mid = (range[0] + range[1]) / 2;
     const diff = Math.round(ppfd - mid);
     const prefix = diff >= 0 ? '+' : '';
-    if (ppfd < range[0]) return `${tr('ppfd.raise')}${range[0]}〜${range[1]} µmol)`;
-    if (ppfd > range[1]) return `${tr('ppfd.lower')}${range[0]}〜${range[1]} µmol)`;
+    if (ppfd < range[0]) return `${tr('ppfd.raise')}${range[0]}–${range[1]} µmol)`;
+    if (ppfd > range[1]) return `${tr('ppfd.lower')}${range[0]}–${range[1]} µmol)`;
     return `${tr('ppfd.diff')}${prefix}${diff} µmol)`;
   }
 
@@ -2859,8 +2865,8 @@
   let refCo2 = false;
   let refMedium = 'soil'; // 'soil' or 'hydro'
   const phData = {
-    soil:  { clone:'6.0〜6.5', veg:'6.0〜6.5', flower:'6.0〜6.5', dry:'—', harvest:'—' },
-    hydro: { clone:'5.5〜6.0', veg:'5.8〜6.2', flower:'5.8〜6.2', dry:'—', harvest:'—' },
+    soil:  { clone:'6.0–6.5', veg:'6.0–6.5', flower:'6.0–6.5', dry:'—', harvest:'—' },
+    hydro: { clone:'5.5–6.0', veg:'5.8–6.2', flower:'5.8–6.2', dry:'—', harvest:'—' },
   };
   function toggleRefCo2() {
     refCo2 = !refCo2;
@@ -2895,12 +2901,12 @@
       const isDry = key === 'dry';
       const zebra = ri % 2 === 1 ? 'background:rgba(255,255,255,0.04);border-radius:4px;' : '';
       const vals = [
-        `${s.temp[0]}〜${s.temp[1]}`,
-        `${s.hum[0]}〜${s.hum[1]}`,
-        `${fv(s.vpd[0])}〜${fv(s.vpd[1])}`,
-        isDry ? '—' : (refCo2 ? `${s.ppfdCo2[0]}〜${s.ppfdCo2[1]}` : `${s.ppfd[0]}〜${s.ppfd[1]}`),
-        isDry ? '—' : `${s.ecInput[0].toFixed(1)}〜${s.ecInput[1].toFixed(1)}`,
-        isDry ? '—' : `${s.ecRunoff[0].toFixed(1)}〜${s.ecRunoff[1].toFixed(1)}`,
+        `${s.temp[0]}–${s.temp[1]}`,
+        `${s.hum[0]}–${s.hum[1]}`,
+        `${fv(s.vpd[0])}–${fv(s.vpd[1])}`,
+        isDry ? '—' : (refCo2 ? `${s.ppfdCo2[0]}–${s.ppfdCo2[1]}` : `${s.ppfd[0]}–${s.ppfd[1]}`),
+        isDry ? '—' : `${s.ecInput[0].toFixed(1)}–${s.ecInput[1].toFixed(1)}`,
+        isDry ? '—' : `${s.ecRunoff[0].toFixed(1)}–${s.ecRunoff[1].toFixed(1)}`,
         phData[refMedium][key] ?? '—',
       ];
       html += `<div style="display:grid;grid-template-columns:clamp(44px,14.5vw,56px) 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);${zebra}">
