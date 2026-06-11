@@ -793,7 +793,7 @@
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px 18px;width:280px;box-sizing:border-box;">
       <div style="font-size:0.9rem;font-weight:700;color:var(--accent);margin-bottom:4px;">LUX → PPFD</div>
       <div style="font-size:0.65rem;color:var(--text);opacity:0.7;line-height:1.5;margin-bottom:12px;">Photoneや照度計のlux値を貼るだけで換算。係数は光源別の目安。</div>
-      <input id="luxInput" type="text" inputmode="numeric" placeholder="lux 値" oninput="convertLux()" style="width:100%;box-sizing:border-box;padding:8px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-size:1.1rem;font-weight:700;text-align:center;outline:none;font-family:'Rajdhani',sans-serif;margin-bottom:8px;">
+      <input id="luxInput" type="text" inputmode="numeric" placeholder="lux" oninput="convertLux()" style="width:100%;box-sizing:border-box;padding:8px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-size:1.1rem;font-weight:700;text-align:center;outline:none;font-family:'Rajdhani',sans-serif;margin-bottom:8px;">
       <select id="luxSource" onchange="convertLux()" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8rem;outline:none;margin-bottom:10px;">
         <option value="0.015" selected>LED フルスペクトラム</option>
         <option value="0.0122">HPS</option>
