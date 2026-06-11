@@ -23,33 +23,37 @@
   <noscript><link href=”https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Rajdhani:wght@700&display=swap” rel=”stylesheet”></noscript>
 
   <style>
-    /* 基本テーマ（ダーク） */
+    /* Apple iOS Dark — VPD PRO v2 */
     :root {
-      --bg: #090d0b;
-      --surface: #101510;
-      --surface2: #161e16;
-      --border: #5aaa70;
-      --accent: #00ff88;
-      --accent2: #00ccff;
-      --danger: #ff3333;
-      --ok: #00ff88;
-      --text: #dff5e8;
-      --muted: #4a6a55;
-      --leaf: #88ffaa;
+      --bg: #000000;
+      --surface: #1c1c1e;
+      --surface2: #2c2c2e;
+      --border: rgba(255,255,255,0.12);
+      --accent: #34c759;
+      --accent2: #0a84ff;
+      --danger: #ff453a;
+      --warning: #ff9f0a;
+      --ok: #34c759;
+      --text: #ffffff;
+      --text2: rgba(255,255,255,0.55);
+      --muted: rgba(255,255,255,0.30);
+      --leaf: #63e2a3;
     }
     /* ライトモード */
     body.light-mode {
-      --bg: #f0f7f2;
+      --bg: #f2f2f7;
       --surface: #ffffff;
-      --surface2: #e8f5ed;
-      --border: #5aaa6a;
-      --accent: #00aa55;
-      --accent2: #0099cc;
-      --danger: #dd2222;
-      --ok: #00aa55;
-      --text: #1a3325;
-      --muted: #7aaa8a;
-      --leaf: #22aa55;
+      --surface2: #e5e5ea;
+      --border: rgba(0,0,0,0.12);
+      --accent: #28a745;
+      --accent2: #007aff;
+      --danger: #ff3b30;
+      --warning: #ff9500;
+      --ok: #28a745;
+      --text: #000000;
+      --text2: rgba(0,0,0,0.55);
+      --muted: rgba(0,0,0,0.30);
+      --leaf: #1a8c3a;
     }
     #settingsToggle {
       position: absolute;
@@ -92,7 +96,7 @@
       color: var(--text);
       padding: 8px;
       padding-top: max(10px, env(safe-area-inset-top));
-      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      padding-bottom: calc(70px + env(safe-area-inset-bottom));
       /* iOS ダブルタップズーム / ピンチズーム抑止（アプリ的UIで固定） */
       touch-action: manipulation;
       -webkit-touch-callout: none;
@@ -100,96 +104,110 @@
     }
     html { touch-action: manipulation; }
     h1 {
-      font-size: 1.9rem;
-      font-weight: 800;
+      font-size: 1.1rem;
+      font-weight: 700;
       text-align: center;
       color: var(--accent);
-      margin: 0 0 2px 0;
-      letter-spacing: 2px;
+      margin: 0 0 4px 0;
+      letter-spacing: 3px;
     }
-    .subtitle {
-      text-align: center;
-      font-size: 0.8rem;
-      color: var(--text);
-      margin-bottom: 6px;
-      opacity: 0.75;
-      letter-spacing: 0.2px;
-    }
+    .subtitle { display: none; }
     /* テントバー */
     .tent-bar {
       display: flex;
-      margin-bottom: 8px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      margin-bottom: 10px;
+      background: var(--surface2);
+      border-radius: 12px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      scrollbar-width: none; /* Firefox */
+      scrollbar-width: none;
+      padding: 3px;
+      gap: 2px;
     }
-    .tent-bar::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+    .tent-bar::-webkit-scrollbar { display: none; }
     .tent-btn {
       flex: 1 0 auto;
       min-width: 56px;
       max-width: 90px;
-      padding: 10px 6px;
-      background: var(--surface);
+      padding: 7px 6px;
+      background: transparent;
       border: none;
-      color: var(--text);
-      font-size: 0.8rem;
-      font-weight: 700;
+      color: var(--text2);
+      font-size: 0.78rem;
+      font-weight: 600;
       text-align: center;
       cursor: pointer;
       white-space: pre-line;
       font-family: inherit;
+      border-radius: 9px;
+      transition: background 0.15s, color 0.15s;
     }
-    .tent-btn.solo {
-      max-width: none;
-    }
-    .tent-btn:first-child { border-radius: 10px 0 0 10px; }
-    .tent-btn:last-child  { border-radius: 0 10px 10px 0; }
+    .tent-btn.solo { max-width: none; }
+    .tent-btn:first-child { border-radius: 9px; }
+    .tent-btn:last-child  { border-radius: 9px; }
     .tent-btn.active {
-      background: var(--accent);
-      color: #000;
-    }
-    /* タブ */
-    .tabs {
-      display: flex;
-      margin-bottom: 8px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .tab {
-      flex: 1;
-      /* 拡大してタップしやすくする */
-      padding: 10px 6px;
-      text-align: center;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color:var(--text);
-      cursor: pointer;
       background: var(--surface);
+      color: var(--accent);
+      font-weight: 700;
     }
-    .tab.active {
+    /* タブ（hidden — bottom nav に置換） */
+    .tabs { display: none; }
+    .tab { display: none; }
+    .tab.active { display: none; }
+
+    /* Bottom Navigation — iOS style */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: calc(56px + env(safe-area-inset-bottom));
+      background: rgba(12,12,14,0.92);
+      backdrop-filter: saturate(180%) blur(28px);
+      -webkit-backdrop-filter: saturate(180%) blur(28px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: flex-start; justify-content: space-around;
+      padding-top: 8px;
+      z-index: 200;
+    }
+    .bnav-item {
+      position: relative;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      cursor: pointer; padding: 0 14px; min-width: 64px;
+      color: rgba(255,255,255,0.32);
+      -webkit-tap-highlight-color: transparent;
+      transition: color 0.18s;
+    }
+    .bnav-item::before {
+      content: '';
+      position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 2px;
       background: var(--accent);
-      color: #000;
+      border-radius: 2px;
+      transition: width 0.18s;
     }
+    .bnav-item.active::before { width: 28px; }
+    .bnav-icon {
+      font-size: 1.4rem; line-height: 1;
+      transition: transform 0.18s;
+    }
+    .bnav-item.active .bnav-icon { transform: scale(1.12); }
+    .bnav-label { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.03em; }
+    .bnav-item.active { color: var(--accent); }
     /* コンテンツ */
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     /* カード */
     .card {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 8px 10px;
-      margin-bottom: 6px;
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
     }
     .card-title {
-      font-size: 0.95rem;
-      color:var(--text);
-      font-weight: 700;
-      margin-bottom: 8px;
-      letter-spacing: 0.3px;
+      font-size: 0.68rem;
+      color: var(--text2);
+      font-weight: 600;
+      margin-bottom: 10px;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
     }
     /* ステージボタン */
     .stage-row {
@@ -276,12 +294,12 @@
     }
     .stepper-row:last-child { border-bottom: none; }
     .stepper-btn {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       flex-shrink: 0;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: rgba(0,255,136,0.06);
+      border-radius: 50%;
+      border: none;
+      background: var(--surface2);
       color: var(--accent);
       font-size: 1.5rem;
       font-weight: 400;
@@ -292,8 +310,9 @@
       line-height: 1;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+      transition: background 0.1s, transform 0.08s;
     }
-    .stepper-btn:active { background: rgba(0,255,136,0.18); }
+    .stepper-btn:active { background: var(--border); transform: scale(0.92); }
     .stepper-center {
       display: flex;
       align-items: baseline;
@@ -383,29 +402,32 @@
     .vpd-row {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 4px;
-      margin-top: -8px;
+      margin-bottom: 6px;
+      margin-top: -4px;
     }
     .vpd-block {
       flex: 1;
       text-align: center;
     }
     .vpd-label {
-      font-size: 0.65rem;
-      color: var(--text);
+      font-size: 0.62rem;
+      color: var(--text2);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
     .vpd-num {
       font-family: 'Rajdhani', -apple-system, sans-serif;
-      font-size: 1.8rem;
+      font-size: 3.2rem;
       font-weight: 700;
+      line-height: 1;
     }
     .status-badge {
       display: inline-block;
       padding: 4px 14px;
-      border-radius: 16px;
-      font-size: 0.8rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
       font-weight: 700;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       text-transform: none;
       letter-spacing: 0.2px;
     }
@@ -422,35 +444,32 @@
     }
     .toggle-btn {
       flex: 1;
-      padding: 4px 3px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
+      padding: 6px 3px;
+      border: none;
+      border-radius: 10px;
       font-size: 0.65rem;
-      font-weight: 700;
-      background: transparent;
-      color: var(--text);
+      font-weight: 600;
+      background: var(--surface2);
+      color: var(--text2);
       cursor: pointer;
       text-align: center;
+      transition: background 0.15s, color 0.15s;
     }
     .toggle-btn.active-day {
-      border-color: var(--accent);
+      background: rgba(52,199,89,0.18);
       color: var(--accent);
-      background: rgba(0,255,136,0.1);
     }
     .toggle-btn.active-night {
-      border-color: #8888ff;
-      color: #8888ff;
-      background: rgba(136,136,255,0.1);
+      background: rgba(120,120,255,0.18);
+      color: #a0a0ff;
     }
     .toggle-btn.active-leaf {
-      border-color: var(--leaf);
+      background: rgba(99,226,163,0.18);
       color: var(--leaf);
-      background: rgba(136,255,170,0.1);
     }
     .toggle-btn.active-co2 {
-      border-color: var(--accent2);
+      background: rgba(10,132,255,0.18);
       color: var(--accent2);
-      background: rgba(0,204,255,0.1);
     }
     /* 写真比較オーバーレイ */
     .photo-overlay {
@@ -525,11 +544,11 @@
   
 /* === Pro enhancements === */
 *, *::before, *::after { -webkit-tap-highlight-color: transparent; }
-.status-danger { color:#fff; background:linear-gradient(90deg,#ff1f3d,#ff0033); border:1px solid #ff0033; box-shadow:0 0 6px rgba(255,0,50,.8),0 0 12px rgba(255,0,50,.6),0 0 20px rgba(255,0,50,.4); transform:scale(1.03); }
-.status-warning { color:#ff9500; background:rgba(255,149,0,.15); border:1px solid #ff9500; }
+.status-danger { color:#fff; background:var(--danger); border:none; box-shadow:0 0 10px rgba(255,69,58,.45); transform:scale(1.03); }
+.status-warning { color:var(--warning); background:rgba(255,159,10,.15); border:1px solid rgba(255,159,10,.5); }
 @keyframes dangerPulse { 0%{opacity:1; transform:scale(1.03);} 50%{opacity:.6; transform:scale(1.06);} 100%{opacity:1; transform:scale(1.03);} }
 .pulse { animation: dangerPulse 1.2s ease-in-out infinite; }
-.ppfd-alert { display:block;width:100%;box-sizing:border-box;padding:5px 8px;border-radius:8px;color:#fff;font-weight:700;font-size:0.72rem;text-align:center;background:rgba(255,30,0,0.85);box-shadow:0 0 8px rgba(255,0,0,.7),0 0 16px rgba(255,0,0,.4); }
+.ppfd-alert { display:block;width:100%;box-sizing:border-box;padding:6px 10px;border-radius:10px;color:#fff;font-weight:600;font-size:0.72rem;text-align:center;background:rgba(255,69,58,0.90);box-shadow:0 0 8px rgba(255,69,58,.4); }
 .tabs .tab, .stage-btn, .small-btn { font-weight: 700; }
 
 .mode-pill { padding:3px 9px; font-size:0.6rem; cursor:pointer; color:rgba(255,255,255,0.45); user-select:none; }
@@ -797,10 +816,12 @@
       </div>
       <div id="statusBadge" class="status-badge status-ok">—</div>
       <!-- VPDの状態と推奨アクション -->
-      <div id="rec" style="font-size:0.68rem;color:var(--text); margin-bottom:2px;"></div>
-      <div id="vpdDiff" style="font-size:0.68rem;color:var(--text); margin-bottom:2px;"></div>
-      <div style="font-size:0.68rem; color:var(--text);"><span data-i18n="monitor.target_hum">目標湿度:</span> <span id="targetHum">—</span> %RH　<span data-i18n="monitor.ppfd_now">現在PPFD:</span> <span id="ppfdNow">—</span> <span data-i18n="monitor.ppfd_target">/ 目標:</span> <span id="targetPpfd">—</span> µmol</div>
-      <div id="ppfdAdvice" style="font-size:0.68rem;color:var(--text); margin-top:2px;"></div>
+      <div style="margin-top:6px;padding:8px 10px;background:var(--surface2);border-radius:10px;display:flex;flex-direction:column;gap:3px;">
+        <div id="rec" style="font-size:0.72rem;color:var(--text);font-weight:500;line-height:1.5;"></div>
+        <div id="vpdDiff" style="font-size:0.7rem;color:var(--text2);"></div>
+        <div style="font-size:0.7rem;color:var(--text2);"><span data-i18n="monitor.target_hum">目標湿度:</span> <span id="targetHum" style="color:var(--text);font-weight:600;">—</span> %RH　<span data-i18n="monitor.ppfd_now">PPFD:</span> <span id="ppfdNow" style="color:var(--text);font-weight:600;">—</span> <span data-i18n="monitor.ppfd_target">/ 目標:</span> <span id="targetPpfd" style="color:var(--accent);font-weight:600;">—</span> µmol</div>
+        <div id="ppfdAdvice" style="font-size:0.7rem;color:var(--warning);"></div>
+      </div>
       </div>
     </div>
     <div class="card">
@@ -1049,21 +1070,45 @@
 <div class="tab-content" id="tab-analysis">
   <!-- ステージ進捗タイムライン -->
   <div class="card">
-    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:0;padding:4px 0;" onclick="(function(){var el=document.getElementById('stageTimeline');el.style.display=el.style.display!=='none'?'none':'';})()">
-      <span data-i18n="analysis.stage_progress" style="text-align:left;">ステージ進捗</span>
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span data-i18n="analysis.stage_progress">STAGE PROGRESS</span>
       <span style="display:flex;align-items:center;gap:8px;">
-        <span style="display:flex;gap:6px;" onclick="event.stopPropagation()">
-          <button onclick="triggerPhoto('camera','gallery')" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);border-radius:6px;color:var(--accent);font-size:0.75rem;padding:4px 8px;cursor:pointer;">📷</button>
-          <button onclick="triggerPhoto('library','gallery')" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);border-radius:6px;color:var(--accent);font-size:0.75rem;padding:4px 8px;cursor:pointer;">🖼</button>
+        <span style="display:flex;gap:6px;">
+          <button onclick="triggerPhoto('camera','gallery')" style="background:var(--surface2);border:none;border-radius:8px;color:var(--text2);font-size:0.78rem;padding:4px 10px;cursor:pointer;">📷</button>
+          <button onclick="triggerPhoto('library','gallery')" style="background:var(--surface2);border:none;border-radius:8px;color:var(--text2);font-size:0.78rem;padding:4px 10px;cursor:pointer;">🖼</button>
         </span>
         <span id="stageTotalDays" style="font-size:0.8rem;color:var(--accent);font-weight:700;"></span>
       </span>
     </div>
     <div id="stageTimeline"></div>
+    <div id="analysisEmptyState" style="display:none;text-align:center;padding:24px 16px;">
+      <div style="font-size:2rem;margin-bottom:8px;">📊</div>
+      <div style="font-size:0.85rem;color:var(--text2);line-height:1.6;">まだデータがありません。<br>環境タブで値を入力して<br>Save してください。</div>
+    </div>
   </div>
 </div>
 
 <div id="toast" class="toast"></div>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="bnav-item active" data-tab="monitor" onclick="switchBottomNav(this,'monitor')">
+    <div class="bnav-icon">📊</div>
+    <div class="bnav-label">環境</div>
+  </div>
+  <div class="bnav-item" data-tab="log" onclick="switchBottomNav(this,'log')">
+    <div class="bnav-icon">💧</div>
+    <div class="bnav-label">給水</div>
+  </div>
+  <div class="bnav-item" data-tab="analysis" onclick="switchBottomNav(this,'analysis')">
+    <div class="bnav-icon">📈</div>
+    <div class="bnav-label">分析</div>
+  </div>
+  <div class="bnav-item" data-tab="table" onclick="switchBottomNav(this,'table')">
+    <div class="bnav-icon">📋</div>
+    <div class="bnav-label">参考</div>
+  </div>
+</nav>
 
 <!-- Save ポップアップ -->
 <div id="savePopup" class="save-popup" onclick="document.getElementById('savePopup').classList.remove('show')">
@@ -2418,7 +2463,7 @@
     const el = document.getElementById('dliVal');
     const tgtEl = document.getElementById('dliTarget');
     if (!el) return;
-    const dli = (Number(t.ppfd) || 0) * h * 3600 / 1e6;
+    const dli = (t.dayNight === 'night' ? 0 : (Number(t.ppfd) || 0)) * h * 3600 / 1e6;
     el.textContent = dli.toFixed(1);
     const range = getPpfdRange(t.stage, t.co2);
     if (tgtEl) {
@@ -2691,19 +2736,22 @@
     const humidityDiff = targetHumValue - hum;
     const humiditySign = humidityDiff >= 0 ? '+' : '';    document.getElementById('vpdDiff').textContent = `${tr('vpd.diff')} ${diffSign}${diff.toFixed(2)} kPa ${tr('vpd.hum_adj')} ${humiditySign}${Math.round(humidityDiff)}%`;    document.getElementById('targetHum').textContent = targetHumValue;
     const ppfd = Number(t.ppfd || 0);
+    const effectivePpfd = t.dayNight === 'night' ? 0 : ppfd;
     const ppfdRange = getPpfdRange(t.stage, t.co2);
-    const ppfdState = classifyPpfd(ppfd, ppfdRange);
+    const ppfdState = classifyPpfd(effectivePpfd, ppfdRange);
     const ppfdMid = (ppfdRange[0] + ppfdRange[1]) / 2;
     document.getElementById('ppfdNow').textContent = ppfd;
     document.getElementById('targetPpfd').textContent = Math.round(ppfdMid);
     const ppfdAdviceEl = document.getElementById('ppfdAdvice');
-    if (ppfdState === 'ok') {
+    if (t.dayNight === 'night') {
+      ppfdAdviceEl.innerHTML = '';
+    } else if (ppfdState === 'ok') {
       ppfdAdviceEl.innerHTML = '';
     } else if (ppfdState === 'high') {
       ppfdAdviceEl.innerHTML = `<span class="ppfd-alert">${tr('ppfd.high')}${ppfdAction(ppfd, ppfdRange)}</span>`;
     } else {
       ppfdAdviceEl.textContent = `${tr('ppfd.low')}${ppfdAction(ppfd, ppfdRange)}`;
-      ppfdAdviceEl.style.color = '#ffaa00';
+      ppfdAdviceEl.style.color = 'var(--warning)';
     }
     updateSpotDisplay();
 
@@ -2749,8 +2797,8 @@
     const mid = (range[0] + range[1]) / 2;
     const diff = Math.round(ppfd - mid);
     const prefix = diff >= 0 ? '+' : '';
-    if (ppfd < range[0]) return `${tr('ppfd.raise')}${Math.max(50, range[0] - ppfd)}〜${Math.max(50, range[1] - ppfd)} µmol)`;
-    if (ppfd > range[1]) return `${tr('ppfd.lower')}${Math.max(50, ppfd - range[1])}〜${Math.max(50, ppfd - range[0])} µmol)`;
+    if (ppfd < range[0]) return `${tr('ppfd.raise')}${range[0]}〜${range[1]} µmol)`;
+    if (ppfd > range[1]) return `${tr('ppfd.lower')}${range[0]}〜${range[1]} µmol)`;
     return `${tr('ppfd.diff')}${prefix}${diff} µmol)`;
   }
 
@@ -3472,6 +3520,8 @@ function classifyVpd(vpd, lo, hi) {
     });
     html += '</div>';
     el.innerHTML = html;
+    const emptyEl = document.getElementById('analysisEmptyState');
+    if (emptyEl) emptyEl.style.display = _logs.filter(l => l.tentId === tents[currentTent]?.id).length === 0 ? '' : 'none';
   }
   async function deleteStageLog(id, stageKey) {
 
@@ -4240,7 +4290,17 @@ function classifyVpd(vpd, lo, hi) {
       document.getElementById('settingsModal').classList.remove('open');
     }
   }
-// tab switching
+// Bottom navigation switching
+  function switchBottomNav(el, target) {
+    document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    const tc = document.getElementById('tab-' + target);
+    if (tc) tc.classList.add('active');
+    if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); }
+    if (target === 'analysis') { dbGetAll('logs').then(logs => { renderStageTimeline(logs); }); }
+  }
+// tab switching (kept for legacy compat — hidden tabs)
   document.querySelectorAll('.tab').forEach(tab => {
     tab.onclick = () => {
       const target = tab.getAttribute('data-tab');
