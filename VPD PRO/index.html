@@ -631,11 +631,13 @@
       <!-- バックアップ -->
       <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">BACKUP</div>
       <button class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="exportData()">⬆ EXPORT JSON</button>
+      <button class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="exportCsv()">📊 EXPORT CSV</button>
       <button class="small-btn" style="width:100%;margin-bottom:16px;font-size:0.78rem;" onclick="importData()">⬇ IMPORT JSON</button>
       <input type="file" accept="application/json" id="importFile" style="display:none" onchange="handleImport(event)">
       <div style="border-top:1px solid var(--border);margin-bottom:16px;"></div>
       <!-- データ操作 -->
       <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">DATA</div>
+      <button class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="startNewCycle()">🌱 NEW CYCLE</button>
       <button class="small-btn" style="width:100%;margin-bottom:8px;border-color:var(--danger);color:var(--danger);font-size:0.78rem;" onclick="clearLogs()">🗑 CLEAR LOG</button>
       <button class="small-btn" style="width:100%;border-color:var(--danger);color:var(--danger);font-size:0.78rem;" onclick="eraseAllData()">🗑 ERASE ALL</button>
       <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
@@ -646,20 +648,13 @@
       </div>
       <button id="pinSetupBtn" class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.78rem;" onclick="setupPin()">🔒 SET PIN</button>
       <button id="pinRemoveBtn" class="small-btn" style="width:100%;display:none;border-color:var(--danger);color:var(--danger);font-size:0.78rem;" onclick="removePin()">🗑 REMOVE PIN</button>
-      <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
-      <div style="font-size:0.7rem;font-weight:700;color:var(--accent);opacity:0.8;letter-spacing:0.1em;margin-bottom:10px;">MY SPOT TOLERANCE</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <span style="font-size:0.8rem;color:var(--text);" data-i18n="settings.tolTemp">温度 ±°C</span>
-        <input type="number" id="tolTemp" min="0.5" max="5" step="0.5" value="1" style="width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 8px;font-size:0.85rem;text-align:center;" onchange="saveSpotTol()">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+        <span style="font-size:0.8rem;color:var(--text);">🔦 デコイ起動画面</span>
+        <div id="decoyToggle" onclick="toggleDecoyMode()" style="width:42px;height:24px;border-radius:12px;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.4);cursor:pointer;position:relative;transition:background 0.2s;">
+          <div id="decoyThumb" style="width:18px;height:18px;border-radius:50%;background:var(--accent);position:absolute;top:2px;left:2px;transition:left 0.2s;"></div>
+        </div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <span style="font-size:0.8rem;color:var(--text);" data-i18n="settings.tolHum">湿度 ±%RH</span>
-        <input type="number" id="tolHum" min="1" max="10" step="1" value="3" style="width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 8px;font-size:0.85rem;text-align:center;" onchange="saveSpotTol()">
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        <span style="font-size:0.8rem;color:var(--text);">PPFD ±µmol</span>
-        <input type="number" id="tolPpfd" min="10" max="200" step="10" value="50" style="width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 8px;font-size:0.85rem;text-align:center;" onchange="saveSpotTol()">
-      </div>
+      <div style="font-size:0.62rem;color:var(--text);opacity:0.6;line-height:1.5;margin-top:6px;">ONにすると起動時にライトアプリの画面を表示。電源ボタンを2秒長押しで本体へ。</div>
     </div>
   </div>
   <!-- ライトメーター（カメラ計測）モーダル -->
@@ -729,6 +724,13 @@
     </div>
   </div>
 
+  <!-- デコイ起動画面: シンプルなフラッシュライトアプリに偽装 -->
+  <div id="decoyScreen" style="display:none;position:fixed;inset:0;background:#111;z-index:30000;flex-direction:column;align-items:center;justify-content:center;gap:48px;transition:background 0.25s;">
+    <div id="decoyTitle" style="font-size:0.85rem;letter-spacing:0.35em;color:rgba(255,255,255,0.35);font-weight:600;user-select:none;transition:color 0.25s;">FLASHLIGHT</div>
+    <button id="decoyPowerBtn" style="width:130px;height:130px;border-radius:50%;border:3px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.55);font-size:3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none;transition:all 0.25s;outline:none;">⏻</button>
+    <div id="decoyHint" style="font-size:0.7rem;color:rgba(255,255,255,0.22);user-select:none;transition:color 0.25s;">タップで点灯</div>
+  </div>
+
   <!-- lux→PPFD 変換モーダル -->
   <div id="luxModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeLuxConverter()">
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px 18px;width:280px;box-sizing:border-box;">
@@ -760,6 +762,39 @@
   </div>
   <div class="tab-content active" id="tab-monitor">
     <div class="card">
+      <div style="position:relative;display:flex;justify-content:center;align-items:center;cursor:pointer;margin-bottom:4px;" onclick="(function(){var el=document.getElementById('vpdCardBody');var ic=document.getElementById('vpdToggleIcon');var ci=document.getElementById('vpdCollapsedInfo');var open=el.style.display!=='none';el.style.display=open?'none':'';ic.textContent=open?'▶':'▼';ci.style.visibility=open?'visible':'hidden';})()">
+        <span id="vpdCollapsedInfo" style="visibility:hidden;font-size:1rem;font-weight:700;color:var(--text);"></span>
+        <span id="vpdToggleIcon" style="position:absolute;right:0;font-size:0.7rem;color:var(--text);opacity:0.5;">▼</span>
+      </div>
+      <div id="vpdCardBody">
+      <div class="vpd-row">
+        <div class="vpd-block">
+          <div class="vpd-label">Air VPD</div>
+          <div class="vpd-num" id="vpdAir">—</div>
+          <div style="font-size:0.7rem;color:var(--text);">kPa</div>
+        </div>
+        <div class="vpd-block" id="leafBlock">
+          <div class="vpd-label">Leaf VPD</div>
+          <div class="vpd-num" id="vpdLeaf" style="color:var(--leaf)">—</div>
+          <div style="font-size:0.7rem;color:var(--text);">kPa</div>
+        </div>
+      </div>
+      <div class="vpd-zonebar-wrap">
+        <div class="vpd-zonebar">
+          <div id="vpdZoneTarget" class="vpd-zone-target"></div>
+          <div id="vpdZoneMarker" class="vpd-zone-marker"></div>
+        </div>
+        <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
+      </div>
+      <div id="statusBadge" class="status-badge status-ok">—</div>
+      <!-- VPDの状態と推奨アクション -->
+      <div id="rec" style="font-size:0.68rem;color:var(--text); margin-bottom:2px;"></div>
+      <div id="vpdDiff" style="font-size:0.68rem;color:var(--text); margin-bottom:2px;"></div>
+      <div style="font-size:0.68rem; color:var(--text);"><span data-i18n="monitor.target_hum">目標湿度:</span> <span id="targetHum">—</span> %RH　<span data-i18n="monitor.ppfd_now">現在PPFD:</span> <span id="ppfdNow">—</span> <span data-i18n="monitor.ppfd_target">/ 目標:</span> <span id="targetPpfd">—</span> µmol</div>
+      <div id="ppfdAdvice" style="font-size:0.68rem;color:var(--text); margin-top:2px;"></div>
+      </div>
+    </div>
+    <div class="card">
       <div class="card-title" style="display:flex;align-items:center;">
         <span style="flex:1;font-size:0.95rem;font-weight:700;color:var(--text);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">ENVIRONMENT LOG</span>
         <div style="flex-shrink:0;display:flex;border:1px solid rgba(0,255,136,0.35);border-radius:20px;overflow:hidden;">
@@ -789,9 +824,14 @@
         <input id="stageStartDate" type="date" style="width:120px;flex-shrink:0;font-size:0.95rem;height:28px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(0,255,136,0.4);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
         <button id="clearDateBtn" oncontextmenu="return false;" style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.85rem;width:28px;height:28px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;">🗑</button>
       </div>
+      <!-- 収量記録 (Harvestステージのみ) -->
+      <div id="yieldRow" class="input-row" style="display:none;margin-bottom:2px;align-items:center;gap:8px;justify-content:center;">
+        <label style="font-size:0.95rem;color:var(--text);font-weight:700;flex-shrink:0;">🏆 収量</label>
+        <input id="yieldInput" type="text" inputmode="decimal" placeholder="—" style="width:80px;flex-shrink:0;font-size:1.1rem;font-weight:700;font-family:'Rajdhani',sans-serif;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(0,255,136,0.4);outline:none;text-align:center;" onfocus="this.select()" onchange="applyYield(this.value)">
+        <span style="font-size:0.85rem;color:var(--text);flex-shrink:0;">g（乾燥重量）</span>
+      </div>
       <div class="toggle-row">
-        <div class="toggle-btn active-day" id="btnDay" role="button" aria-pressed="true" onclick="setDayNight('day')">💡 Light ON</div>
-        <div class="toggle-btn" id="btnNight" role="button" aria-pressed="false" onclick="setDayNight('night')">🌑 Light OFF</div>
+        <div class="toggle-btn active-day" id="btnDayNight" role="button" aria-pressed="true" onclick="toggleDayNight()">💡 Light ON</div>
         <div class="toggle-btn" id="btnLeaf" role="button" aria-pressed="false" onclick="toggleLeaf()">🌿 Leaf VPD</div>
         <div class="toggle-btn" id="btnCO2" role="button" aria-pressed="false" onclick="toggleCO2()">💨 CO₂</div>
       </div>
@@ -879,39 +919,6 @@
             <button id="deleteSpotBtn" style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.85rem;width:28px;height:28px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 0.1s;">🗑</button>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="card">
-      <div style="position:relative;display:flex;justify-content:center;align-items:center;cursor:pointer;margin-bottom:4px;" onclick="(function(){var el=document.getElementById('vpdCardBody');var ic=document.getElementById('vpdToggleIcon');var ci=document.getElementById('vpdCollapsedInfo');var open=el.style.display!=='none';el.style.display=open?'none':'';ic.textContent=open?'▶':'▼';ci.style.visibility=open?'visible':'hidden';})()">
-        <span id="vpdCollapsedInfo" style="visibility:hidden;font-size:1rem;font-weight:700;color:var(--text);"></span>
-        <span id="vpdToggleIcon" style="position:absolute;right:0;font-size:0.7rem;color:var(--text);opacity:0.5;">▼</span>
-      </div>
-      <div id="vpdCardBody">
-      <div class="vpd-row">
-        <div class="vpd-block">
-          <div class="vpd-label">Air VPD</div>
-          <div class="vpd-num" id="vpdAir">—</div>
-          <div style="font-size:0.7rem;color:var(--text);">kPa</div>
-        </div>
-        <div class="vpd-block" id="leafBlock">
-          <div class="vpd-label">Leaf VPD</div>
-          <div class="vpd-num" id="vpdLeaf" style="color:var(--leaf)">—</div>
-          <div style="font-size:0.7rem;color:var(--text);">kPa</div>
-        </div>
-      </div>
-      <div class="vpd-zonebar-wrap">
-        <div class="vpd-zonebar">
-          <div id="vpdZoneTarget" class="vpd-zone-target"></div>
-          <div id="vpdZoneMarker" class="vpd-zone-marker"></div>
-        </div>
-        <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
-      </div>
-      <div id="statusBadge" class="status-badge status-ok">—</div>
-      <!-- VPDの状態と推奨アクション -->
-      <div id="rec" style="font-size:0.68rem;color:var(--text); margin-bottom:2px;"></div>
-      <div id="vpdDiff" style="font-size:0.68rem;color:var(--text); margin-bottom:2px;"></div>
-      <div style="font-size:0.68rem; color:var(--text);"><span data-i18n="monitor.target_hum">目標湿度:</span> <span id="targetHum">—</span> %RH　<span data-i18n="monitor.ppfd_now">現在PPFD:</span> <span id="ppfdNow">—</span> <span data-i18n="monitor.ppfd_target">/ 目標:</span> <span id="targetPpfd">—</span> µmol</div>
-      <div id="ppfdAdvice" style="font-size:0.68rem;color:var(--text); margin-top:2px;"></div>
       </div>
     </div>
   </div>
@@ -1374,6 +1381,8 @@
       co2Level: 1000,
       ppfd: 300,
       photoperiod: 18,
+      cycle: 1,
+      yield: null,
       stageSpots: {},
       logs: []
     };
@@ -1550,10 +1559,7 @@
     const leafOff = (t.leafOffset !== undefined && t.leafOffset !== null) ? t.leafOffset : -2.0;
     document.getElementById('leafOffsetInput').value = useFahrenheit ? (leafOff * 9/5).toFixed(1) : leafOff.toFixed(1);
     document.getElementById('ppfdVal').value = t.ppfd || 0;
-    document.getElementById('btnDay').classList.toggle('active-day', t.dayNight==='day');
-    document.getElementById('btnDay').setAttribute('aria-pressed', t.dayNight==='day');
-    document.getElementById('btnNight').classList.toggle('active-night', t.dayNight==='night');
-    document.getElementById('btnNight').setAttribute('aria-pressed', t.dayNight==='night');
+    _updateDayNightBtn(t.dayNight);
     document.getElementById('btnLeaf').classList.toggle('active-leaf', t.leaf);
     document.getElementById('btnLeaf').setAttribute('aria-pressed', !!t.leaf);
     document.getElementById('btnCO2').classList.toggle('active-co2', t.co2);
@@ -1567,8 +1573,35 @@
     const currentDate = (t.stageDates && t.stageDates[t.stage]) || '';
     const currentEnd = (t.stageEndDates && t.stageEndDates[t.stage]) || null;
     if (dateInput) dateInput.value = currentDate;
+    _updateClearDateBtn();
+    _updateYieldRow();
     const linked = getLinkedDayCountDates(t, t.stage);
     updateStageDayCount(linked.base, linked.end, t.stage);
+  }
+
+  // 日付が未設定なら🗑を隠す
+  function _updateClearDateBtn() {
+    const btn = document.getElementById('clearDateBtn');
+    const inp = document.getElementById('stageStartDate');
+    if (btn && inp) btn.style.display = inp.value ? 'flex' : 'none';
+  }
+
+  // Harvestステージのときだけ収量入力を表示
+  function _updateYieldRow() {
+    const row = document.getElementById('yieldRow');
+    if (!row) return;
+    const t = tents[currentTent];
+    row.style.display = t.stage === 'harvest' ? 'flex' : 'none';
+    const inp = document.getElementById('yieldInput');
+    if (inp) inp.value = t.yield != null ? t.yield : '';
+  }
+
+  async function applyYield(v) {
+    const t = tents[currentTent];
+    const n = parseFloat(v);
+    t.yield = (!isNaN(n) && n >= 0) ? n : null;
+    await dbPut('tents', t);
+    if (t.yield != null) showToast(`🏆 収量 ${t.yield}g を記録`);
   }
 
   // Stage grouping: Growth (Clone, Veg) | Flower | Dry | Harvest
@@ -1644,6 +1677,8 @@
     const endDate = (t.stageEndDates && t.stageEndDates[s]) || null;
     if (dateInput) dateInput.value = savedDate;
     updateStageSelector(s);
+    _updateClearDateBtn();
+    _updateYieldRow();
     const linked = getLinkedDayCountDates(t, s);
     updateStageDayCount(linked.base, linked.end, s);
     await dbPut('tents', t);
@@ -1663,6 +1698,7 @@
     if (el) el.value = '';
     const dc = document.getElementById('stageDayCount');
     if (dc) dc.textContent = '';
+    _updateClearDateBtn();
     await dbPut('tents', t);
   }
 
@@ -1675,6 +1711,7 @@
     if (el) el.value = '';
     const dc = document.getElementById('stageDayCount');
     if (dc) dc.textContent = '';
+    _updateClearDateBtn();
     if (typeof buildStageTable === 'function') buildStageTable();
   }
 
@@ -1755,6 +1792,7 @@
     t.stageDates[t.stage] = val || null;
     recalculateStageEndDates(t);
     await dbPut('tents', t);
+    _updateClearDateBtn();
     const linked = getLinkedDayCountDates(t, t.stage);
     updateStageDayCount(linked.base, linked.end, t.stage);
     updateFeedingHeader();
@@ -1783,13 +1821,20 @@
       el.style.display = 'none';
     }
   }
-  async function setDayNight(mode) {
-    tents[currentTent].dayNight = mode;
-    document.getElementById('btnDay').classList.toggle('active-day', mode === 'day');
-    document.getElementById('btnDay').setAttribute('aria-pressed', mode === 'day');
-    document.getElementById('btnNight').classList.toggle('active-night', mode === 'night');
-    document.getElementById('btnNight').setAttribute('aria-pressed', mode === 'night');
-    await dbPut('tents', tents[currentTent]);
+  function _updateDayNightBtn(mode) {
+    const btn = document.getElementById('btnDayNight');
+    if (!btn) return;
+    const isDay = mode === 'day';
+    btn.classList.toggle('active-day', isDay);
+    btn.classList.toggle('active-night', !isDay);
+    btn.setAttribute('aria-pressed', isDay);
+    btn.textContent = isDay ? '💡 Light ON' : '🌑 Light OFF';
+  }
+  async function toggleDayNight() {
+    const t = tents[currentTent];
+    t.dayNight = t.dayNight === 'day' ? 'night' : 'day';
+    _updateDayNightBtn(t.dayNight);
+    await dbPut('tents', t);
     update();
   }
   function updateCompactMode() {
@@ -2908,6 +2953,7 @@
     const log = {
       id,
       tentId: tents[currentTent].id,
+      cycle: t.cycle || 1,
       timestamp: new Date().toLocaleString('ja-JP'),
       ts: Date.now(),
       temp: t.temp,
@@ -2957,6 +3003,58 @@
     if (isNaN(val)) val = 0;
     val = Math.max(0, Math.round((val + delta) * 10) / 10);
     input.value = val.toFixed(1);
+  }
+
+  /* === グロウサイクル管理 === */
+  // 過去ログは残したまま（cycleタグで分離）、ステージ・日付・収量をリセットして次のサイクルを開始
+  async function startNewCycle() {
+    const t = tents[currentTent];
+    const cur = t.cycle || 1;
+    const yieldNote = t.yield != null ? `\n（収量 ${t.yield}g を記録済み）` : '';
+    if (!(await customConfirm(`サイクル ${cur} を終了して、新しいサイクル ${cur + 1} を開始しますか？\n過去のログは保存されたまま残ります。${yieldNote}`))) return;
+    t.cycle = cur + 1;
+    t.stage = 'clone';
+    t.stageDates = {};
+    t.stageEndDates = {};
+    t.stageSpots = {};
+    t.yield = null;
+    await dbPut('tents', t);
+    document.getElementById('settingsModal').classList.remove('open');
+    loadTentToUI(currentTent);
+    update();
+    buildStageTable();
+    buildTentBar();
+    const logs = await dbGetAll('logs');
+    renderStageTimeline(logs);
+    showToast(`🌱 サイクル ${t.cycle} を開始`);
+  }
+
+  /* === CSVエクスポート === */
+  async function exportCsv() {
+    const logs = await dbGetAll('logs');
+    if (!logs.length) { showToast('ログがありません'); return; }
+    const tentName = id => (tents.find(x => x.id === id) || {}).name || id;
+    const cols = ['timestamp','tent','cycle','type','stage','temp_c','hum_pct','ppfd','co2_ppm','leaf_vpd','ph','ec_in','ec_runoff','water_temp','note'];
+    const esc = v => {
+      if (v == null || v === '') return '';
+      const s = String(v);
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    const rows = logs
+      .sort((a, b) => (a.ts || 0) - (b.ts || 0))
+      .map(l => [
+        l.timestamp, tentName(l.tentId), l.cycle || 1, l.type || 'feeding', l.stage || '',
+        l.temp ?? '', l.hum ?? '', l.ppfd ?? '', l.co2val ?? '', l.leafVpd ?? '',
+        l.ph ?? '', l.ec ?? '', l.runoffEc ?? '', l.waterTemp ?? '', l.note ?? ''
+      ].map(esc).join(','));
+    const csv = '﻿' + cols.join(',') + '\n' + rows.join('\n'); // BOM付き=Excel日本語対応
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `vpd_logs_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast(`📊 ${logs.length}件をCSV出力`);
   }
 
   async function clearLogs(skipConfirm = false) {
@@ -3230,7 +3328,7 @@ function classifyVpd(vpd, lo, hi) {
       totalEl.textContent = '';
     }
     const allStageLogs = (_logs || (await dbGetAll('logs')))
-      .filter(l => l.tentId === t.id && (l.type === 'monitor' || l.fertilizers || l.photo))
+      .filter(l => l.tentId === t.id && (l.cycle || 1) === (t.cycle || 1) && (l.type === 'monitor' || l.fertilizers || l.photo))
       .sort((a, b) => a.ts - b.ts);
     const logsByStage = {};
     allStageLogs.forEach(l => {
@@ -3562,7 +3660,7 @@ function classifyVpd(vpd, lo, hi) {
   /* === PIN Lock System === */
   const _PIN_KEY    = 'vpdPin';
   const _PIN_FAILS  = 'vpdPinFails';
-  const _PIN_LOCKED = 'vpdPinLocked';
+  const _PIN_LOCK_UNTIL = 'vpdPinLockUntil';
   const _PIN_MAX    = 3;
   const _PIN_LEN    = 9;   // PIN桁数（9桁＝10億通り。レガシー旧PINは桁数不問で解錠可）
   let _pinBuf  = '';
@@ -3578,11 +3676,18 @@ function classifyVpd(vpd, lo, hi) {
   }
   const _pinIsSet   = () => !!localStorage.getItem(_PIN_KEY);
   const _pinFails   = () => parseInt(localStorage.getItem(_PIN_FAILS) || '0', 10);
-  const _pinLocked  = () => localStorage.getItem(_PIN_LOCKED) === 'true';
+  const _pinLockRemain = () => Math.max(0, parseInt(localStorage.getItem(_PIN_LOCK_UNTIL) || '0', 10) - Date.now());
 
   function pinInitCheck() {
-    if (_pinLocked())  { _showBlankScreen(); return; }
-    if (_pinIsSet())   { _showPinOverlay('unlock'); }
+    if (_pinLockRemain() > 0) { _showLockScreen(); return; }
+    if (_pinIsSet()) {
+      // ロック期間明け: 失敗カウントをリセットして通常解錠へ
+      if (localStorage.getItem(_PIN_LOCK_UNTIL)) {
+        localStorage.removeItem(_PIN_LOCK_UNTIL);
+        localStorage.setItem(_PIN_FAILS, '0');
+      }
+      _showPinOverlay('unlock');
+    }
   }
 
   function _showPinOverlay(mode) {
@@ -3616,22 +3721,28 @@ function classifyVpd(vpd, lo, hi) {
     _pinBuf = '';
   }
 
-  async function _pinNukeAllData() {
-    try {
-      await new Promise(r => {
-        const req = indexedDB.deleteDatabase('VPD_FINAL_DB');
-        req.onsuccess = r; req.onerror = r;
-      });
-    } catch(e) {}
-    _cryptoKey = null;
-    localStorage.clear();
-  }
-
-  function _showBlankScreen() {
+  // 24時間ロック画面（データは保持。残り時間を表示して毎分更新）
+  function _showLockScreen() {
     const bs = document.getElementById('blankScreen');
     bs.onclick = null;
     bs.style.pointerEvents = 'none';
     bs.style.display = 'block';
+    let msg = document.getElementById('lockMsg');
+    if (!msg) {
+      msg = document.createElement('div');
+      msg.id = 'lockMsg';
+      msg.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(255,255,255,0.55);font-size:0.85rem;text-align:center;padding:24px;';
+      bs.appendChild(msg);
+    }
+    const render = () => {
+      const remain = _pinLockRemain();
+      if (remain <= 0) { location.reload(); return; }
+      const h = Math.floor(remain / 3600000);
+      const m = Math.ceil((remain % 3600000) / 60000);
+      msg.innerHTML = `<div style="font-size:2rem;">🔒</div><div>PINを${_PIN_MAX}回間違えたためロック中</div><div style="font-size:1.1rem;color:rgba(255,255,255,0.8);font-weight:700;">残り ${h}時間${m}分</div><div style="font-size:0.7rem;opacity:0.7;">データは消えていません</div>`;
+    };
+    render();
+    setInterval(render, 60000);
   }
 
   // 入力済みの桁数ぶんドットを描画（可変長対応：旧4桁PINも新9桁PINも自然に表示）
@@ -3699,16 +3810,11 @@ function classifyVpd(vpd, lo, hi) {
         const f = _pinFails() + 1;
         localStorage.setItem(_PIN_FAILS, String(f));
         if (f >= _PIN_MAX) {
-          // 3回目: 即ロック＋全データ削除
+          // 3回目: 24時間ロック（データは消さない）
+          localStorage.setItem(_PIN_LOCK_UNTIL, String(Date.now() + 24 * 60 * 60 * 1000));
           _hidePinOverlay();
-          _pinNukeAllData();
-          _showBlankScreen();
-        } else if (f === 2) {
-          // 2回目: 真っ黒画面のみ
-          _hidePinOverlay();
-          _showBlankScreen();
+          _showLockScreen();
         } else {
-          // 1回目
           document.getElementById('pinFailInfo').textContent = `⚠ ${f} / ${_PIN_MAX} attempts`;
           _pinShake();
         }
@@ -3870,7 +3976,90 @@ function classifyVpd(vpd, lo, hi) {
     update();
   }
 
+  /* === デコイ起動画面（フラッシュライト偽装） === */
+  let _decoyLightOn = false;
+  let _decoyTorchStream = null;
+  let _decoyHoldTimer = null;
+  let _decoyUnlocked = false;
+
+  function _showDecoy() {
+    document.getElementById('decoyScreen').style.display = 'flex';
+    const btn = document.getElementById('decoyPowerBtn');
+    // タップ＝点灯/消灯、2秒長押し＝本体アプリへ
+    const startHold = () => {
+      _decoyHoldTimer = setTimeout(() => {
+        _decoyHoldTimer = null;
+        _decoyExit();
+      }, 2000);
+    };
+    const endHold = (toggle) => {
+      if (_decoyHoldTimer) {
+        clearTimeout(_decoyHoldTimer);
+        _decoyHoldTimer = null;
+        if (toggle) _decoyToggleLight();
+      }
+    };
+    btn.addEventListener('touchstart', e => { e.preventDefault(); startHold(); }, { passive: false });
+    btn.addEventListener('touchend',   e => { e.preventDefault(); endHold(true); });
+    btn.addEventListener('touchcancel',() => endHold(false));
+    btn.addEventListener('mousedown',  startHold);
+    btn.addEventListener('mouseup',    () => endHold(true));
+    btn.addEventListener('mouseleave', () => endHold(false));
+  }
+
+  async function _decoyToggleLight() {
+    _decoyLightOn = !_decoyLightOn;
+    const scr   = document.getElementById('decoyScreen');
+    const btn   = document.getElementById('decoyPowerBtn');
+    const title = document.getElementById('decoyTitle');
+    const hint  = document.getElementById('decoyHint');
+    if (_decoyLightOn) {
+      scr.style.background = '#fff';
+      title.style.color = 'rgba(0,0,0,0.3)';
+      hint.style.color  = 'rgba(0,0,0,0.25)';
+      hint.textContent  = 'タップで消灯';
+      btn.style.borderColor = 'rgba(0,0,0,0.3)';
+      btn.style.background  = 'rgba(0,0,0,0.05)';
+      btn.style.color = 'rgba(0,0,0,0.55)';
+      // 背面トーチ点灯を試す（対応端末のみ。iOS Safariは非対応→白画面ライトで代替）
+      try {
+        _decoyTorchStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        const track = _decoyTorchStream.getVideoTracks()[0];
+        if (track.getCapabilities && track.getCapabilities().torch) {
+          await track.applyConstraints({ advanced: [{ torch: true }] });
+        } else {
+          track.stop(); _decoyTorchStream = null;
+        }
+      } catch(e) { _decoyTorchStream = null; }
+    } else {
+      scr.style.background = '#111';
+      title.style.color = 'rgba(255,255,255,0.35)';
+      hint.style.color  = 'rgba(255,255,255,0.22)';
+      hint.textContent  = 'タップで点灯';
+      btn.style.borderColor = 'rgba(255,255,255,0.25)';
+      btn.style.background  = 'rgba(255,255,255,0.06)';
+      btn.style.color = 'rgba(255,255,255,0.55)';
+      if (_decoyTorchStream) { _decoyTorchStream.getTracks().forEach(t => t.stop()); _decoyTorchStream = null; }
+    }
+  }
+
+  function _decoyExit() {
+    if (_decoyUnlocked) return;
+    _decoyUnlocked = true;
+    if (_decoyTorchStream) { _decoyTorchStream.getTracks().forEach(t => t.stop()); _decoyTorchStream = null; }
+    document.getElementById('decoyScreen').style.display = 'none';
+    _realInit();
+  }
+
   async function init() {
+    if (_decoyEnabled()) {
+      _showDecoy();   // 長押し解除で _realInit() が呼ばれる
+    } else {
+      await _realInit();
+    }
+  }
+
+  async function _realInit() {
     await initDB();
     // restore theme
     if (localStorage.getItem('vpdTheme') === 'light') {
@@ -3951,10 +4140,8 @@ function classifyVpd(vpd, lo, hi) {
   function openSettings() {
     document.getElementById('settingsModal').classList.add('open');
     updateThemeToggleUI(document.body.classList.contains('light-mode'));
-    document.getElementById('tolTemp').value = spotTolTemp;
-    document.getElementById('tolHum').value  = spotTolHum;
-    document.getElementById('tolPpfd').value = spotTolPpfd;
     document.getElementById('dayCountThumb').style.left = dayCountVisible ? '22px' : '2px';
+    _updateDecoyToggleUI();
   }
   function toggleDayCount() {
     dayCountVisible = !dayCountVisible;
@@ -3965,14 +4152,16 @@ function classifyVpd(vpd, lo, hi) {
     const dc = document.getElementById('stageDayCount');
     if (dc && dc.textContent) dc.style.display = dayCountVisible ? '' : 'none';
   }
-  function saveSpotTol() {
-    spotTolTemp = parseFloat(document.getElementById('tolTemp').value) || 1;
-    spotTolHum  = parseFloat(document.getElementById('tolHum').value)  || 3;
-    spotTolPpfd = parseFloat(document.getElementById('tolPpfd').value) || 50;
-    localStorage.setItem('spotTolTemp', spotTolTemp);
-    localStorage.setItem('spotTolHum',  spotTolHum);
-    localStorage.setItem('spotTolPpfd', spotTolPpfd);
-    update();
+  /* === デコイ起動画面 設定トグル === */
+  const _decoyEnabled = () => localStorage.getItem('decoyMode') !== 'false';
+  function _updateDecoyToggleUI() {
+    const thumb = document.getElementById('decoyThumb');
+    if (thumb) thumb.style.left = _decoyEnabled() ? '22px' : '2px';
+  }
+  function toggleDecoyMode() {
+    localStorage.setItem('decoyMode', _decoyEnabled() ? 'false' : 'true');
+    _updateDecoyToggleUI();
+    showToast(_decoyEnabled() ? '🔦 次回起動時からデコイ画面を表示' : 'デコイ画面をOFFにしました');
   }
   function loadDrySettings() {
     stages.dry.temp = JSON.parse(localStorage.getItem('dryTemp') || '[15,16]');
@@ -4099,6 +4288,7 @@ function classifyVpd(vpd, lo, hi) {
       id: Date.now() + '-' + t.id,
       type: 'monitor',
       tentId: t.id,
+      cycle: t.cycle || 1,
       stage: t.stage,
       timestamp: now.toLocaleString('ja-JP'),
       ts: now.getTime(),
