@@ -893,7 +893,7 @@
           <div class="stage-btn" data-s="harvest" onclick="setStage('harvest')">Harvest</div>
         </div>
       </div>
-      <div id="startDateRow" style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:4px;">
+      <div id="startDateRow" style="display:none;align-items:center;gap:6px;justify-content:center;margin-bottom:4px;">
         <label style="font-size:0.68rem;color:var(--text2);font-weight:600;flex-shrink:0;letter-spacing:0.06em;text-transform:uppercase;">Start</label>
         <input id="stageStartDate" type="date" style="width:110px;flex-shrink:0;font-size:0.78rem;height:24px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(52,199,89,0.3);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
         <button id="clearDateBtn" oncontextmenu="return false;" style="background:transparent;border:none;color:rgba(255,120,120,0.6);font-size:0.7rem;width:22px;height:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;display:none;">✕</button>
@@ -2730,20 +2730,24 @@
       zoneMarker.style.background = state === 'danger' ? 'var(--danger)' : state === 'warning' ? '#ff9500' : '#fff';
     }
     updateDli();
+    const airEl = document.getElementById('vpdAir');
     badge.className = 'status-badge';
     if (state === 'danger') {
       badge.classList.add('status-danger','pulse');
       badge.textContent = check < lo ? tr('vpd.too_low') : tr('vpd.too_high');
       const ppfdRange = getPpfdRange(t.stage, t.co2);
       recEl.textContent = generateAction(check, lo, hi, temp, hum, Number(t.ppfd || 0), t.dayNight === 'night' ? null : ppfdRange, null, null);
+      if (airEl) airEl.style.color = 'var(--danger)';
     } else if (state === 'warning') {
       badge.classList.add('status-warning');
       badge.textContent = tr('vpd.warning');
       recEl.textContent = tr('vpd.rec_warning');
+      if (airEl) airEl.style.color = 'var(--warning)';
     } else {
       badge.classList.add('status-ok');
       badge.textContent = tr('vpd.ok');
       recEl.textContent = `${stages[t.stage].name}${tr('vpd.rec_ok')}`;
+      if (airEl) airEl.style.color = 'var(--accent)';
     }
 
     // My Spot mode override
