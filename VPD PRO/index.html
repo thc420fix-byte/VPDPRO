@@ -914,12 +914,6 @@
         <div style="padding:3px 0 0;">
           <input id="monitorNoteInput" type="text" placeholder="メモ（任意）" maxlength="100" style="width:100%;box-sizing:border-box;padding:5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
         </div>
-        <div style="padding:4px 0 2px;">
-          <button id="monitorSaveBtn" class="save-btn"
-            onmousedown="startSaveHold('monitor',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
-            ontouchstart="startSaveHold('monitor',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
-            style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;">Save</button>
-        </div>
         <!-- CO2 Level (shown when CO2 is ON) -->
         <div id="co2LevelCard" style="display:none; border-top:1px solid rgba(255,255,255,0.06);">
           <div class="stepper-row" style="border-bottom:none;">
@@ -943,7 +937,13 @@
             </div>
             <button class="stepper-btn" onclick="adjustLeafOffset(0.5)">+</button>
           </div>
-          <div style="font-size:0.6rem;color:var(--text);text-align:center;padding-bottom:4px;">Leaf Temp = Air Temp + Offset</div>
+          <div style="font-size:0.6rem;color:var(--muted);text-align:center;padding-bottom:4px;">Leaf Temp = Air Temp + Offset</div>
+        </div>
+        <div style="padding:4px 0 2px;">
+          <button id="monitorSaveBtn" class="save-btn"
+            onmousedown="startSaveHold('monitor',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
+            ontouchstart="startSaveHold('monitor',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
+            style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;">Save</button>
         </div>
       </div>
       <!-- Sweet Spot Bar -->

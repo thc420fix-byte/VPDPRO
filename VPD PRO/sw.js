@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'vpd-pro-v26';
+const CACHE_VERSION = 'vpd-pro-v27';
 const ASSETS = [
   './',
   './index.html',
