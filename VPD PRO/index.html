@@ -823,7 +823,7 @@
         <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
       </div>
       <div id="statusBadge" class="status-badge status-ok">—</div>
-      <div id="rec" style="font-size:0.72rem;color:var(--text2);text-align:center;min-height:0;margin-top:2px;"></div>
+      <div id="rec" style="font-size:0.72rem;color:var(--text2);text-align:center;min-height:0;margin-top:3px;white-space:pre-line;line-height:1.5;"></div>
       <div id="vpdDiff" style="display:none"></div>
       <div id="targetHum" style="display:none"></div>
       <div id="ppfdNow" style="display:none"></div>
@@ -3496,7 +3496,7 @@ function classifyVpd(vpd, lo, hi) {
               <span style="font-size:0.8rem;font-weight:${isCurrent ? '700' : '600'};color:${isCurrent ? color : 'var(--text)'};">${s.name}${isCurrent ? ' ◀' : ''}</span>
               <span style="display:flex;align-items:center;gap:6px;">
                 <span style="font-size:0.72rem;color:var(--text);opacity:0.9;white-space:nowrap;">
-                  <span style="color:#fff;opacity:${isCurrent ? '0.9' : '0.4'};">${dateStr ? dateStr.replace(/-/g, '/') : (key === 'harvest' ? '' : '未設定')}</span>${daysText ? `　<span style="color:var(--accent);font-weight:700;opacity:${isCurrent ? '1' : '0.4'};">${daysText}</span>` : ''}
+                  <span style="color:#fff;opacity:${isCurrent ? '0.9' : '0.4'};">${dateStr ? dateStr.replace(/-/g, '/') : (key === 'harvest' ? '' : '—')}</span>${daysText ? `　<span style="color:var(--accent);font-weight:700;opacity:${isCurrent ? '1' : '0.4'};">${daysText}</span>` : ''}
                 </span>
                 ${dateStr ? `<span id="sicon-${key}" style="font-size:0.65rem;color:var(--text);opacity:0.5;cursor:pointer;">▶</span>` : ''}
               </span>
