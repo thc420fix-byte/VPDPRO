@@ -732,9 +732,9 @@
     <div style="display:flex;align-items:center;justify-content:space-between;padding:max(14px,env(safe-area-inset-top)) 16px 12px;background:rgba(0,0,0,0.85);flex-shrink:0;">
       <div>
         <div style="font-size:1rem;font-weight:700;color:var(--accent);letter-spacing:0.08em;">☀️ LIGHT METER</div>
-        <div style="font-size:0.62rem;color:rgba(255,255,255,0.5);margin-top:1px;">カメラで光量をリアルタイム測定</div>
+        <div style="font-size:0.62rem;color:rgba(255,255,255,0.5);margin-top:1px;">Real-time camera light measurement</div>
       </div>
-      <button onclick="closeLightMeter()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:0.85rem;padding:6px 14px;cursor:pointer;">✕ 閉じる</button>
+      <button onclick="closeLightMeter()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:0.85rem;padding:6px 14px;cursor:pointer;">✕ Close</button>
     </div>
     <!-- カメラビュー -->
     <div style="position:relative;flex:1;min-height:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;">
@@ -752,7 +752,7 @@
         </div>
         <!-- ステージ目標との比較バー -->
         <div id="lmZoneWrap" style="margin-top:12px;display:none;">
-          <div style="font-size:0.6rem;color:rgba(255,255,255,0.45);text-align:center;margin-bottom:4px;">ステージ目標 <span id="lmRangeLabel"></span> µmol</div>
+          <div style="font-size:0.6rem;color:rgba(255,255,255,0.45);text-align:center;margin-bottom:4px;">Stage target: <span id="lmRangeLabel"></span> µmol</div>
           <div style="position:relative;height:8px;border-radius:4px;background:rgba(255,255,255,0.1);">
             <div id="lmZoneTarget" style="position:absolute;top:-1px;bottom:-1px;background:rgba(0,255,136,0.3);border:1px solid rgba(0,255,136,0.7);border-radius:4px;"></div>
             <div id="lmZoneMarker" style="position:absolute;top:-4px;width:3px;height:16px;border-radius:2px;background:#fff;transform:translateX(-50%);transition:left 0.3s;"></div>
@@ -762,34 +762,34 @@
       <!-- 計測不可メッセージ -->
       <div id="lmError" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center;padding:24px;">
         <div style="font-size:2rem;">📷</div>
-        <div style="color:#fff;font-size:0.85rem;line-height:1.6;" id="lmErrorMsg">カメラにアクセスできません</div>
-        <button onclick="startLightMeter()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.5);border-radius:8px;color:var(--accent);font-size:0.85rem;padding:8px 20px;cursor:pointer;">再試行</button>
+        <div style="color:#fff;font-size:0.85rem;line-height:1.6;" id="lmErrorMsg">Camera access unavailable</div>
+        <button onclick="startLightMeter()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.5);border-radius:8px;color:var(--accent);font-size:0.85rem;padding:8px 20px;cursor:pointer;">Retry</button>
       </div>
     </div>
     <!-- 下部コントロール -->
     <div style="padding:14px 16px max(16px,env(safe-area-inset-bottom));background:rgba(10,20,14,0.97);border-top:1px solid var(--border);flex-shrink:0;">
       <!-- 光源選択 -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <span style="font-size:0.72rem;color:rgba(255,255,255,0.5);white-space:nowrap;flex-shrink:0;">光源</span>
+        <span style="font-size:0.72rem;color:rgba(255,255,255,0.5);white-space:nowrap;flex-shrink:0;">Source</span>
         <select id="lmSource" onchange="lmUpdateSource()" style="flex:1;padding:6px 10px;background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.78rem;outline:none;">
-          <option value="0.015" selected>LED フルスペクトラム</option>
+          <option value="0.015" selected>LED Full Spectrum</option>
           <option value="0.0122">HPS</option>
           <option value="0.0141">MH</option>
           <option value="0.0154">CMH</option>
-          <option value="0.0135">蛍光灯 / CFL</option>
-          <option value="0.0185">太陽光</option>
+          <option value="0.0135">Fluorescent / CFL</option>
+          <option value="0.0185">Sunlight</option>
         </select>
       </div>
       <!-- キャリブレーション -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:0.72rem;color:rgba(255,255,255,0.5);white-space:nowrap;flex-shrink:0;">補正 ×</span>
+        <span style="font-size:0.72rem;color:rgba(255,255,255,0.5);white-space:nowrap;flex-shrink:0;">Calib ×</span>
         <input id="lmCalib" type="range" min="0.2" max="5" step="0.05" value="1" oninput="lmOnCalibChange()" style="flex:1;accent-color:var(--accent);">
         <span id="lmCalibVal" style="font-size:0.78rem;color:var(--accent);font-family:'Rajdhani',sans-serif;min-width:32px;text-align:right;">1.00</span>
-        <button onclick="lmResetCalib()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:rgba(255,255,255,0.5);font-size:0.65rem;padding:3px 7px;cursor:pointer;white-space:nowrap;">リセット</button>
+        <button onclick="lmResetCalib()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:rgba(255,255,255,0.5);font-size:0.65rem;padding:3px 7px;cursor:pointer;white-space:nowrap;">Reset</button>
       </div>
       <div style="font-size:0.6rem;color:rgba(255,255,255,0.32);text-align:center;margin-bottom:10px;line-height:1.5;">Accuracy depends on your camera. Compare against Photone readings to calibrate the correction factor.</div>
       <!-- アクションボタン -->
-      <button id="lmApplyBtn" onclick="lmApply()" style="width:100%;padding:12px;background:rgba(0,255,136,0.15);border:2px solid rgba(0,255,136,0.6);border-radius:12px;color:var(--accent);font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;">✓ この値をPPFDに反映</button>
+      <button id="lmApplyBtn" onclick="lmApply()" style="width:100%;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#000;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;">Apply to PPFD</button>
     </div>
   </div>
 
@@ -823,8 +823,8 @@
         <option value="0.0185">太陽光</option>
       </select>
       <div style="text-align:center;font-size:0.85rem;color:var(--text);margin-bottom:14px;">→ <span id="luxResult" style="color:var(--accent);font-size:1.3rem;font-weight:700;font-family:'Rajdhani',sans-serif;">—</span> µmol/m²/s</div>
-      <button class="small-btn" style="width:100%;margin-bottom:8px;font-size:0.85rem;padding:8px;" onclick="applyLuxResult()">✓ PPFDに反映</button>
-      <button class="small-btn" style="width:100%;font-size:0.78rem;opacity:0.7;" onclick="closeLuxConverter()">閉じる</button>
+      <button style="width:100%;margin-bottom:8px;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.85rem;font-weight:700;cursor:pointer;" onclick="applyLuxResult()">Apply to PPFD</button>
+      <button style="width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:0.78rem;cursor:pointer;" onclick="closeLuxConverter()">Close</button>
     </div>
   </div>
   <h1>VPD PRO</h1>
