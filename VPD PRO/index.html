@@ -802,21 +802,17 @@
   </div>
   <div class="tab-content active" id="tab-monitor">
     <div class="card">
-      <div style="position:relative;display:flex;justify-content:center;align-items:center;cursor:pointer;margin-bottom:4px;" onclick="(function(){var el=document.getElementById('vpdCardBody');var ic=document.getElementById('vpdToggleIcon');var ci=document.getElementById('vpdCollapsedInfo');var open=el.style.display!=='none';el.style.display=open?'none':'';ic.textContent=open?'▶':'▼';ci.style.visibility=open?'visible':'hidden';})()">
-        <span id="vpdCollapsedInfo" style="visibility:hidden;font-size:1rem;font-weight:700;color:var(--text);"></span>
-        <span id="vpdToggleIcon" style="position:absolute;right:0;font-size:0.7rem;color:var(--text);opacity:0.5;">▼</span>
-      </div>
       <div id="vpdCardBody">
       <div class="vpd-row">
         <div class="vpd-block">
           <div class="vpd-label">Air VPD</div>
           <div class="vpd-num" id="vpdAir">—</div>
-          <div style="font-size:0.7rem;color:var(--text);">kPa</div>
+          <div style="font-size:0.7rem;color:var(--muted);">kPa</div>
         </div>
         <div class="vpd-block" id="leafBlock">
           <div class="vpd-label">Leaf VPD</div>
           <div class="vpd-num" id="vpdLeaf" style="color:var(--leaf)">—</div>
-          <div style="font-size:0.7rem;color:var(--text);">kPa</div>
+          <div style="font-size:0.7rem;color:var(--muted);">kPa</div>
         </div>
       </div>
       <div class="vpd-zonebar-wrap">
@@ -826,8 +822,8 @@
         </div>
         <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
       </div>
-      <div id="statusBadge" class="status-badge status-ok" style="display:none">—</div>
-      <div id="rec" style="display:none"></div>
+      <div id="statusBadge" class="status-badge status-ok">—</div>
+      <div id="rec" style="font-size:0.72rem;color:var(--text2);text-align:center;min-height:0;margin-top:2px;"></div>
       <div id="vpdDiff" style="display:none"></div>
       <div id="targetHum" style="display:none"></div>
       <div id="ppfdNow" style="display:none"></div>
@@ -860,11 +856,12 @@
           <div class="stage-btn" data-s="harvest" onclick="setStage('harvest')">Harvest</div>
         </div>
       </div>
-      <div class="input-row" style="margin-top:0;margin-bottom:4px; align-items:center; gap:6px; justify-content:center;">
-        <label style="font-size:0.72rem;color:var(--text2);font-weight:600;flex-shrink:0;">Start</label>
+      <div id="startDateRow" style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:4px;">
+        <label style="font-size:0.68rem;color:var(--text2);font-weight:600;flex-shrink:0;letter-spacing:0.06em;text-transform:uppercase;">Start</label>
         <input id="stageStartDate" type="date" style="width:110px;flex-shrink:0;font-size:0.78rem;height:24px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(52,199,89,0.3);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
-        <button id="clearDateBtn" oncontextmenu="return false;" style="background:transparent;border:none;color:rgba(255,120,120,0.6);font-size:0.7rem;width:22px;height:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
+        <button id="clearDateBtn" oncontextmenu="return false;" style="background:transparent;border:none;color:rgba(255,120,120,0.6);font-size:0.7rem;width:22px;height:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;display:none;">✕</button>
       </div>
+      <div id="addDateRow" onclick="document.getElementById('stageStartDate').click()" style="text-align:center;margin-bottom:4px;cursor:pointer;font-size:0.68rem;color:var(--muted);letter-spacing:0.04em;">+ Set start date</div>
       <!-- 収量記録 (Harvestステージのみ) -->
       <div id="yieldRow" class="input-row" style="display:none;margin-bottom:2px;align-items:center;gap:8px;justify-content:center;">
         <label style="font-size:0.95rem;color:var(--text);font-weight:700;flex-shrink:0;">🏆 収量</label>
@@ -914,8 +911,6 @@
           <span onclick="openLuxConverter()" style="cursor:pointer;font-size:0.68rem;color:var(--text2);background:var(--surface2);border-radius:6px;padding:3px 7px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;">lux</span>
           <span onclick="openLightMeter()" style="cursor:pointer;font-size:0.68rem;color:var(--accent);background:rgba(52,199,89,0.12);border-radius:6px;padding:3px 7px;font-weight:700;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;">Meter</span>
         </div>
-        <!-- Theory reference (Theory mode only) -->
-        <div id="monitorTheoryRef" style="display:none;border-top:1px solid rgba(255,255,255,0.06);padding:5px 0;font-size:0.68rem;color:var(--text);opacity:0.8;text-align:center;line-height:1.7;"></div>
         <div style="padding:3px 0 0;">
           <input id="monitorNoteInput" type="text" placeholder="メモ（任意）" maxlength="100" style="width:100%;box-sizing:border-box;padding:5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
         </div>
@@ -1644,11 +1639,15 @@
     updateStageDayCount(linked.base, linked.end, t.stage);
   }
 
-  // 日付が未設定なら🗑を隠す
   function _updateClearDateBtn() {
     const btn = document.getElementById('clearDateBtn');
     const inp = document.getElementById('stageStartDate');
-    if (btn && inp) btn.style.display = inp.value ? 'flex' : 'none';
+    const row = document.getElementById('startDateRow');
+    const addRow = document.getElementById('addDateRow');
+    const hasDate = !!(inp && inp.value);
+    if (btn) btn.style.display = hasDate ? 'flex' : 'none';
+    if (row) row.style.display = hasDate ? 'flex' : 'none';
+    if (addRow) addRow.style.display = hasDate ? 'none' : '';
   }
 
   // Harvestステージのときだけ収量入力を表示
@@ -2481,7 +2480,7 @@
       if (range && range[1] > 0) {
         const lo = Math.round(range[0] * h * 3600 / 1e6);
         const hi = Math.round(range[1] * h * 3600 / 1e6);
-        tgtEl.textContent = `（目標 ${lo}〜${hi}）`;
+        tgtEl.textContent = ` / ${lo}–${hi} target`;
       } else {
         tgtEl.textContent = '';
       }
@@ -2693,7 +2692,7 @@
       badge.classList.add('status-danger','pulse');
       badge.textContent = check < lo ? tr('vpd.too_low') : tr('vpd.too_high');
       const ppfdRange = getPpfdRange(t.stage, t.co2);
-      recEl.textContent = generateAction(check, lo, hi, temp, hum, Number(t.ppfd || 0), ppfdRange, null, null);
+      recEl.textContent = generateAction(check, lo, hi, temp, hum, Number(t.ppfd || 0), t.dayNight === 'night' ? null : ppfdRange, null, null);
     } else if (state === 'warning') {
       badge.classList.add('status-warning');
       badge.textContent = tr('vpd.warning');
@@ -2732,12 +2731,6 @@
       }
     }
 
-    const _ci = document.getElementById('vpdCollapsedInfo');
-    if (_ci) {
-      const _ciColor = badge.classList.contains('status-danger') ? 'var(--danger)' : badge.classList.contains('status-warning') ? '#ff9500' : 'var(--ok)';
-      _ci.innerHTML = `<span style="color:var(--text);">VPD ｜ </span><span style="color:${_ciColor};">Air ${airV.toFixed(2)} kPa</span><span style="color:var(--text);"> / </span><span style="color:${_ciColor};">Leaf ${leafV.toFixed(2)} kPa</span>`;
-    }
-
     const mid = (lo + hi)/2;
     // 現在値との差分(kPa)
     const diff = check - mid;
@@ -2766,20 +2759,6 @@
     }
     updateSpotDisplay();
 
-    // Theory 参考値をPPFD下に表示
-    const theoryRefEl = document.getElementById('monitorTheoryRef');
-    if (theoryRefEl) {
-      if (spotMode === 'theory') {
-        theoryRefEl.style.display = '';
-        const s = stages[t.stage];
-        const tempStr = s.temp ? `${s.temp[0]}–${s.temp[1]}℃` : '—';
-        const humStr = s.hum ? `${s.hum[0]}–${s.hum[1]}%` : '—';
-        const ppfdStr = `${ppfdRange[0]}–${ppfdRange[1]} µmol`;
-        theoryRefEl.innerHTML = `Temp: ${tempStr} &nbsp;|&nbsp; Humidity: ${humStr} &nbsp;|&nbsp; PPFD: ${ppfdStr}`;
-      } else {
-        theoryRefEl.style.display = 'none';
-      }
-    }
   }
 
   /* === ステージ表 === */
