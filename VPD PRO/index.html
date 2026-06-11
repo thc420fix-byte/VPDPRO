@@ -2515,6 +2515,8 @@
       if (range && range[1] > 0) {
         const lo = Math.round(range[0] * h * 3600 / 1e6);
         const hi = Math.round(range[1] * h * 3600 / 1e6);
+        const dliState = dli < lo ? 'low' : dli > hi ? 'high' : 'ok';
+        el.style.color = dliState === 'ok' ? 'var(--accent)' : dliState === 'low' ? 'var(--warning)' : 'var(--danger)';
         tgtEl.textContent = ` / ${lo}–${hi} target`;
       } else {
         tgtEl.textContent = '';
