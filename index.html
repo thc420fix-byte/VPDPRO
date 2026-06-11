@@ -757,14 +757,6 @@
     <div id="decoyTitle" style="font-size:0.85rem;letter-spacing:0.35em;color:rgba(255,255,255,0.35);font-weight:600;user-select:none;transition:color 0.25s;">FLASHLIGHT</div>
     <button id="decoyPowerBtn" style="width:130px;height:130px;border-radius:50%;border:3px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.55);font-size:3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none;transition:all 0.25s;outline:none;">⏻</button>
     <div id="decoyHint" style="font-size:0.7rem;color:rgba(255,255,255,0.22);user-select:none;transition:color 0.25s;">タップで点灯</div>
-    <!-- デコイPINオーバーレイ -->
-    <div id="decoyPinOverlay" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.92);flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:1;">
-      <div style="font-size:0.75rem;letter-spacing:0.2em;color:rgba(255,255,255,0.4);font-weight:600;">ENTER PIN</div>
-      <div id="decoyPinDots" style="display:flex;gap:10px;margin:4px 0;"></div>
-      <div id="decoyPinError" style="font-size:0.72rem;color:#ff453a;min-height:18px;text-align:center;"></div>
-      <div id="decoyPinKeypad" style="display:grid;grid-template-columns:repeat(3,68px);gap:10px;"></div>
-      <div style="margin-top:4px;font-size:0.7rem;color:rgba(255,255,255,0.2);cursor:pointer;padding:6px 16px;" onclick="_hideDecoyPin()">キャンセル</div>
-    </div>
   </div>
 
   <!-- lux→PPFD 変換モーダル -->
@@ -4105,18 +4097,15 @@ function classifyVpd(vpd, lo, hi) {
   let _decoyTorchStream = null;
   let _decoyHoldTimer = null;
   let _decoyUnlocked = false;
-  let _decoyPinVerified = false;
-  let _decoyPinBuf = '';
-  const _DECOY_PIN_LEN = 9;
 
   function _showDecoy() {
     document.getElementById('decoyScreen').style.display = 'flex';
     const btn = document.getElementById('decoyPowerBtn');
-    // タップ＝点灯/消灯、2秒長押し＝PIN入力（またはそのまま本体へ）
+    // タップ＝点灯/消灯、2秒長押し＝本体アプリへ
     const startHold = () => {
       _decoyHoldTimer = setTimeout(() => {
         _decoyHoldTimer = null;
-        _showDecoyPin();
+        _decoyExit();
       }, 2000);
     };
     const endHold = (toggle) => {
@@ -4132,75 +4121,6 @@ function classifyVpd(vpd, lo, hi) {
     btn.addEventListener('mousedown',  startHold);
     btn.addEventListener('mouseup',    () => endHold(true));
     btn.addEventListener('mouseleave', () => endHold(false));
-  }
-
-  function _showDecoyPin() {
-    if (!_pinIsSet()) { _decoyExit(); return; }
-    _decoyPinBuf = '';
-    const overlay = document.getElementById('decoyPinOverlay');
-    overlay.style.display = 'flex';
-    _decoyRenderDots();
-    _decoyBuildKeypad();
-    document.getElementById('decoyPinError').textContent = '';
-  }
-
-  function _hideDecoyPin() {
-    document.getElementById('decoyPinOverlay').style.display = 'none';
-    _decoyPinBuf = '';
-  }
-
-  function _decoyRenderDots() {
-    const box = document.getElementById('decoyPinDots');
-    box.innerHTML = '';
-    for (let i = 0; i < _DECOY_PIN_LEN; i++) {
-      const d = document.createElement('div');
-      d.style.cssText = `width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,0.4);background:${i < _decoyPinBuf.length ? '#34c759' : 'transparent'};transition:background 0.15s;`;
-      box.appendChild(d);
-    }
-  }
-
-  function _decoyBuildKeypad() {
-    const pad = document.getElementById('decoyPinKeypad');
-    pad.innerHTML = '';
-    const digits = [1,2,3,4,5,6,7,8,9,0].sort(() => Math.random()-0.5);
-    // 3×3 grid of digits + backspace + confirm
-    const allKeys = [...digits, '⌫', '✓'];
-    allKeys.forEach(k => {
-      const el = document.createElement('div');
-      el.style.cssText = 'width:68px;height:52px;border-radius:12px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85);font-size:1.3rem;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;';
-      el.textContent = k;
-      if (k === '⌫') {
-        el.style.color = 'rgba(255,255,255,0.5)';
-        el.onclick = () => { _decoyPinBuf = _decoyPinBuf.slice(0,-1); _decoyRenderDots(); };
-      } else if (k === '✓') {
-        el.style.color = '#34c759';
-        el.onclick = () => _decoyPinConfirm();
-      } else {
-        el.onclick = () => {
-          if (_decoyPinBuf.length >= _DECOY_PIN_LEN) return;
-          _decoyPinBuf += k;
-          _decoyRenderDots();
-          if (_decoyPinBuf.length === _DECOY_PIN_LEN) _decoyPinConfirm();
-        };
-      }
-      pad.appendChild(el);
-    });
-  }
-
-  async function _decoyPinConfirm() {
-    const ok = await _pinCheck(_decoyPinBuf);
-    if (ok) {
-      _decoyPinVerified = true;
-      _hideDecoyPin();
-      _decoyExit();
-    } else {
-      document.getElementById('decoyPinError').textContent = '✗ 違います';
-      const box = document.getElementById('decoyPinDots');
-      box.style.animation = 'none';
-      setTimeout(() => { box.style.animation = 'pinShake 0.35s ease'; }, 10);
-      _decoyPinBuf = '';
-      setTimeout(() => { _decoyRenderDots(); document.getElementById('decoyPinError').textContent = ''; }, 800);
-    }
   }
 
   async function _decoyToggleLight() {
@@ -4265,11 +4185,11 @@ function classifyVpd(vpd, lo, hi) {
     // restore language
     applyLang();
     _updatePinSettingsUI();
-    if (_pinIsSet() && !_decoyPinVerified) {
+    if (_pinIsSet()) {
       // PIN 設定済み: 解除するまでデータを読み込まない（暗号文のみメモリ外に保つ）
       pinInitCheck();
     } else {
-      // PIN 未設定 or デコイPIN検証済み: 即読み込み
+      // PIN 未設定: 従来どおり平文で即読み込み
       await bootData();
     }
   }
