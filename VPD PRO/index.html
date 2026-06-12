@@ -57,16 +57,21 @@
     }
     #settingsToggle {
       position: absolute;
-      right: 8px;
-      top: max(10px, env(safe-area-inset-top));
+      right: 10px;
+      top: max(6px, env(safe-area-inset-top));
       background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      color: var(--text);
-      font-size: 1rem;
-      padding: 4px 10px;
+      border: none;
+      border-radius: 50%;
+      color: var(--text2);
+      font-size: 1.35rem;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      opacity: 0.8;
+      opacity: 0.75;
+      padding: 0;
     }
     #settingsModal {
       display: none;
@@ -97,7 +102,7 @@
       color: var(--text);
       padding: 6px 6px;
       padding-top: max(8px, env(safe-area-inset-top));
-      padding-bottom: calc(66px + env(safe-area-inset-bottom));
+      padding-bottom: calc(120px + env(safe-area-inset-bottom));
       /* iOS ダブルタップズーム / ピンチズーム抑止（アプリ的UIで固定） */
       touch-action: manipulation;
       -webkit-touch-callout: none;
@@ -105,12 +110,13 @@
     }
     html { touch-action: manipulation; }
     h1 {
-      font-size: 0.9rem;
-      font-weight: 700;
+      font-size: 1.05rem;
+      font-weight: 800;
       text-align: center;
       color: var(--accent);
       margin: 0 0 2px 0;
-      letter-spacing: 4px;
+      letter-spacing: 0.22em;
+      text-shadow: 0 0 18px rgba(52,199,89,0.45);
     }
     .subtitle { display: none; }
     /* テントバー */
@@ -201,6 +207,7 @@
       border-radius: 14px;
       padding: 12px 14px;
       margin-bottom: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.04) inset;
     }
     .card-title {
       font-size: 0.68rem;
@@ -283,7 +290,7 @@
       height: 40px;
       flex-shrink: 0;
       border-radius: 50%;
-      border: none;
+      border: 1px solid rgba(52,199,89,0.2);
       background: var(--surface2);
       color: var(--accent);
       font-size: 1.4rem;
@@ -296,6 +303,7 @@
       padding: 0;
       -webkit-tap-highlight-color: transparent;
       transition: background 0.1s, transform 0.08s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
     }
     .stepper-btn:active { background: var(--border); transform: scale(0.92); }
     .stepper-center {
@@ -405,13 +413,13 @@
     }
     .status-badge {
       display: inline-block;
-      padding: 3px 12px;
-      border-radius: 16px;
+      padding: 4px 14px;
+      border-radius: 20px;
       font-size: 0.68rem;
       font-weight: 700;
       margin-bottom: 3px;
       text-transform: none;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.04em;
     }
     .status-ok {
       background: rgba(52,199,89,0.15);
@@ -463,20 +471,21 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.92);
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 8000;
     }
     .photo-overlay img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 10px;
+      max-width: 92%;
+      max-height: 88%;
+      border-radius: 12px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
     }
     .photo-overlay .overlay-close {
       position: absolute;
-      top: 16px;
+      top: max(16px, env(safe-area-inset-top));
       right: 20px;
       font-size: 1.6rem;
       color: #fff;
@@ -489,7 +498,7 @@
     }
     .toast {
       position: fixed;
-      bottom: max(28px, env(safe-area-inset-bottom));
+      bottom: calc(76px + env(safe-area-inset-bottom));
       left: 50%;
       transform: translateX(-50%);
       background: var(--accent);
@@ -500,21 +509,51 @@
       font-weight: 700;
       opacity: 0;
       transition: opacity 0.3s;
-      z-index: 2000;
+      z-index: 6000;
       pointer-events: none;
       white-space: nowrap;
     }
     .toast.show { opacity: 1; }
-    .save-btn { position:relative; overflow:hidden; }
+    .save-btn {
+      position:relative; overflow:hidden;
+      background: linear-gradient(135deg, #34c759 0%, #28a745 100%) !important;
+      border-radius: 12px !important;
+      box-shadow: 0 2px 14px rgba(52,199,89,0.30), 0 1px 0 rgba(255,255,255,0.12) inset;
+      letter-spacing: 0.06em !important;
+    }
     .save-btn::after {
       content:'';
       position:absolute;
       left:0; top:0; bottom:0;
       width:0%;
-      background:rgba(0,255,136,0.35);
+      background:rgba(255,255,255,0.22);
       transition:none;
     }
     .save-btn.holding::after { width:100%; transition:width 0.8s linear; }
+    .ai-action-btn {
+      width:100%; padding:9px;
+      background: rgba(52,199,89,0.08);
+      border: 1px solid rgba(52,199,89,0.28);
+      border-radius: 10px;
+      color: var(--accent);
+      font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; letter-spacing: 0.04em;
+      box-shadow: 0 0 0 0 rgba(52,199,89,0);
+      transition: background 0.15s, box-shadow 0.15s;
+      text-align: center;
+    }
+    .ai-action-btn:active {
+      background: rgba(52,199,89,0.18);
+      box-shadow: 0 0 12px rgba(52,199,89,0.22);
+    }
+    .ai-result-box {
+      margin-top: 8px; padding: 12px 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      font-size: 0.76rem; color: var(--text);
+      line-height: 1.7; white-space: pre-wrap;
+    }
     .save-popup {
       position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex;
       align-items:center; justify-content:center; z-index:3000;
@@ -693,6 +732,34 @@
         </div>
       </div>
       <div style="font-size:0.65rem;color:var(--muted);line-height:1.5;padding:0 4px;margin-bottom:6px;">100% offline — no account, no server.</div>
+
+      <!-- AI / Local LLM -->
+      <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;">AI (Local LLM)</div>
+      <div style="background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:8px;">
+        <div style="padding:11px 14px;">
+          <div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px;">LM Studio URL</div>
+          <input id="lmUrlInput" type="url" placeholder="http://localhost:11234" value=""
+            style="width:100%;box-sizing:border-box;padding:7px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8rem;outline:none;"
+            oninput="localStorage.setItem('lmUrl',this.value.trim())">
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button onclick="testLmConnection()" style="flex:1;padding:7px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:0.75rem;cursor:pointer;">Test</button>
+            <div id="lmStatus" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:0.72rem;color:var(--text2);">—</div>
+          </div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:0 14px;"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
+          <span style="font-size:0.88rem;color:var(--text);">AI Advice</span>
+          <div id="aiToggleSwitch" onclick="toggleAi()" style="width:42px;height:26px;border-radius:13px;background:rgba(255,255,255,0.12);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;">
+            <div id="aiToggleThumb" style="width:20px;height:20px;border-radius:50%;background:var(--text2);position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- About -->
+      <div style="margin-top:16px;padding:12px 14px;background:var(--surface2);border-radius:12px;text-align:center;">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--accent);letter-spacing:0.12em;margin-bottom:4px;">VPD PRO</div>
+        <div style="font-size:0.62rem;color:var(--muted);line-height:1.6;">Cannabis Grow Environment Monitor<br>v1.0 · 完全オフライン PWA<br><span style="color:var(--text2);">note で配布中</span></div>
+      </div>
 
       <!-- PIN 3回失敗時の動作 -->
       <div id="pinFailModeSection" style="display:none;margin-top:8px;">
@@ -961,6 +1028,12 @@
             onmousedown="startSaveHold('monitor',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
             ontouchstart="startSaveHold('monitor',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
             style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;">Save</button>
+          <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;">press &amp; hold</div>
+        </div>
+        <!-- AI Advice Panel -->
+        <div id="aiAdvicePanel" style="display:none;margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:6px;">
+          <button onclick="runAiAdvice()" class="ai-action-btn">✦ AI Advice</button>
+          <div id="aiAdviceResult" class="ai-result-box" style="display:none;"></div>
         </div>
       </div>
       <!-- Sweet Spot Bar -->
@@ -984,11 +1057,17 @@
           <button id="refCo2Btn" onclick="toggleRefCo2()" style="background:transparent;border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:0.72rem;padding:3px 10px;cursor:pointer;opacity:0.8;">CO₂ OFF</button>
         </div>
       </div>
-      <div id="stageTable"></div>
+      <div style="position:relative;">
+        <div id="stageTable"></div>
+        <div style="position:absolute;top:0;right:0;height:100%;width:24px;background:linear-gradient(to right,transparent,var(--surface2));pointer-events:none;border-radius:0 8px 8px 0;"></div>
+      </div>
       <div id="waterTempNote" style="margin-top:8px;font-size:0.68rem;color:var(--accent);opacity:0.85;" data-i18n="ref.water_temp">💧 水温目安: 18〜22°C（根の健康・溶存酸素量の観点から）</div>
     </div>
     <div class="card">
-      <div class="card-title">VPD REFERENCE CHART</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="card-title" style="margin-bottom:0;">VPD REFERENCE CHART</div>
+        <span style="font-size:0.58rem;color:var(--muted);letter-spacing:0.04em;">← scroll →</span>
+      </div>
       <div id="vpdMatrix"></div>
     </div>
   </div>
@@ -1042,8 +1121,15 @@
         </div>
         <button class="stepper-btn" onclick="adjustWaterTemp(0.5)">+</button>
       </div>
+      <!-- EC Measurement Toggle -->
+      <div onclick="toggleEcRows()" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;cursor:pointer;border-top:1px solid rgba(255,255,255,0.06);">
+        <span style="font-size:0.75rem;color:var(--text2);letter-spacing:0.04em;">EC Measurement</span>
+        <div id="ecToggleSwitch" style="width:38px;height:22px;border-radius:11px;background:rgba(255,255,255,0.12);position:relative;transition:background 0.2s;flex-shrink:0;">
+          <div id="ecToggleThumb" style="width:18px;height:18px;border-radius:50%;background:var(--text2);position:absolute;top:2px;left:2px;transition:left 0.2s,background 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.4);"></div>
+        </div>
+      </div>
       <!-- Input EC -->
-      <div class="stepper-row">
+      <div id="inputEcRow" class="stepper-row" style="display:none;">
         <button class="stepper-btn" onclick="adjustEc(-0.1)">−</button>
         <div class="stepper-center">
           <span id="inputEcLabel" class="stepper-label">Input EC</span>
@@ -1053,7 +1139,7 @@
         <button class="stepper-btn" onclick="adjustEc(0.1)">+</button>
       </div>
       <!-- Runoff EC -->
-      <div id="runoffEcRow" class="stepper-row">
+      <div id="runoffEcRow" class="stepper-row" style="display:none;">
         <button class="stepper-btn" onclick="adjustRunoffEc(-0.1)">−</button>
         <div class="stepper-center">
           <span class="stepper-label">Runoff EC</span>
@@ -1073,6 +1159,12 @@
         onmousedown="startSaveHold('feeding',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
         ontouchstart="startSaveHold('feeding',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
         style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;">Save</button>
+      <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;">press &amp; hold</div>
+    </div>
+    <!-- AI Feeding Review Panel -->
+    <div id="aiFeedingPanel" style="display:none;padding:0 8px 4px;">
+      <button onclick="runAiFeeding()" class="ai-action-btn">✦ AI Review</button>
+      <div id="aiFeedingResult" class="ai-result-box" style="display:none;"></div>
     </div>
     <!-- Feeding Sweet Spot Bar -->
     <div id="feedingSpotBar" style="display:none;flex-direction:column;gap:2px;padding:4px 2px;border-top:1px solid rgba(0,255,136,0.15);margin-top:2px;">
@@ -1085,9 +1177,11 @@
       </div>
     </div>
   </div>
+  <!-- Recent Feed Logs -->
+  <div id="feedRecentLogs"></div>
 </div>
 
-  
+
 <div class="tab-content" id="tab-analysis">
   <!-- ステージ進捗タイムライン -->
   <div class="card">
@@ -1105,6 +1199,16 @@
     <div id="analysisEmptyState" style="display:none;text-align:center;padding:24px 16px;">
       <div style="font-size:2rem;margin-bottom:8px;">📊</div>
       <div style="font-size:0.85rem;color:var(--text2);line-height:1.6;" data-i18n="analysis.empty">No data yet.<br>Enter values in the Environ tab<br>and press Save.</div>
+    </div>
+  </div>
+  <!-- How to use hint -->
+  <div class="card" style="opacity:0.72;">
+    <div class="card-title" style="margin-bottom:8px;">HOW TO USE</div>
+    <div style="display:flex;flex-direction:column;gap:7px;font-size:0.74rem;color:var(--text2);line-height:1.5;">
+      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">①</span><span>環境タブで Temp / Humidity / PPFD を入力し <strong style="color:var(--text);">Save</strong> → 各ステージに記録が積まれます</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">②</span><span>ステージ行をタップ → 保存済みの記録一覧と写真が展開されます</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">③</span><span><strong style="color:var(--text);">📷</strong> でカメラ撮影、<strong style="color:var(--text);">🖼</strong> でライブラリから画像を追加できます</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">④</span><span>✦ AIチャットでVPD・栄養・栽培管理について質問できます</span></div>
     </div>
   </div>
 </div>
@@ -1193,6 +1297,29 @@
   <script>
   /* === 多言語対応 === */
   let appLang = localStorage.getItem('appLang') || 'en';
+
+  // EC Measurement row toggle
+  let _showEcRows = localStorage.getItem('showEcRows') === 'true';
+  function applyEcRows() {
+    const show = _showEcRows;
+    const d = show ? 'flex' : 'none';
+    const ir = document.getElementById('inputEcRow');
+    const rr = document.getElementById('runoffEcRow');
+    if (ir) ir.style.display = d;
+    if (rr) rr.style.display = d;
+    const sw = document.getElementById('ecToggleSwitch');
+    const th = document.getElementById('ecToggleThumb');
+    if (sw) sw.style.background = show ? 'var(--accent)' : 'rgba(255,255,255,0.12)';
+    if (th) { th.style.left = show ? '18px' : '2px'; th.style.background = show ? '#000' : 'var(--text2)'; }
+    // Hide EC target hint when rows are visible (redundant info)
+    const ref = document.getElementById('feedingRef');
+    if (ref) ref.style.display = show ? 'none' : '';
+  }
+  function toggleEcRows() {
+    _showEcRows = !_showEcRows;
+    localStorage.setItem('showEcRows', _showEcRows);
+    applyEcRows();
+  }
   const STRINGS = {
     ja: {
       'tab.monitor':'📊 環境','tab.log':'💧 給水','tab.analysis':'📈 分析','tab.table':'📋 参考',
@@ -2141,7 +2268,7 @@
 
     // タブバー
     if (!list.length) {
-      bar.innerHTML = '<div style="font-size:0.72rem;color:var(--text);padding:2px 0;">Not registered</div>';
+      bar.innerHTML = '<div style="font-size:0.72rem;color:var(--muted);padding:2px 0;">栄養素未登録 — 右上の ＋ で追加</div>';
       content.style.display = 'none';
       return;
     }
@@ -3059,6 +3186,7 @@
     if (feedNoteEl) feedNoteEl.value = '';
     clearPhoto();
     buildTentBar();
+    renderFeedRecentLogs();
     const fertNames = (log.fertilizers || []).map(f => esc(f.name)).filter(Boolean).join('、');
     showSavePopup('Feeding Saved ✅', [
       `📅 ${log.timestamp}`,
@@ -3069,6 +3197,43 @@
       log.ec ? `⚡ Input EC: ${log.ec} mS${log.runoffEc ? '　🔄 Runoff: ' + log.runoffEc + ' mS' : ''}` : '',
       fertNames ? `🌿 ${fertNames}` : ''
     ].filter(Boolean));
+  }
+
+  function renderFeedRecentLogs() {
+    const el = document.getElementById('feedRecentLogs');
+    if (!el) return;
+    dbGetAll('logs').then(all => {
+      const tent = tents[currentTent];
+      if (!tent) { el.innerHTML = ''; return; }
+      const recent = all
+        .filter(l => l.tentId === tent.id && (l.ph || l.ec || l.waterTemp))
+        .sort((a, b) => (b.ts || 0) - (a.ts || 0))
+        .slice(0, 5);
+      if (!recent.length) { el.innerHTML = ''; return; }
+      el.innerHTML = `<div class="card" style="margin-top:0;">
+        <div class="card-title" style="margin-bottom:8px;font-size:0.63rem;letter-spacing:0.1em;">RECENT LOGS</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          ${recent.map(l => {
+            const date = l.timestamp ? l.timestamp.replace(/\d{4}\//, '').replace(/:\d{2}$/, '') : '—';
+            const stage = stages[l.stage]?.name || l.stage || '—';
+            const parts = [];
+            if (l.ph) parts.push(`pH <strong style="color:var(--text)">${l.ph}</strong>`);
+            if (l.waterTemp) parts.push(`水温 <strong style="color:var(--text)">${l.waterTemp}°C</strong>`);
+            if (l.ec) parts.push(`EC <strong style="color:var(--text)">${l.ec}</strong>${l.runoffEc ? `→${l.runoffEc}` : ''}`);
+            return `<div style="display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px solid rgba(255,255,255,0.05);">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:0.68rem;color:var(--text2);line-height:1.4;">${parts.join('　')}</div>
+                ${l.note ? `<div style="font-size:0.6rem;color:var(--muted);margin-top:1px;">📝 ${esc(l.note)}</div>` : ''}
+              </div>
+              <div style="text-align:right;flex-shrink:0;">
+                <div style="font-size:0.6rem;color:var(--accent);font-weight:600;">${esc(stage)}</div>
+                <div style="font-size:0.55rem;color:var(--muted);">${esc(date)}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    });
   }
 
   function adjustRunoffEc(delta) {
@@ -3527,7 +3692,7 @@ function classifyVpd(vpd, lo, hi) {
                 <span style="font-size:0.72rem;color:var(--text);opacity:0.9;white-space:nowrap;">
                   <span style="color:#fff;opacity:${isCurrent ? '0.9' : '0.4'};">${dateStr ? dateStr.replace(/-/g, '/') : (key === 'harvest' ? '' : '—')}</span>${daysText ? `　<span style="color:var(--accent);font-weight:700;opacity:${isCurrent ? '1' : '0.4'};">${daysText}</span>` : ''}
                 </span>
-                ${dateStr ? `<span id="sicon-${key}" style="font-size:0.65rem;color:var(--text);opacity:0.5;cursor:pointer;">▶</span>` : ''}
+                ${dateStr ? `<span id="sicon-${key}" style="font-size:0.75rem;color:var(--accent);opacity:0.7;cursor:pointer;background:rgba(52,199,89,0.1);border-radius:4px;padding:1px 5px;font-weight:700;">▶</span>` : ''}
               </span>
             </div>
             <div id="slog-${key}" style="display:none;margin-top:4px;border-top:1px solid rgba(255,255,255,0.08);padding-top:4px;">${logsHtml}</div>
@@ -4111,6 +4276,16 @@ function classifyVpd(vpd, lo, hi) {
     buildStageTable();
     buildMatrix();
     update();
+    applyEcRows();
+    // restore AI settings
+    const lmInput = document.getElementById('lmUrlInput');
+    if (lmInput) lmInput.value = localStorage.getItem('lmUrl') || '';
+    applyAiToggle();
+    // First-run hint
+    if (!localStorage.getItem('vpdFirstRunSeen')) {
+      localStorage.setItem('vpdFirstRunSeen', '1');
+      setTimeout(() => showToast('👋 ステージ選択 → 値を入力 → 長押し Save'), 800);
+    }
   }
 
   /* === デコイ起動画面（フラッシュライト偽装） === */
@@ -4349,23 +4524,30 @@ function classifyVpd(vpd, lo, hi) {
   function openSettings() {
     document.getElementById('settingsModal').classList.add('open');
     updateThemeToggleUI(document.body.classList.contains('light-mode'));
-    document.getElementById('dayCountThumb').style.left = dayCountVisible ? '22px' : '2px';
+    const dct = document.getElementById('dayCountToggle');
+    const dcth = document.getElementById('dayCountThumb');
+    if (dcth) dcth.style.left = dayCountVisible ? '22px' : '2px';
+    if (dct) dct.style.background = dayCountVisible ? 'var(--accent)' : 'rgba(255,255,255,0.15)';
     _updateDecoyToggleUI();
   }
   function toggleDayCount() {
     dayCountVisible = !dayCountVisible;
     localStorage.setItem('dayCountVisible', dayCountVisible);
     const thumb = document.getElementById('dayCountThumb');
+    const track = document.getElementById('dayCountToggle');
     if (thumb) thumb.style.left = dayCountVisible ? '22px' : '2px';
+    if (track) track.style.background = dayCountVisible ? 'var(--accent)' : 'rgba(255,255,255,0.15)';
     updateFeedingHeader();
     const dc = document.getElementById('stageDayCount');
     if (dc && dc.textContent) dc.style.display = dayCountVisible ? '' : 'none';
   }
   /* === デコイ起動画面 設定トグル === */
-  const _decoyEnabled = () => localStorage.getItem('decoyMode') !== 'false';
+  const _decoyEnabled = () => localStorage.getItem('decoyMode') === 'true';
   function _updateDecoyToggleUI() {
     const thumb = document.getElementById('decoyThumb');
+    const track = document.getElementById('decoyToggle');
     if (thumb) thumb.style.left = _decoyEnabled() ? '22px' : '2px';
+    if (track) track.style.background = _decoyEnabled() ? 'var(--accent)' : 'rgba(255,255,255,0.15)';
   }
   function toggleDecoyMode() {
     localStorage.setItem('decoyMode', _decoyEnabled() ? 'false' : 'true');
@@ -4389,8 +4571,14 @@ function classifyVpd(vpd, lo, hi) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     const tc = document.getElementById('tab-' + target);
     if (tc) tc.classList.add('active');
-    if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); }
+    if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); renderFeedRecentLogs(); }
     if (target === 'analysis') { dbGetAll('logs').then(logs => { renderStageTimeline(logs); }); }
+    if (target === 'table') { buildStageTable(); buildMatrix(); }
+    // AI Chat FAB: show only on analysis/table tabs (avoid conflicting with inline AI buttons)
+    const chatFab = document.getElementById('aiChatFab');
+    if (chatFab && _aiEnabled) {
+      chatFab.style.display = (target === 'analysis' || target === 'table') ? 'flex' : 'none';
+    }
   }
 // tab switching (kept for legacy compat — hidden tabs)
   document.querySelectorAll('.tab').forEach(tab => {
@@ -4400,8 +4588,9 @@ function classifyVpd(vpd, lo, hi) {
       tab.classList.add('active');
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.getElementById('tab-' + target).classList.add('active');
-      if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); }
+      if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); renderFeedRecentLogs(); }
       if (target === 'analysis') { dbGetAll('logs').then(logs => { renderStageTimeline(logs); }); }
+      if (target === 'table') { buildStageTable(); buildMatrix(); }
     };
   });
   window.addEventListener('load', init);
@@ -4425,37 +4614,165 @@ function classifyVpd(vpd, lo, hi) {
     document.addEventListener('gestureend', (e) => e.preventDefault());
   })();
 
-  /* === Runoff EC 表示/非表示（Input ECラベル長押し） === */
-  (() => {
-    function applyRunoffEcVisibility() {
-      const show = localStorage.getItem('showRunoffEc') !== 'false';
-      const row = document.getElementById('runoffEcRow');
-      if (row) row.style.display = show ? 'flex' : 'none';
+  /* EC row visibility is now managed by applyEcRows() / toggleEcRows() */
+
+  // ===== AI / Local LLM =====
+  let _aiEnabled = localStorage.getItem('aiEnabled') === 'true';
+  const _aiChatHistory = [];
+
+  function applyAiToggle() {
+    const sw = document.getElementById('aiToggleSwitch');
+    const th = document.getElementById('aiToggleThumb');
+    if (sw) sw.style.background = _aiEnabled ? 'var(--accent)' : 'rgba(255,255,255,0.12)';
+    if (th) { th.style.left = _aiEnabled ? '18px' : '3px'; th.style.background = _aiEnabled ? '#000' : 'var(--text2)'; }
+    const adv = document.getElementById('aiAdvicePanel');
+    const feed = document.getElementById('aiFeedingPanel');
+    const fab = document.getElementById('aiChatFab');
+    if (adv) adv.style.display = _aiEnabled ? 'block' : 'none';
+    if (feed) feed.style.display = _aiEnabled ? 'block' : 'none';
+    // FAB only on analysis/table tabs to avoid overlapping inline AI buttons
+    if (fab) {
+      const activeTab = document.querySelector('.tab-content.active')?.id;
+      const fabTabs = ['tab-analysis', 'tab-table'];
+      fab.style.display = (_aiEnabled && fabTabs.includes(activeTab)) ? 'flex' : 'none';
     }
+  }
 
-    function toggleRunoffEc() {
-      const current = localStorage.getItem('showRunoffEc') !== 'false';
-      localStorage.setItem('showRunoffEc', current ? 'false' : 'true');
-      applyRunoffEcVisibility();
-      showToast(current ? 'Runoff EC hidden' : 'Runoff EC shown');
+  function toggleAi() {
+    _aiEnabled = !_aiEnabled;
+    localStorage.setItem('aiEnabled', _aiEnabled);
+    applyAiToggle();
+    showToast(_aiEnabled ? 'AI Advice enabled' : 'AI Advice disabled');
+  }
+
+  async function askLLM(messages) {
+    const base = (localStorage.getItem('lmUrl') || 'http://localhost:11234').replace(/\/$/, '');
+    let res;
+    try {
+      res = await fetch(base + '/v1/chat/completions', {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'local', messages, temperature: 0.7, max_tokens: 400 })
+      });
+    } catch(e) {
+      // CORS or network error
+      if (e.message.includes('fetch') || e.name === 'TypeError') {
+        throw new Error('CORS or network error — In LM Studio: Local Server → Settings → enable CORS (Allow All Origins)');
+      }
+      throw e;
     }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const d = await res.json();
+    return d.choices[0].message.content.trim();
+  }
 
-    applyRunoffEcVisibility();
+  async function testLmConnection() {
+    const st = document.getElementById('lmStatus');
+    if (st) { st.textContent = '…'; st.style.color = 'var(--text2)'; }
+    try {
+      const reply = await askLLM([{ role: 'user', content: 'Reply with exactly: OK' }]);
+      if (st) { st.textContent = '✓ Connected'; st.style.color = 'var(--accent)'; }
+    } catch(e) {
+      const msg = e.message.includes('CORS') ? '✗ CORS — enable in LM Studio' : '✗ ' + e.message.slice(0, 28);
+      if (st) { st.textContent = msg; st.style.color = 'var(--danger)'; }
+    }
+  }
 
-    const label = document.getElementById('inputEcLabel');
-    if (!label) return;
-    let timer = null;
-    label.addEventListener('touchstart', e => {
-      timer = setTimeout(() => { timer = null; toggleRunoffEc(); }, 600);
-    }, { passive: true });
-    label.addEventListener('touchend', () => { if (timer) { clearTimeout(timer); timer = null; } });
-    label.addEventListener('touchmove', () => { if (timer) { clearTimeout(timer); timer = null; } }, { passive: true });
-    label.addEventListener('mousedown', () => {
-      timer = setTimeout(() => { timer = null; toggleRunoffEc(); }, 600);
-    });
-    label.addEventListener('mouseup', () => { if (timer) { clearTimeout(timer); timer = null; } });
-    label.addEventListener('mouseleave', () => { if (timer) { clearTimeout(timer); timer = null; } });
-  })();
+  async function runAiAdvice() {
+    const t = tents[currentTent];
+    const vpdVal = document.getElementById('vpdAir') ? document.getElementById('vpdAir').textContent : '—';
+    const stage = stages[t.stage] ? stages[t.stage].name : t.stage;
+    const btn = document.querySelector('#aiAdvicePanel button');
+    const result = document.getElementById('aiAdviceResult');
+    if (!result) return;
+    result.style.display = 'block';
+    result.textContent = '考え中…';
+    if (btn) btn.disabled = true;
+    const prompt = `You are a cannabis grow expert. Current conditions:
+Stage: ${stage} | Temp: ${t.temp}°C | RH: ${t.hum}% | VPD: ${vpdVal} kPa | PPFD: ${t.ppfd} µmol | ${t.dayNight === 'night' ? 'Night' : 'Day'} | CO2: ${t.co2 ? 'ON' : 'OFF'}
+Give 2-3 concise, actionable tips to optimize this environment. Be specific with numbers. Max 120 words.`;
+    try {
+      const reply = await askLLM([{ role: 'system', content: 'You are a concise, expert cannabis cultivation assistant. Always respond in Japanese.' }, { role: 'user', content: prompt }]);
+      result.textContent = reply;
+    } catch(e) {
+      result.textContent = '⚠ LM Studio に接続できません。設定 → AI でURLを確認してください。';
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function runAiFeeding() {
+    const t = tents[currentTent];
+    const stage = stages[t.stage] ? stages[t.stage].name : t.stage;
+    const ec = document.getElementById('ecInput') ? document.getElementById('ecInput').value : '—';
+    const runoff = document.getElementById('runoffEcInput') ? document.getElementById('runoffEcInput').value : '—';
+    const ph = document.getElementById('phInput') ? document.getElementById('phInput').value : '—';
+    const waterTemp = document.getElementById('waterTempInput') ? document.getElementById('waterTempInput').value : '—';
+    const btn = document.querySelector('#aiFeedingPanel button');
+    const result = document.getElementById('aiFeedingResult');
+    if (!result) return;
+    result.style.display = 'block';
+    result.textContent = '考え中…';
+    if (btn) btn.disabled = true;
+    const prompt = `Cannabis feeding review:
+Stage: ${stage} | Input EC: ${ec} mS | Runoff EC: ${runoff} mS | pH: ${ph} | Water Temp: ${waterTemp}°C
+Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed. Max 100 words.`;
+    try {
+      const reply = await askLLM([{ role: 'system', content: 'You are a concise, expert cannabis cultivation assistant. Always respond in Japanese.' }, { role: 'user', content: prompt }]);
+      result.textContent = reply;
+    } catch(e) {
+      result.textContent = '⚠ LM Studio に接続できません。設定 → AI でURLを確認してください。';
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function openAiChat() {
+    const modal = document.getElementById('aiChatModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    if (_aiChatHistory.length === 0) {
+      _aiChatHistory.push({ role: 'system', content: 'You are a concise cannabis cultivation expert. Always respond in Japanese. Answer questions about VPD, nutrients, growing stages, and plant health. Keep answers under 150 words.' });
+      appendChatBubble('assistant', 'こんにちは！VPD・栄養素・栽培ステージ・植物の健康について何でも聞いてください。');
+    }
+    setTimeout(() => document.getElementById('aiChatInput').focus(), 100);
+  }
+
+  function closeAiChat() {
+    const modal = document.getElementById('aiChatModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function appendChatBubble(role, text) {
+    const wrap = document.getElementById('aiChatMessages');
+    if (!wrap) return;
+    const isUser = role === 'user';
+    const el = document.createElement('div');
+    el.style.cssText = `max-width:85%;padding:9px 12px;border-radius:${isUser?'14px 14px 4px 14px':'14px 14px 14px 4px'};font-size:0.8rem;line-height:1.55;white-space:pre-wrap;align-self:${isUser?'flex-end':'flex-start'};background:${isUser?'var(--accent)':'rgba(255,255,255,0.08)'};color:${isUser?'#000':'var(--text)'};`;
+    el.textContent = text;
+    wrap.appendChild(el);
+    wrap.scrollTop = wrap.scrollHeight;
+    return el;
+  }
+
+  async function sendAiChat() {
+    const input = document.getElementById('aiChatInput');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    appendChatBubble('user', text);
+    _aiChatHistory.push({ role: 'user', content: text });
+    const typing = appendChatBubble('assistant', '…');
+    try {
+      const reply = await askLLM(_aiChatHistory.slice(-10)); // last 10 msgs for context
+      _aiChatHistory.push({ role: 'assistant', content: reply });
+      if (typing) typing.textContent = reply;
+    } catch(e) {
+      if (typing) typing.textContent = '⚠ LM Studio に接続できません。設定でURLを確認してください。';
+    }
+  }
 
   /* === 長押しセーブ === */
   let saveHoldTimer = null;
@@ -4531,5 +4848,23 @@ function classifyVpd(vpd, lo, hi) {
       navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW registration failed:', err));
     }
   </script>
+
+  <!-- AI Chat Modal -->
+  <div id="aiChatModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:11000;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:max(14px,env(safe-area-inset-top)) 16px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="font-size:0.95rem;font-weight:700;color:var(--accent);letter-spacing:0.08em;">✦ GROW AI</div>
+      <button onclick="closeAiChat()" style="background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:0.82rem;padding:5px 12px;cursor:pointer;">Close</button>
+    </div>
+    <div id="aiChatMessages" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;"></div>
+    <div style="padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
+      <input id="aiChatInput" type="text" placeholder="VPD・栄養素・栽培について質問…"
+        style="flex:1;padding:9px 12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:0.82rem;outline:none;"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiChat();}">
+      <button onclick="sendAiChat()" style="padding:9px 14px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.82rem;font-weight:700;cursor:pointer;">Send</button>
+    </div>
+  </div>
+
+  <!-- AI Chat Floating Button -->
+  <button id="aiChatFab" onclick="openAiChat()" style="position:fixed;left:16px;bottom:calc(80px + env(safe-area-inset-bottom));width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,rgba(52,199,89,0.25) 0%,rgba(52,199,89,0.12) 100%);border:1.5px solid rgba(52,199,89,0.55);color:var(--accent);font-size:1.35rem;cursor:pointer;z-index:5000;box-shadow:0 4px 18px rgba(52,199,89,0.28),0 2px 8px rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);" aria-label="AI Chat">✦</button>
 </body>
 </html>
