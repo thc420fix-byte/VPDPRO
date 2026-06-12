@@ -2329,15 +2329,17 @@
   function prefillLastWatering() {
     const phEl = document.getElementById('phInput');
     const wtEl = document.getElementById('waterTempInput');
-    if (!phEl || !wtEl) return;
-    if (phEl.value && wtEl.value) return; // already filled
+    const ecEl = document.getElementById('ecInput');
+    if (!phEl) return;
+    if (phEl.value && wtEl?.value && ecEl?.value) return; // already filled
     dbGetAll('logs').then(all => {
       const tent = tents[currentTent];
-      const last = all.filter(l => l.tentId === tent.id && (l.ph || l.waterTemp))
+      const last = all.filter(l => l.tentId === tent.id && (l.ph || l.waterTemp || l.ec))
                       .sort((a, b) => (b.ts || 0) - (a.ts || 0))[0];
       if (!last) return;
-      if (!phEl.value && last.ph)        { phEl.value = last.ph; }
-      if (!wtEl.value && last.waterTemp) { wtEl.value = last.waterTemp; }
+      if (!phEl.value && last.ph)          { phEl.value = last.ph; }
+      if (wtEl && !wtEl.value && last.waterTemp) { wtEl.value = last.waterTemp; }
+      if (ecEl && !ecEl.value && last.ec)  { ecEl.value = last.ec; }
     });
   }
 
