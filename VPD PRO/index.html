@@ -941,11 +941,11 @@
       </div>
       <div id="stageDropdown" style="display:none;margin-bottom:2px;">
         <div class="stage-row">
-          <div class="stage-btn" data-s="clone" onclick="setStage('clone')">Clone</div>
-          <div class="stage-btn" data-s="veg" onclick="setStage('veg')">Veg</div>
-          <div class="stage-btn" data-s="flower" onclick="setStage('flower')">Flower</div>
-          <div class="stage-btn" data-s="dry" onclick="setStage('dry')">Dry</div>
-          <div class="stage-btn" data-s="harvest" onclick="setStage('harvest')">Harvest</div>
+          <div class="stage-btn" data-s="clone" onclick="setStage('clone')" data-i18n="stage.clone">Clone</div>
+          <div class="stage-btn" data-s="veg" onclick="setStage('veg')" data-i18n="stage.veg">Veg</div>
+          <div class="stage-btn" data-s="flower" onclick="setStage('flower')" data-i18n="stage.flower">Flower</div>
+          <div class="stage-btn" data-s="dry" onclick="setStage('dry')" data-i18n="stage.dry">Dry</div>
+          <div class="stage-btn" data-s="harvest" onclick="setStage('harvest')" data-i18n="stage.harvest">Harvest</div>
         </div>
       </div>
       <div id="startDateRow" style="display:none;align-items:center;gap:6px;justify-content:center;margin-bottom:4px;">
@@ -1411,6 +1411,7 @@
       'lightmeter.close':'✕ 閉じる','lightmeter.subtitle':'カメラでリアルタイム計測','lightmeter.stage_target':'ステージ目標: ',
       'lightmeter.apply':'PPFD に適用','lightmeter.retry':'再試行',
       'stage.set_date':'+ 開始日を設定',
+      'stage.clone':'クローン','stage.veg':'成長期','stage.flower':'開花期','stage.dry':'乾燥','stage.harvest':'収穫',
       'yield.label':'🏆 収量','yield.unit':'g（乾燥重量）',
       'mode.theory':'理論値','mode.myspot':'マイスポット',
       'feed.title':'栄養素ログ','feed.ec_toggle':'EC 計測','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
@@ -1488,6 +1489,7 @@
       'lightmeter.close':'✕ Close','lightmeter.subtitle':'Real-time camera light measurement','lightmeter.stage_target':'Stage target: ',
       'lightmeter.apply':'Apply to PPFD','lightmeter.retry':'Retry',
       'stage.set_date':'+ Set start date',
+      'stage.clone':'Clone','stage.veg':'Veg','stage.flower':'Flower','stage.dry':'Dry','stage.harvest':'Harvest',
       'yield.label':'🏆 Yield','yield.unit':'g (dry weight)',
       'mode.theory':'Theory','mode.myspot':'My Spot',
       'feed.title':'Nutrient Log','feed.ec_toggle':'EC Measurement','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
@@ -2003,8 +2005,6 @@
   }
 
   /* === ステージ＆モードSettings === */
-  const stageLabelMap = { clone:'Clone', veg:'Veg', flower:'Flower', dry:'Dry', harvest:'Harvest' };
-
   function toggleStageDropdown() {
     const d = document.getElementById('stageDropdown');
     const arrow = document.getElementById('stageDropArrow');
@@ -2015,7 +2015,7 @@
 
   function updateStageSelector(s) {
     const lbl = document.getElementById('stageSelectorLabel');
-    if (lbl) lbl.textContent = stageLabelMap[s] || s;
+    if (lbl) lbl.textContent = tr('stage.' + s) || s;
     document.querySelectorAll('.stage-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.s === s);
     });
@@ -2380,7 +2380,7 @@
     if (!t) return;
     const nameEl = document.getElementById('feedingStageName');
     const refEl  = document.getElementById('feedingRef');
-    if (nameEl) nameEl.textContent = stages[t.stage] ? stages[t.stage].name : '—';
+    if (nameEl) nameEl.textContent = t.stage ? (tr('stage.' + t.stage) || stages[t.stage]?.name || '—') : '—';
     // Sync Week/Day display to Feeding tab
     const feedDC = document.getElementById('feedingDayCount');
     if (feedDC) {
