@@ -4323,19 +4323,27 @@ function classifyVpd(vpd, lo, hi) {
     const msg = document.getElementById('pinMessage');
     const fi  = document.getElementById('pinFailInfo');
     fi.textContent = '';
-    const labels = {
+    const labels = appLang === 'en' ? {
       unlock:  'Enter PIN',
-      setup1:  'Set new PIN (9 digits)',
+      setup1:  `Set new PIN (${_PIN_LEN} digits)`,
       setup2:  'Confirm PIN',
       change1: 'Current PIN',
-      change2: 'New PIN (9 digits)',
+      change2: `New PIN (${_PIN_LEN} digits)`,
       change3: 'Confirm new PIN',
       remove1: 'Enter PIN to remove'
+    } : {
+      unlock:  'PINを入力',
+      setup1:  `新しいPINを入力（${_PIN_LEN}桁）`,
+      setup2:  'PINを確認',
+      change1: '現在のPIN',
+      change2: `新しいPIN（${_PIN_LEN}桁）`,
+      change3: '新しいPINを確認',
+      remove1: 'PIN削除のため入力'
     };
     msg.textContent = labels[mode] || '';
     if (mode === 'unlock') {
       const f = _pinFails();
-      if (f > 0) fi.textContent = `⚠ ${f} / ${_PIN_MAX} attempts`;
+      if (f > 0) fi.textContent = appLang === 'en' ? `⚠ ${f} / ${_PIN_MAX} attempts` : `⚠ ${f} / ${_PIN_MAX} 回失敗`;
     }
     document.getElementById('pinOverlay').style.display = 'flex';
     _randomizePinKeypad();
@@ -4470,7 +4478,7 @@ function classifyVpd(vpd, lo, hi) {
             _showLockScreen();
           }
         } else {
-          document.getElementById('pinFailInfo').textContent = `⚠ ${f} / ${_PIN_MAX} attempts`;
+          document.getElementById('pinFailInfo').textContent = appLang === 'en' ? `⚠ ${f} / ${_PIN_MAX} attempts` : `⚠ ${f} / ${_PIN_MAX} 回失敗`;
           _pinShake();
         }
       }
@@ -4489,7 +4497,7 @@ function classifyVpd(vpd, lo, hi) {
         showToast(appLang === 'en' ? '🔒 PIN set — data encrypted' : '🔒 PIN設定完了 — データを暗号化しました');
         _updatePinSettingsUI();
       } else {
-        document.getElementById('pinMessage').textContent = 'Mismatch — try again';
+        document.getElementById('pinMessage').textContent = appLang === 'en' ? 'Mismatch — try again' : 'PINが一致しません';
         _pinShake();
         setTimeout(() => _showPinOverlay('setup1'), 900);
       }
@@ -4497,7 +4505,7 @@ function classifyVpd(vpd, lo, hi) {
       if (await _pinCheck(buf)) {
         _showPinOverlay('change2');
       } else {
-        document.getElementById('pinMessage').textContent = 'Wrong PIN';
+        document.getElementById('pinMessage').textContent = appLang === 'en' ? 'Wrong PIN' : 'PINが違います';
         _pinShake();
         setTimeout(() => _showPinOverlay('change1'), 900);
       }
@@ -4511,7 +4519,7 @@ function classifyVpd(vpd, lo, hi) {
         _hidePinOverlay();
         showToast(appLang === 'en' ? '🔒 PIN updated' : '🔒 PIN変更完了');
       } else {
-        document.getElementById('pinMessage').textContent = 'Mismatch — try again';
+        document.getElementById('pinMessage').textContent = appLang === 'en' ? 'Mismatch — try again' : 'PINが一致しません';
         _pinShake();
         setTimeout(() => _showPinOverlay('change2'), 900);
       }
@@ -4526,7 +4534,7 @@ function classifyVpd(vpd, lo, hi) {
         showToast(appLang === 'en' ? '🔓 PIN removed — data no longer encrypted' : '🔓 PIN削除完了 — データの暗号化を解除しました');
         _updatePinSettingsUI();
       } else {
-        document.getElementById('pinMessage').textContent = 'Wrong PIN';
+        document.getElementById('pinMessage').textContent = appLang === 'en' ? 'Wrong PIN' : 'PINが違います';
         _pinShake();
         setTimeout(() => _showPinOverlay('remove1'), 900);
       }
