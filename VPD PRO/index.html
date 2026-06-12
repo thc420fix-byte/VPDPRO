@@ -872,7 +872,7 @@
   <div id="luxModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeLuxConverter()">
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px 18px;width:280px;box-sizing:border-box;">
       <div style="font-size:0.9rem;font-weight:700;color:var(--accent);margin-bottom:4px;">LUX → PPFD</div>
-      <div style="font-size:0.65rem;color:var(--text);opacity:0.7;line-height:1.5;margin-bottom:12px;">Photoneや照度計のlux値を貼るだけで換算。係数は光源別の目安。</div>
+      <div style="font-size:0.65rem;color:var(--text);opacity:0.7;line-height:1.5;margin-bottom:12px;" data-i18n="lux.description">Photoneや照度計のlux値を貼るだけで換算。係数は光源別の目安。</div>
       <input id="luxInput" type="text" inputmode="numeric" placeholder="lux" oninput="convertLux()" style="width:100%;box-sizing:border-box;padding:8px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-size:1.1rem;font-weight:700;text-align:center;outline:none;font-family:'Rajdhani',sans-serif;margin-bottom:8px;">
       <select id="luxSource" onchange="convertLux()" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8rem;outline:none;margin-bottom:10px;">
         <option value="0.015" selected>LED フルスペクトラム</option>
@@ -888,7 +888,7 @@
     </div>
   </div>
   <h1>VPD PRO</h1>
-  <div class="subtitle">Grow Environment Monitor</div>
+  <div class="subtitle" data-i18n="app.subtitle">Grow Environment Monitor</div>
 
   <div class="tent-bar" id="tentBar"></div>
   <div class="tabs">
@@ -1431,6 +1431,7 @@
       'settings.pin_fail_action':'PIN 失敗時の動作','settings.lock_24h':'24時間ロック','settings.wipe_all':'全データを消去',
       'settings.change_pin':'PIN を変更',
       'ai.advice_btn':'✦ AI アドバイス','spot.save_btn':'📌 保存','chat.send_btn':'送信',
+      'app.subtitle':'植物環境モニター','lux.description':'Photoneや照度計のlux値を貼るだけで換算。係数は光源別の目安。',
     },
     en: {
       'tab.monitor':'📊 Monitor','tab.log':'💧 Feeding','tab.analysis':'📈 Analysis','tab.table':'📋 Reference',
@@ -1503,6 +1504,7 @@
       'settings.pin_fail_action':'PIN Fail Action','settings.lock_24h':'Lock 24h','settings.wipe_all':'Wipe All Data',
       'settings.change_pin':'Change PIN',
       'ai.advice_btn':'✦ AI Advice','spot.save_btn':'📌 Save','chat.send_btn':'Send',
+      'app.subtitle':'Grow Environment Monitor','lux.description':'Paste a lux reading from Photone or a light meter. Conversion factors are per light source.',
     }
   };
   const tr = k => (STRINGS[appLang]?.[k]) ?? (STRINGS.ja[k] ?? k);
@@ -2824,6 +2826,16 @@
   }
   function openLuxConverter() {
     document.getElementById('luxModal').style.display = 'flex';
+    const sel = document.getElementById('luxSource');
+    if (sel) {
+      const cur = sel.value;
+      const opts = appLang === 'en' ? [
+        [0.015,'LED Full Spectrum'],[0.0122,'HPS'],[0.0141,'MH'],[0.0154,'CMH'],[0.0135,'Fluorescent / CFL'],[0.0185,'Sunlight']
+      ] : [
+        [0.015,'LED フルスペクトラム'],[0.0122,'HPS'],[0.0141,'MH'],[0.0154,'CMH'],[0.0135,'蛍光灯 / CFL'],[0.0185,'太陽光']
+      ];
+      sel.innerHTML = opts.map(([v,l]) => `<option value="${v}"${String(v)===cur?' selected':''}>${l}</option>`).join('');
+    }
     const inp = document.getElementById('luxInput');
     if (inp) { inp.value = ''; convertLux(); setTimeout(() => inp.focus(), 50); }
   }
@@ -3190,7 +3202,7 @@
         ? (appLang === 'en' ? '💧 Water temp: 64–72°F (for root health & dissolved oxygen)' : '💧 水温目安: 64〜72°F（根の健康・溶存酸素量の観点から）')
         : tr('ref.water_temp');
     }
-    const hdrs = [tempUnit,'%RH','kPa',refCo2?'µmol*':'µmol','In EC','Out EC','pH'];
+    const hdrs = [tempUnit,'%RH','kPa',refCo2?'µmol*':'µmol',tr('feed.input_ec'),tr('feed.runoff_ec'),'pH'];
     let html = `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div style="min-width:430px;">`;
     html += `<div style="display:grid;grid-template-columns:56px 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;padding:4px 0 8px;border-bottom:1px solid rgba(255,255,255,0.2);">
       <span></span>${hdrs.map((t,i) => hdr(t,i)).join('')}
@@ -3632,6 +3644,7 @@
     renderStageTimeline(logs);
     renderVpdStats();
     renderVpdSparkline();
+    renderFeedRecentLogs();
     showToast(appLang === 'en' ? `🌱 Cycle ${t.cycle} started` : `🌱 サイクル ${t.cycle} を開始`);
   }
 
