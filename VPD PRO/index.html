@@ -2229,6 +2229,7 @@
     const offset = tents[currentTent].leafOffset || -2.0;
     const offsetEl = document.getElementById('leafOffsetInput');
     if (offsetEl) offsetEl.value = useFahrenheit ? (offset * 9/5).toFixed(1) : offset.toFixed(1);
+    buildMatrix();
   }
 
   /* === Sweet Spot Mode === */
@@ -2963,7 +2964,7 @@
           badge.classList.add('status-warning');
           badge.textContent = tr('spot.out');
           const tips = [];
-          if (!tOk) tips.push(`${tr('spot.temp_adj')}${dT > 0 ? '−' : '+'}${Math.abs(dT)}°C`);
+          if (!tOk) { const dTDisp = useFahrenheit ? (Math.abs(dT) * 9/5).toFixed(1) : Math.abs(dT); tips.push(`${tr('spot.temp_adj')}${dT > 0 ? '−' : '+'}${dTDisp}${useFahrenheit ? '°F' : '°C'}`); }
           if (!hOk) tips.push(`${tr('spot.hum_adj')}${dH > 0 ? '−' : '+'}${Math.abs(dH)}%`);
           if (!pOk) tips.push(`${tr('spot.light_adj')}${dP > 0 ? '−' : '+'}${Math.abs(dP)}µmol`);
           recEl.textContent = tips.join(' / ') + tr('spot.approach');
@@ -3120,21 +3121,25 @@
   }
   /* === VPD マトリクス === */
   function buildMatrix() {
-    const temps = [];
-    for (let t = 18; t <= 30; t++) temps.push(t); // 1°C刻み（18〜30°C）
+    const tempsC = [];
+    for (let t = 18; t <= 30; t++) tempsC.push(t); // 1°C刻み（18〜30°C）
     const hums = [];
     for (let h = 80; h >= 40; h -= 5) hums.push(h); // 5%刻み（80%→40%）
     const cellTD = 'font-size:0.62rem;text-align:center;padding:4px 4px;color:#fff;';
     const headTH = 'font-size:0.62rem;color:var(--text);padding:5px 5px;font-weight:700;background:var(--surface);';
     const stickyTH = headTH + 'position:sticky;left:0;z-index:2;';
     const stickyTD = 'font-size:0.62rem;color:var(--text);padding:4px 6px;font-weight:700;background:var(--surface);position:sticky;left:0;z-index:1;text-align:center;';
+    const unitLabel = useFahrenheit ? '℉' : '℃';
     let html = '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">';
     html += '<table style="border-collapse:collapse;white-space:nowrap;">';
-    // ヘッダー: RH\℃ + 温度列
-    html += `<tr><th style="${stickyTH}">RH\\℃</th>`;
-    html += temps.map(t => `<th style="${headTH}">${t}°</th>`).join('');
+    html += `<tr><th style="${stickyTH}">RH\\${unitLabel}</th>`;
+    html += tempsC.map(t => {
+      const label = useFahrenheit ? Math.round(t * 9/5 + 32) : t;
+      return `<th style="${headTH}">${label}°</th>`;
+    }).join('');
     html += '</tr>';
     // データ行
+    const temps = tempsC;
     hums.forEach(h => {
       html += `<tr><td style="${stickyTD}">${h}%</td>`;
       const tent = tents[currentTent];
