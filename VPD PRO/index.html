@@ -5097,10 +5097,13 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
     };
     await dbPut('logs', log);
     if (noteEl) noteEl.value = '';
+    const airVpdNow = calcVPD(temp, hum).toFixed(2);
+    renderVpdSparkline();
+    renderVpdStats();
     showSavePopup('Monitor Saved ✅', [
       `📅 ${log.timestamp}`,
       `🌡 Temp: ${log.temp}°C　💧 Humidity: ${log.hum}%`,
-      `🌿 Leaf VPD: ${log.leafVpd} kPa`,
+      `📊 Air VPD: ${airVpdNow} kPa　🌿 Leaf: ${log.leafVpd} kPa`,
       `💡 PPFD: ${log.ppfd} µmol`,
       log.co2val ? `💨 CO₂: ${log.co2val} ppm` : ''
     ].filter(Boolean));
