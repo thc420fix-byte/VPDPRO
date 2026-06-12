@@ -671,6 +671,15 @@
           </div>
         </div>
         <div style="height:1px;background:var(--border);margin:0 14px;"></div>
+        <div style="height:1px;background:var(--border);margin:0 14px;"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
+          <span style="font-size:0.88rem;color:var(--text);">Temperature</span>
+          <div style="display:flex;background:var(--surface);border-radius:16px;overflow:hidden;">
+            <div id="unitC" onclick="if(useFahrenheit)toggleTempUnit()" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">°C</div>
+            <div id="unitF" onclick="if(!useFahrenheit)toggleTempUnit()" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">°F</div>
+          </div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:0 14px;"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
           <span style="font-size:0.88rem;color:var(--text);">Language</span>
           <div style="display:flex;background:var(--surface);border-radius:16px;overflow:hidden;">
@@ -2248,6 +2257,7 @@
       if (!isNaN(wv)) wtInput.value = useFahrenheit ? (wv * 9/5 + 32).toFixed(1) : ((wv - 32) * 5/9).toFixed(1);
     }
     wtInput && (wtInput.placeholder = useFahrenheit ? '68' : '20');
+    _applyUnitUI();
     buildMatrix();
   }
 
@@ -4826,8 +4836,9 @@ function classifyVpd(vpd, lo, hi) {
       document.body.classList.add('light-mode');
       updateThemeToggleUI(true);
     }
-    // restore language
+    // restore language + unit UI
     applyLang();
+    _applyUnitUI();
     _updatePinSettingsUI();
     if (_pinIsSet() && !_decoyPinVerified) {
       // PIN 設定済み: 解除するまでデータを読み込まない（暗号文のみメモリ外に保つ）
@@ -4877,6 +4888,13 @@ function classifyVpd(vpd, lo, hi) {
       cancel.onclick = () => cleanup(false);
     });
   }
+  function _applyUnitUI() {
+    const cBtn = document.getElementById('unitC');
+    const fBtn = document.getElementById('unitF');
+    if (cBtn) { cBtn.style.background = !useFahrenheit ? 'var(--accent)' : 'transparent'; cBtn.style.color = !useFahrenheit ? '#000' : 'var(--text)'; }
+    if (fBtn) { fBtn.style.background =  useFahrenheit ? 'var(--accent)' : 'transparent'; fBtn.style.color =  useFahrenheit ? '#000' : 'var(--text)'; }
+  }
+
   function applyLang() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
       el.textContent = tr(el.getAttribute('data-i18n'));
@@ -4909,6 +4927,8 @@ function classifyVpd(vpd, lo, hi) {
     if (dcth) dcth.style.left = dayCountVisible ? '22px' : '2px';
     if (dct) dct.style.background = dayCountVisible ? 'var(--accent)' : 'rgba(255,255,255,0.15)';
     _updateDecoyToggleUI();
+    _applyUnitUI();
+    applyLang();
   }
   function toggleDayCount() {
     dayCountVisible = !dayCountVisible;
