@@ -912,6 +912,7 @@
         <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
       </div>
       <div id="statusBadge" class="status-badge status-ok">—</div>
+      <svg id="vpdSparkline" viewBox="0 0 200 28" preserveAspectRatio="none" style="width:100%;height:28px;margin:4px 0 0;display:none;overflow:visible;"></svg>
       <div id="rec" style="font-size:0.72rem;color:var(--text2);text-align:center;min-height:0;margin-top:4px;line-height:1.5;display:flex;flex-wrap:wrap;justify-content:center;gap:2px;"></div>
       <div id="vpdDiff" style="display:none"></div>
       <div id="targetHum" style="display:none"></div>
@@ -1782,6 +1783,8 @@
     update();
     buildStageTable();
     updateFeedingHeader();
+    renderFeedRecentLogs();
+    renderVpdStats();
     const logs = await dbGetAll('logs');
     renderStageTimeline(logs);
   }
@@ -2927,12 +2930,12 @@
     } else if (state === 'warning') {
       badge.classList.add('status-warning');
       badge.textContent = tr('vpd.warning');
-      recEl.textContent = tr('vpd.rec_warning');
+      recEl.innerHTML = `<span style="color:var(--warning);font-size:0.72rem;">${tr('vpd.rec_warning')}</span>`;
       if (airEl) airEl.style.color = 'var(--warning)';
     } else {
       badge.classList.add('status-ok');
       badge.textContent = tr('vpd.ok');
-      recEl.textContent = `${stages[t.stage].name}${tr('vpd.rec_ok')}`;
+      recEl.innerHTML = `<span style="color:var(--ok);font-size:0.72rem;">${stages[t.stage].name}${tr('vpd.rec_ok')}</span>`;
       if (airEl) airEl.style.color = 'var(--accent)';
     }
 
@@ -3272,6 +3275,8 @@
     clearPhoto();
     buildTentBar();
     renderFeedRecentLogs();
+    renderVpdSparkline();
+    renderVpdStats();
     const fertNames = (log.fertilizers || []).map(f => esc(f.name)).filter(Boolean).join('、');
     showSavePopup('Feeding Saved ✅', [
       `📅 ${log.timestamp}`,
@@ -3282,6 +3287,39 @@
       log.ec ? `⚡ Input EC: ${log.ec} mS${log.runoffEc ? '　🔄 Runoff: ' + log.runoffEc + ' mS' : ''}` : '',
       fertNames ? `🌿 ${fertNames}` : ''
     ].filter(Boolean));
+  }
+
+  function renderVpdSparkline() {
+    const svg = document.getElementById('vpdSparkline');
+    if (!svg) return;
+    dbGetAll('logs').then(all => {
+      const tent = tents[currentTent];
+      const rows = all.filter(r => r.tentId === currentTent && r.vpd != null)
+                      .sort((a,b) => (a.ts||0)-(b.ts||0)).slice(-10);
+      if (rows.length < 2) { svg.style.display = 'none'; return; }
+      svg.style.display = '';
+      const vals = rows.map(r => r.vpd);
+      const min = Math.max(0, Math.min(...vals) - 0.1);
+      const max = Math.min(3, Math.max(...vals) + 0.1);
+      const range = max - min || 1;
+      const W = 200, H = 24, pad = 4;
+      const px = (i) => pad + (i / (vals.length - 1)) * (W - pad*2);
+      const py = (v) => H - pad - ((v - min) / range) * (H - pad*2);
+      // range bands
+      const stage = tent.stage || 'veg';
+      const stageData = { clone:{min:0.4,max:0.8}, seedling:{min:0.4,max:0.8}, veg:{min:0.8,max:1.2}, flower:{min:1.0,max:1.5}, lateflower:{min:1.2,max:1.6}, dry:{min:0.8,max:1.2}, harvest:{min:0,max:99} };
+      const r = stageData[stage] || stageData.veg;
+      const bandY1 = py(Math.min(r.max, max));
+      const bandY2 = py(Math.max(r.min, min));
+      const pts = vals.map((v,i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
+      const fill = vals.map((v,i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ') + ` ${px(vals.length-1).toFixed(1)},${H} ${pad},${H}`;
+      svg.innerHTML = `
+        <rect x="${pad}" y="${bandY1.toFixed(1)}" width="${W-pad*2}" height="${Math.max(0,bandY2-bandY1).toFixed(1)}" fill="rgba(52,199,89,0.1)" rx="1"/>
+        <polygon points="${fill}" fill="rgba(52,199,89,0.08)"/>
+        <polyline points="${pts}" fill="none" stroke="rgba(52,199,89,0.7)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+        ${vals.map((v,i) => `<circle cx="${px(i).toFixed(1)}" cy="${py(v).toFixed(1)}" r="2" fill="${v>=r.min&&v<=r.max?'#34c759':'#ff453a'}"/>`).join('')}
+      `;
+    });
   }
 
   function renderVpdStats() {
@@ -4503,6 +4541,7 @@ function classifyVpd(vpd, lo, hi) {
     if (lmInput) lmInput.value = localStorage.getItem('lmUrl') || '';
     applyAiToggle();
     _resumeReminder();
+    renderVpdSparkline();
     // First-run hint
     if (!localStorage.getItem('vpdFirstRunSeen')) {
       localStorage.setItem('vpdFirstRunSeen', '1');
