@@ -2687,9 +2687,10 @@
       return;
     }
     if (delBtn) delBtn.style.display = 'flex';
+    if (spot.temp == null || spot.hum == null) { infoEl.innerHTML = `<span style="color:rgba(255,255,255,0.45);">${tr('spot.unsaved')}</span>`; return; }
     const dTc = parseFloat((t.temp - spot.temp).toFixed(1));
     const dH = Math.round(t.hum - spot.hum);
-    const dP = Math.round(t.ppfd - spot.ppfd);
+    const dP = Math.round(t.ppfd - (spot.ppfd || 0));
     const fmt = (v, thr, unit) => {
       const cls = Math.abs(v) <= thr ? 'on' : 'off';
       return `<span class="spot-delta ${cls}">${v > 0 ? '+' : ''}${v}${unit}</span>`;
@@ -3624,7 +3625,7 @@
   async function exportData() {
     const tentsData = tents.slice();
     const logs = await dbGetAll('logs');
-    const settingsKeys = ['appLang','vpdTheme','dayCountVisible','spotTolTemp','spotTolHum','spotTolPpfd','dryTemp','dryHum','dryVpd','showRunoffEc'];
+    const settingsKeys = ['appLang','vpdTheme','dayCountVisible','spotTolTemp','spotTolHum','spotTolPpfd','dryTemp','dryHum','dryVpd','showRunoffEc','aiEnabled','lmUrl'];
     const settings = {};
     settingsKeys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) settings[k] = v; });
     const payload = { tents: tentsData, logs, settings };
