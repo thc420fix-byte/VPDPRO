@@ -1313,7 +1313,7 @@
 <!-- ログ編集モーダル -->
 <div id="editLogModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
   <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:12px;padding:20px;width:86%;max-width:360px;max-height:85vh;overflow-y:auto;">
-    <div style="font-size:0.9rem;color:var(--accent);margin-bottom:14px;letter-spacing:0.05em;font-weight:700;">EDIT LOG</div>
+    <div style="font-size:0.9rem;color:var(--accent);margin-bottom:14px;letter-spacing:0.05em;font-weight:700;" data-i18n="edit.title">EDIT LOG</div>
     <div id="editLogBody"></div>
     <div style="display:flex;gap:8px;margin-top:16px;">
       <button onclick="confirmEditLog()" style="flex:2;padding:10px;background:var(--accent);color:#000;border:none;border-radius:6px;font-weight:700;font-size:0.9rem;cursor:pointer;">OK</button>
@@ -1409,6 +1409,7 @@
       'toast.reminder':'💧 給水の時間です！',
       'chat.placeholder':'VPD・栄養素・栽培について質問…',
       'rename.tent':'テント名を変更','rename.fertilizer':'肥料名を変更',
+      'edit.title':'ログ編集','edit.fertilizers':'🌿 肥料','edit.delete_photo':'🗑 写真を削除','edit.deleted':'🗑 削除済み',
       'mode.theory':'理論値','mode.myspot':'マイスポット',
       'feed.title':'栄養素ログ','feed.ec_toggle':'EC 計測','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
       'feed.press_hold':'長押しで保存',
@@ -1462,6 +1463,7 @@
       'toast.reminder':'💧 Time to water!',
       'chat.placeholder':'Ask about VPD, nutrients, grow stages…',
       'rename.tent':'Rename Tent','rename.fertilizer':'Rename Fertilizer',
+      'edit.title':'EDIT LOG','edit.fertilizers':'🌿 Fertilizers','edit.delete_photo':'🗑 Delete Photo','edit.deleted':'🗑 Deleted',
       'mode.theory':'Theory','mode.myspot':'My Spot',
       'feed.title':'Nutrient Log','feed.ec_toggle':'EC Measurement','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
       'feed.press_hold':'press & hold',
@@ -3817,6 +3819,7 @@
     renderFeedRecentLogs();
     renderVpdStats();
     renderVpdSparkline();
+    showToast(appLang === 'en' ? '🗑 All data reset' : '🗑 全データをリセットしました');
   }
 
   /**
@@ -3854,11 +3857,11 @@ function classifyVpd(vpd, lo, hi) {
     if (vpd > vpdMax) {
       const adj = calcHumAdjust(vpd, vpdMax);
       priority.push({ rank: 1, text: `${tr('action.hum_up')}${adj}%`, fn: () => { adjustHumidity(adj); } });
-      priority.push({ rank: 1, text: `Temp -${tempDelta.toFixed(1)}${tempUnit}`, fn: () => { adjustTemp(-1.0); } });
+      priority.push({ rank: 1, text: (appLang === 'en' ? `Temp -${tempDelta.toFixed(1)}${tempUnit}` : `温度 -${tempDelta.toFixed(1)}${tempUnit}`), fn: () => { adjustTemp(-1.0); } });
     } else if (vpd < vpdMin) {
       const adj = calcHumAdjust(vpdMin, vpd);
       priority.push({ rank: 1, text: `${tr('action.hum_down')}${adj}%`, fn: () => { adjustHumidity(-adj); } });
-      priority.push({ rank: 1, text: `Temp +${tempDelta.toFixed(1)}${tempUnit}`, fn: () => { adjustTemp(1.0); } });
+      priority.push({ rank: 1, text: (appLang === 'en' ? `Temp +${tempDelta.toFixed(1)}${tempUnit}` : `温度 +${tempDelta.toFixed(1)}${tempUnit}`), fn: () => { adjustTemp(1.0); } });
     }
 
     if (inputEc != null && runoffEc != null) {
@@ -4161,7 +4164,7 @@ function classifyVpd(vpd, lo, hi) {
       rows += row('⚡ EC',        'el_ec',       log.ec,       'mS');
       rows += row('🔄 Runoff',   'el_runoffEc', log.runoffEc, 'mS');
       if (log.fertilizers && log.fertilizers.length) {
-        rows += '<div style="font-size:0.7rem;color:var(--text);opacity:0.8;margin:10px 0 4px;">🌿 Fertilizers</div>';
+        rows += `<div style="font-size:0.7rem;color:var(--text);opacity:0.8;margin:10px 0 4px;">${tr('edit.fertilizers')}</div>`;
         log.fertilizers.forEach((f, i) => {
           rows += `<div style="display:grid;grid-template-columns:1fr 70px 30px;gap:6px;align-items:center;margin-bottom:6px;">
             <input id="el_fert_name_${i}" value="${esc(f.name || '')}" maxlength="24"
@@ -4183,8 +4186,8 @@ function classifyVpd(vpd, lo, hi) {
     if (log.photo) {
       rows += `<div style="margin-top:10px;display:flex;align-items:center;gap:10px;">
         <img src="${log.photo}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;">
-        <button type="button" onclick="_editDeletePhoto=true;this.textContent='🗑 Deleted';this.disabled=true;this.style.opacity='0.5';"
-                style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.75rem;padding:4px 10px;cursor:pointer;">🗑 Delete Photo</button>
+        <button type="button" onclick="_editDeletePhoto=true;this.textContent=tr('edit.deleted');this.disabled=true;this.style.opacity='0.5';"
+                style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.75rem;padding:4px 10px;cursor:pointer;">${tr('edit.delete_photo')}</button>
       </div>`;
     }
 
@@ -4240,6 +4243,10 @@ function classifyVpd(vpd, lo, hi) {
 
     await dbPut('logs', log);
     closeEditLogModal();
+    showToast(appLang === 'en' ? '✓ Log updated' : '✓ ログを更新しました');
+    renderFeedRecentLogs();
+    renderVpdStats();
+    renderVpdSparkline();
 
     const openStages = Array.from(document.querySelectorAll('[id^="slog-"]'))
       .filter(el => el.style.display !== 'none').map(el => el.id);
