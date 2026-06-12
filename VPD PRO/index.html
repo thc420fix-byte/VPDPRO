@@ -6,7 +6,7 @@
   <title>VPD PRO — Grow Environment Monitor</title>
   <!-- PWA manifest -->
   <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#22c55e">
+  <meta name="theme-color" content="#000000">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1161,6 +1161,19 @@
         style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;">Save</button>
       <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;">press &amp; hold</div>
     </div>
+    <!-- Water Reminder -->
+    <div style="padding:4px 8px 0;border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span id="reminderLabel" style="font-size:0.65rem;color:var(--text2);flex-shrink:0;letter-spacing:0.04em;">💧 次の給水リマインダー</span>
+        <div id="reminderBtnGroup" style="display:flex;gap:4px;flex:1;justify-content:flex-end;">
+          <button onclick="setWaterReminder(24)" style="font-size:0.6rem;padding:3px 7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text2);cursor:pointer;">24h</button>
+          <button onclick="setWaterReminder(48)" style="font-size:0.6rem;padding:3px 7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text2);cursor:pointer;">48h</button>
+          <button onclick="setWaterReminder(72)" style="font-size:0.6rem;padding:3px 7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text2);cursor:pointer;">72h</button>
+        </div>
+        <button id="reminderCancelBtn" onclick="cancelWaterReminder()" style="display:none;font-size:0.6rem;padding:3px 7px;background:transparent;border:1px solid rgba(255,100,100,0.5);border-radius:6px;color:rgba(255,100,100,0.8);cursor:pointer;">✕</button>
+      </div>
+      <div id="reminderStatus" style="font-size:0.6rem;color:var(--accent);margin-top:3px;min-height:14px;"></div>
+    </div>
     <!-- AI Feeding Review Panel -->
     <div id="aiFeedingPanel" style="display:none;padding:0 8px 4px;">
       <button onclick="runAiFeeding()" class="ai-action-btn">✦ AI Review</button>
@@ -1202,13 +1215,13 @@
     </div>
   </div>
   <!-- How to use hint -->
-  <div class="card" style="opacity:0.72;">
-    <div class="card-title" style="margin-bottom:8px;">HOW TO USE</div>
+  <div class="card" style="opacity:0.72;" id="howToUseCard">
+    <div class="card-title" style="margin-bottom:8px;" data-i18n="howto.title">HOW TO USE</div>
     <div style="display:flex;flex-direction:column;gap:7px;font-size:0.74rem;color:var(--text2);line-height:1.5;">
-      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">①</span><span>環境タブで Temp / Humidity / PPFD を入力し <strong style="color:var(--text);">Save</strong> → 各ステージに記録が積まれます</span></div>
-      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">②</span><span>ステージ行をタップ → 保存済みの記録一覧と写真が展開されます</span></div>
-      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">③</span><span><strong style="color:var(--text);">📷</strong> でカメラ撮影、<strong style="color:var(--text);">🖼</strong> でライブラリから画像を追加できます</span></div>
-      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">④</span><span>✦ AIチャットでVPD・栄養・栽培管理について質問できます</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">①</span><span data-i18n="howto.1">環境タブで Temp / Humidity / PPFD を入力し Save → 各ステージに記録が積まれます</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">②</span><span data-i18n="howto.2">ステージ行をタップ → 保存済みの記録一覧と写真が展開されます</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">③</span><span data-i18n="howto.3">📷 でカメラ撮影、🖼 でライブラリから画像を追加できます</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">④</span><span data-i18n="howto.4">✦ AIチャットでVPD・栄養・栽培管理について質問できます</span></div>
     </div>
   </div>
 </div>
@@ -1353,6 +1366,16 @@
       'ppfd.high':'⚠ PPFD 高 / ','ppfd.low':'PPFD 低 / ',
       'ppfd.raise':'光量を上げてください（目安 ','ppfd.lower':'光量を下げてください（目安 ','ppfd.diff':'（差 ',
       'memo.placeholder':'メモ（任意）',
+      'reminder.label':'💧 次の給水リマインダー',
+      'reminder.countdown':'後に通知',
+      'recent.title':'RECENT LOGS',
+      'recent.water_temp':'水温',
+      'howto.title':'HOW TO USE',
+      'howto.1':'環境タブで Temp / Humidity / PPFD を入力し Save → 各ステージに記録が積まれます',
+      'howto.2':'ステージ行をタップ → 保存済みの記録一覧と写真が展開されます',
+      'howto.3':'📷 でカメラ撮影、🖼 でライブラリから画像を追加できます',
+      'howto.4':'✦ AIチャットでVPD・栄養・栽培管理について質問できます',
+      'toast.reminder':'💧 給水の時間です！',
     },
     en: {
       'tab.monitor':'📊 Monitor','tab.log':'💧 Feeding','tab.analysis':'📈 Analysis','tab.table':'📋 Reference',
@@ -1386,6 +1409,16 @@
       'ppfd.high':'⚠ PPFD High / ','ppfd.low':'PPFD Low / ',
       'ppfd.raise':'Increase light (est. ','ppfd.lower':'Decrease light (est. ','ppfd.diff':'(diff ',
       'memo.placeholder':'Note (optional)',
+      'reminder.label':'💧 Next Watering Reminder',
+      'reminder.countdown':'from now',
+      'recent.title':'RECENT LOGS',
+      'recent.water_temp':'Water',
+      'howto.title':'HOW TO USE',
+      'howto.1':'Enter Temp / Humidity / PPFD in the Environ tab → Save → records stack per stage',
+      'howto.2':'Tap a stage row → expand saved records and photos',
+      'howto.3':'📷 for camera, 🖼 for library photo',
+      'howto.4':'✦ AI chat for VPD, nutrients, and grow questions',
+      'toast.reminder':'💧 Time to water!',
     }
   };
   const tr = k => (STRINGS[appLang]?.[k]) ?? (STRINGS.ja[k] ?? k);
@@ -3007,17 +3040,18 @@
     html += `<div style="display:grid;grid-template-columns:56px 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;padding:4px 0 8px;border-bottom:1px solid rgba(255,255,255,0.2);">
       <span></span>${hdrs.map((t,i) => hdr(t,i)).join('')}
     </div>`;
-    Object.keys(stages).filter(k => k !== 'harvest').forEach((key, ri) => {
+    Object.keys(stages).forEach((key, ri) => {
       const s = stages[key];
       const isDry = key === 'dry';
+      const isHarvest = key === 'harvest';
       const zebra = ri % 2 === 1 ? 'background:rgba(255,255,255,0.04);border-radius:4px;' : '';
       const vals = [
-        `${s.temp[0]}–${s.temp[1]}`,
-        `${s.hum[0]}–${s.hum[1]}`,
+        s.temp ? `${s.temp[0]}–${s.temp[1]}` : '—',
+        s.hum  ? `${s.hum[0]}–${s.hum[1]}`   : '—',
         `${fv(s.vpd[0])}–${fv(s.vpd[1])}`,
-        isDry ? '—' : (refCo2 ? `${s.ppfdCo2[0]}–${s.ppfdCo2[1]}` : `${s.ppfd[0]}–${s.ppfd[1]}`),
-        isDry ? '—' : `${s.ecInput[0].toFixed(1)}–${s.ecInput[1].toFixed(1)}`,
-        isDry ? '—' : `${s.ecRunoff[0].toFixed(1)}–${s.ecRunoff[1].toFixed(1)}`,
+        (isDry || isHarvest) ? '—' : (refCo2 ? `${s.ppfdCo2[0]}–${s.ppfdCo2[1]}` : `${s.ppfd[0]}–${s.ppfd[1]}`),
+        (isDry || isHarvest) ? '—' : `${s.ecInput[0].toFixed(1)}–${s.ecInput[1].toFixed(1)}`,
+        (isDry || isHarvest) ? '—' : `${s.ecRunoff[0].toFixed(1)}–${s.ecRunoff[1].toFixed(1)}`,
         phData[refMedium][key] ?? '—',
       ];
       html += `<div style="display:grid;grid-template-columns:clamp(44px,14.5vw,56px) 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);${zebra}">
@@ -3211,14 +3245,14 @@
         .slice(0, 5);
       if (!recent.length) { el.innerHTML = ''; return; }
       el.innerHTML = `<div class="card" style="margin-top:0;">
-        <div class="card-title" style="margin-bottom:8px;font-size:0.63rem;letter-spacing:0.1em;">RECENT LOGS</div>
+        <div class="card-title" style="margin-bottom:8px;font-size:0.63rem;letter-spacing:0.1em;">${tr('recent.title')}</div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           ${recent.map(l => {
             const date = l.timestamp ? l.timestamp.replace(/\d{4}\//, '').replace(/:\d{2}$/, '') : '—';
             const stage = stages[l.stage]?.name || l.stage || '—';
             const parts = [];
             if (l.ph) parts.push(`pH <strong style="color:var(--text)">${l.ph}</strong>`);
-            if (l.waterTemp) parts.push(`水温 <strong style="color:var(--text)">${l.waterTemp}°C</strong>`);
+            if (l.waterTemp) parts.push(`${tr('recent.water_temp')} <strong style="color:var(--text)">${l.waterTemp}°C</strong>`);
             if (l.ec) parts.push(`EC <strong style="color:var(--text)">${l.ec}</strong>${l.runoffEc ? `→${l.runoffEc}` : ''}`);
             return `<div style="display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px solid rgba(255,255,255,0.05);">
               <div style="flex:1;min-width:0;">
@@ -3234,6 +3268,59 @@
         </div>
       </div>`;
     });
+  }
+
+  let _reminderTimeout = null;
+  function setWaterReminder(hours) {
+    cancelWaterReminder();
+    const fireAt = Date.now() + hours * 3600 * 1000;
+    localStorage.setItem('waterReminderAt', String(fireAt));
+    localStorage.setItem('waterReminderH', String(hours));
+    const delay = fireAt - Date.now();
+    _reminderTimeout = setTimeout(() => {
+      showToast(tr('toast.reminder'));
+      localStorage.removeItem('waterReminderAt');
+      localStorage.removeItem('waterReminderH');
+      updateReminderUI();
+    }, delay);
+    updateReminderUI();
+  }
+  function cancelWaterReminder() {
+    if (_reminderTimeout) { clearTimeout(_reminderTimeout); _reminderTimeout = null; }
+    localStorage.removeItem('waterReminderAt');
+    localStorage.removeItem('waterReminderH');
+    updateReminderUI();
+  }
+  function updateReminderUI() {
+    const at = parseInt(localStorage.getItem('waterReminderAt') || '0');
+    const status = document.getElementById('reminderStatus');
+    const cancelBtn = document.getElementById('reminderCancelBtn');
+    if (at && at > Date.now()) {
+      const remaining = at - Date.now();
+      const h = Math.floor(remaining / 3600000);
+      const m = Math.floor((remaining % 3600000) / 60000);
+      if (status) status.textContent = `⏰ ${h}h ${m}m ${tr('reminder.countdown')}`;
+      if (cancelBtn) cancelBtn.style.display = 'block';
+    } else {
+      if (status) status.textContent = '';
+      if (cancelBtn) cancelBtn.style.display = 'none';
+    }
+  }
+  function _resumeReminder() {
+    const at = parseInt(localStorage.getItem('waterReminderAt') || '0');
+    if (at && at > Date.now()) {
+      const delay = at - Date.now();
+      _reminderTimeout = setTimeout(() => {
+        showToast(tr('toast.reminder'));
+        localStorage.removeItem('waterReminderAt');
+        localStorage.removeItem('waterReminderH');
+        updateReminderUI();
+      }, delay);
+    } else if (at) {
+      localStorage.removeItem('waterReminderAt');
+      localStorage.removeItem('waterReminderH');
+    }
+    updateReminderUI();
   }
 
   function adjustRunoffEc(delta) {
@@ -3465,6 +3552,7 @@
     update();
     buildStageTable();
     renderStageTimeline([]);
+    renderFeedRecentLogs();
   }
 
   /**
@@ -4281,6 +4369,7 @@ function classifyVpd(vpd, lo, hi) {
     const lmInput = document.getElementById('lmUrlInput');
     if (lmInput) lmInput.value = localStorage.getItem('lmUrl') || '';
     applyAiToggle();
+    _resumeReminder();
     // First-run hint
     if (!localStorage.getItem('vpdFirstRunSeen')) {
       localStorage.setItem('vpdFirstRunSeen', '1');
@@ -4520,6 +4609,10 @@ function classifyVpd(vpd, lo, hi) {
     applyLang();
     update();
     buildStageTable();
+    updateReminderUI();
+    renderFeedRecentLogs();
+    const rl = document.getElementById('reminderLabel');
+    if (rl) rl.textContent = tr('reminder.label');
   }
   function openSettings() {
     document.getElementById('settingsModal').classList.add('open');
