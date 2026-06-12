@@ -3348,7 +3348,7 @@
       okEl.textContent = Math.round(okCount / rows.length * 100) + '%';
       cntEl.textContent = rows.length;
       const okPct = okCount / rows.length;
-      avgEl.style.color = okPct > 0.7 ? 'var(--ok)' : okPct > 0.4 ? 'var(--warn)' : 'var(--danger)';
+      avgEl.style.color = okPct > 0.7 ? 'var(--ok)' : okPct > 0.4 ? 'var(--warning)' : 'var(--danger)';
       // draw stats sparkline
       const statSvg = document.getElementById('vpdStatsSparkline');
       if (statSvg && rows.length >= 2) {
@@ -3361,7 +3361,7 @@
         const y = v => H - PAD - (v - minV) / (maxV - minV || 1) * (H - PAD * 2);
         const okY1 = y(range.max), okY2 = y(range.min);
         const polyline = pts.map((r, i) => `${x(i).toFixed(1)},${y(r.vpd).toFixed(1)}`).join(' ');
-        const dotColor = r => r.vpd >= range.min && r.vpd <= range.max ? 'var(--ok)' : r.vpd > range.max ? 'var(--warn)' : 'var(--danger)';
+        const dotColor = r => r.vpd >= range.min && r.vpd <= range.max ? 'var(--ok)' : r.vpd > range.max ? 'var(--warning)' : 'var(--danger)';
         statSvg.innerHTML = `
           <rect x="${PAD}" y="${Math.min(okY1,okY2).toFixed(1)}" width="${W-PAD*2}" height="${Math.abs(okY2-okY1).toFixed(1)}" fill="rgba(34,197,94,0.12)"/>
           <polyline points="${polyline}" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2"/>
@@ -3687,6 +3687,8 @@
         buildStageTable();
         update();
         applyLang();
+        renderVpdSparkline();
+        renderVpdStats();
         showToast(tr('toast.import_ok'));
       } else {
         showToast(tr('toast.import_bad_format'));
@@ -3803,11 +3805,15 @@ function classifyVpd(vpd, lo, hi) {
     if (!actions) { recEl.innerHTML = `<span style="color:var(--ok);font-size:0.72rem;">${tr('action.no_change')}</span>`; return; }
     recEl.innerHTML = actions.map((a, i) => {
       const id = `_act_btn_${i}`;
-      return `<button id="${id}" style="display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;padding:3px 9px;background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.3);border-radius:20px;color:var(--accent);cursor:pointer;margin:2px 3px;font-family:inherit;white-space:nowrap;">${i+1}. ${a.text}</button>`;
+      const isInfo = a.rank === 2;
+      const bg = isInfo ? 'rgba(255,159,10,0.1)' : 'rgba(52,199,89,0.12)';
+      const border = isInfo ? 'rgba(255,159,10,0.4)' : 'rgba(52,199,89,0.3)';
+      const col = isInfo ? 'var(--warning)' : 'var(--accent)';
+      return `<button id="${id}" style="display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;padding:3px 9px;background:${bg};border:1px solid ${border};border-radius:20px;color:${col};cursor:pointer;margin:2px 3px;font-family:inherit;white-space:nowrap;">${i+1}. ${a.text}</button>`;
     }).join('');
     actions.forEach((a, i) => {
       const btn = document.getElementById(`_act_btn_${i}`);
-      if (btn) btn.onclick = () => { a.fn(); btn.style.background = 'rgba(52,199,89,0.3)'; setTimeout(() => { if(btn) btn.style.background = 'rgba(52,199,89,0.12)'; }, 600); };
+      if (btn) btn.onclick = () => { a.fn(); btn.style.opacity = '0.6'; setTimeout(() => { if(btn) btn.style.opacity = '1'; }, 500); };
     });
   }
 
