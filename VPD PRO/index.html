@@ -2687,14 +2687,17 @@
       return;
     }
     if (delBtn) delBtn.style.display = 'flex';
-    const dT = (t.temp - spot.temp).toFixed(1);
+    const dTc = parseFloat((t.temp - spot.temp).toFixed(1));
     const dH = Math.round(t.hum - spot.hum);
     const dP = Math.round(t.ppfd - spot.ppfd);
     const fmt = (v, thr, unit) => {
       const cls = Math.abs(v) <= thr ? 'on' : 'off';
       return `<span class="spot-delta ${cls}">${v > 0 ? '+' : ''}${v}${unit}</span>`;
     };
-    infoEl.innerHTML = `${tr('spot.label')}${spot.temp}°C / ${spot.hum}% / ${spot.ppfd}µmol &nbsp;|&nbsp; ${fmt(parseFloat(dT),1,'°C')} ${fmt(dH,3,'%')} ${fmt(dP,50,'µmol')}`;
+    const spotTempDisp = useFahrenheit ? Math.round(spot.temp * 9/5 + 32) + '°F' : spot.temp + '°C';
+    const dTDisp = useFahrenheit ? (dTc * 9/5).toFixed(1) : dTc;
+    const dTUnit = useFahrenheit ? '°F' : '°C';
+    infoEl.innerHTML = `${tr('spot.label')}${spotTempDisp} / ${spot.hum}% / ${spot.ppfd}µmol &nbsp;|&nbsp; ${fmt(parseFloat(dTDisp), useFahrenheit ? 1.8 : 1, dTUnit)} ${fmt(dH,3,'%')} ${fmt(dP,50,'µmol')}`;
   }
 
   /* === DLI & lux→PPFD 変換 === */
@@ -3411,6 +3414,7 @@
             const date = l.timestamp ? l.timestamp.replace(/\d{4}\//, '').replace(/:\d{2}$/, '') : '—';
             const stage = stages[l.stage]?.name || l.stage || '—';
             const parts = [];
+            if (l.vpd != null) parts.push(`VPD <strong style="color:var(--accent)">${parseFloat(l.vpd).toFixed(2)}</strong>`);
             if (l.ph) parts.push(`pH <strong style="color:var(--text)">${l.ph}</strong>`);
             if (l.waterTemp) parts.push(`${tr('recent.water_temp')} <strong style="color:var(--text)">${l.waterTemp}°C</strong>`);
             if (l.ec) parts.push(`EC <strong style="color:var(--text)">${l.ec}</strong>${l.runoffEc ? `→${l.runoffEc}` : ''}`);
