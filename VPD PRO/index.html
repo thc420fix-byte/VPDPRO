@@ -4136,6 +4136,7 @@ function classifyVpd(vpd, lo, hi) {
       if (document.getElementById('el_leafVpd')) log.leafVpd = num('el_leafVpd') ?? log.leafVpd;
       if (document.getElementById('el_ppfd'))    log.ppfd    = num('el_ppfd')    ?? log.ppfd;
       if (document.getElementById('el_co2val'))  log.co2val  = num('el_co2val')  ?? log.co2val;
+      if (log.temp != null && log.hum != null)   log.vpd     = parseFloat(calcVPD(log.temp, log.hum).toFixed(3));
     } else {
       if (document.getElementById('el_ph'))       log.ph       = vv('el_ph')       || null;
       if (document.getElementById('el_ec'))       log.ec       = vv('el_ec')       || null;
