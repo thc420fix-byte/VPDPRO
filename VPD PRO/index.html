@@ -3797,8 +3797,8 @@ function classifyVpd(vpd, lo, hi) {
 
     if (inputEc != null && runoffEc != null) {
       const diff = parseFloat(runoffEc) - parseFloat(inputEc);
-      if (diff > 0.5) priority.push({ rank: 2, text: tr('action.flush'), fn: () => {} });
-      else if (diff < -0.3) priority.push({ rank: 2, text: tr('action.ec_up'), fn: () => {} });
+      if (diff > 0.5) priority.push({ rank: 2, text: tr('action.flush'), fn: () => showToast(appLang === 'en' ? 'Flush: water with no nutrients until runoff EC drops' : 'フラッシュ: 無栄養素水で流すと排液ECが下がります') });
+      else if (diff < -0.3) priority.push({ rank: 2, text: tr('action.ec_up'), fn: () => showToast(appLang === 'en' ? 'Raise input EC slightly next feed' : '次回の給水でInputECを少し上げましょう') });
     }
 
     if (ppfdRange && Array.isArray(ppfdRange)) {
