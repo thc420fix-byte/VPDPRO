@@ -671,7 +671,6 @@
           </div>
         </div>
         <div style="height:1px;background:var(--border);margin:0 14px;"></div>
-        <div style="height:1px;background:var(--border);margin:0 14px;"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
           <span style="font-size:0.88rem;color:var(--text);">Temperature</span>
           <div style="display:flex;background:var(--surface);border-radius:16px;overflow:hidden;">
@@ -934,8 +933,8 @@
       <div style="display:flex;align-items:center;margin-bottom:8px;">
         <span style="flex:1;font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;">Environment</span>
         <div style="flex-shrink:0;display:flex;background:var(--surface2);border-radius:16px;overflow:hidden;">
-          <div id="modeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')">Theory</div>
-          <div id="modeMySpot" class="mode-pill" onclick="setSpotMode('myspot')">My Spot</div>
+          <div id="modeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')" data-i18n="mode.theory">Theory</div>
+          <div id="modeMySpot" class="mode-pill" onclick="setSpotMode('myspot')" data-i18n="mode.myspot">My Spot</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
@@ -1043,7 +1042,7 @@
             onmousedown="startSaveHold('monitor',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
             ontouchstart="startSaveHold('monitor',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
             style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;">Save</button>
-          <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;">press &amp; hold</div>
+          <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;" data-i18n="feed.press_hold">press &amp; hold</div>
         </div>
         <!-- AI Advice Panel -->
         <div id="aiAdvicePanel" style="display:none;margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:6px;">
@@ -1091,10 +1090,10 @@
   <div class="card">
     <!-- Header: Feeding Log + Theory / My Spot -->
     <div style="display:flex;align-items:center;margin-bottom:8px;">
-      <span style="flex:1;font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;">Nutrient Log</span>
+      <span style="flex:1;font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;" data-i18n="feed.title">Nutrient Log</span>
       <div style="flex-shrink:0;display:flex;background:var(--surface2);border-radius:16px;overflow:hidden;">
-        <div id="feedModeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')">Theory</div>
-        <div id="feedModeMySpot" class="mode-pill" onclick="setSpotMode('myspot')">My Spot</div>
+        <div id="feedModeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')" data-i18n="mode.theory">Theory</div>
+        <div id="feedModeMySpot" class="mode-pill" onclick="setSpotMode('myspot')" data-i18n="mode.myspot">My Spot</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
@@ -1138,7 +1137,7 @@
       </div>
       <!-- EC Measurement Toggle -->
       <div onclick="toggleEcRows()" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;cursor:pointer;border-top:1px solid rgba(255,255,255,0.06);">
-        <span style="font-size:0.75rem;color:var(--text2);letter-spacing:0.04em;">EC Measurement</span>
+        <span style="font-size:0.75rem;color:var(--text2);letter-spacing:0.04em;" data-i18n="feed.ec_toggle">EC Measurement</span>
         <div id="ecToggleSwitch" style="width:38px;height:22px;border-radius:11px;background:rgba(255,255,255,0.12);position:relative;transition:background 0.2s;flex-shrink:0;">
           <div id="ecToggleThumb" style="width:18px;height:18px;border-radius:50%;background:var(--text2);position:absolute;top:2px;left:2px;transition:left 0.2s,background 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.4);"></div>
         </div>
@@ -1147,7 +1146,7 @@
       <div id="inputEcRow" class="stepper-row" style="display:none;">
         <button class="stepper-btn" onclick="adjustEc(-0.1)">−</button>
         <div class="stepper-center">
-          <span id="inputEcLabel" class="stepper-label">Input EC</span>
+          <span id="inputEcLabel" class="stepper-label" data-i18n="feed.input_ec">Input EC</span>
           <input id="ecInput" class="stepper-val" type="text" inputmode="decimal" placeholder="1.5" onfocus="this.select()">
           <span class="stepper-unit">mS</span>
         </div>
@@ -1157,7 +1156,7 @@
       <div id="runoffEcRow" class="stepper-row" style="display:none;">
         <button class="stepper-btn" onclick="adjustRunoffEc(-0.1)">−</button>
         <div class="stepper-center">
-          <span class="stepper-label">Runoff EC</span>
+          <span class="stepper-label" data-i18n="feed.runoff_ec">Runoff EC</span>
           <input id="runoffEcInput" class="stepper-val" type="text" inputmode="decimal" placeholder="1.8" onfocus="this.select()">
           <span class="stepper-unit">mS</span>
         </div>
@@ -1174,12 +1173,12 @@
         onmousedown="startSaveHold('feeding',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
         ontouchstart="startSaveHold('feeding',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
         style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;">Save</button>
-      <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;">press &amp; hold</div>
+      <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;" data-i18n="feed.press_hold">press &amp; hold</div>
     </div>
     <!-- Water Reminder -->
     <div style="padding:4px 8px 0;border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;">
       <div style="display:flex;align-items:center;gap:6px;">
-        <span id="reminderLabel" style="font-size:0.65rem;color:var(--text2);flex-shrink:0;letter-spacing:0.04em;">💧 次の給水リマインダー</span>
+        <span id="reminderLabel" style="font-size:0.65rem;color:var(--text2);flex-shrink:0;letter-spacing:0.04em;" data-i18n="reminder.label">💧 次の給水リマインダー</span>
         <div id="reminderBtnGroup" style="display:flex;gap:4px;flex:1;justify-content:flex-end;">
           <button onclick="setWaterReminder(24)" style="font-size:0.6rem;padding:3px 7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text2);cursor:pointer;">24h</button>
           <button onclick="setWaterReminder(48)" style="font-size:0.6rem;padding:3px 7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text2);cursor:pointer;">48h</button>
@@ -1288,7 +1287,7 @@
 <!-- テント名変更モーダル -->
 <div id="renameModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
   <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:12px;padding:24px;width:80%;max-width:320px;">
-    <div style="font-size:0.9rem;color:var(--text);margin-bottom:12px;">Rename Tent</div>
+    <div style="font-size:0.9rem;color:var(--text);margin-bottom:12px;" data-i18n="rename.tent">Rename Tent</div>
     <textarea id="renameInput" maxlength="24" rows="2" style="width:100%;font-size:1.1rem;background:transparent;color:var(--accent);border:none;border-bottom:1px solid var(--accent);outline:none;padding:4px 0;box-sizing:border-box;resize:none;font-family:inherit;line-height:1.3;"></textarea>
     <div style="display:flex;gap:8px;margin-top:16px;">
       <button onclick="confirmRename()" style="flex:2;padding:10px;background:var(--accent);color:#000;border:none;border-radius:6px;font-weight:700;font-size:0.9rem;cursor:pointer;">OK</button>
@@ -1301,7 +1300,7 @@
 <!-- 肥料名変更モーダル -->
 <div id="renameFertilizerModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
   <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:12px;padding:24px;width:80%;max-width:320px;">
-    <div style="font-size:0.9rem;color:var(--text);margin-bottom:16px;">Rename Fertilizer</div>
+    <div style="font-size:0.9rem;color:var(--text);margin-bottom:16px;" data-i18n="rename.fertilizer">Rename Fertilizer</div>
     <input id="renameFertilizerInput" type="text" maxlength="24" style="width:100%;font-size:1.1rem;background:transparent;color:var(--accent);border:none;border-bottom:1px solid var(--accent);outline:none;padding:6px 0 8px 0;box-sizing:border-box;font-family:inherit;">
     <div style="display:flex;gap:8px;margin-top:20px;">
       <button onclick="confirmRenameFertilizer()" style="flex:2;padding:10px;background:var(--accent);color:#000;border:none;border-radius:6px;font-weight:700;font-size:0.9rem;cursor:pointer;">OK</button>
@@ -1377,7 +1376,7 @@
       'analysis.stage_progress':'STAGE PROGRESS',
       'analysis.no_logs':'記録なし',
       'analysis.empty':'まだデータがありません。<br>環境タブで値を入力して<br>Save してください。',
-      'analysis.total_days':'合計: ','analysis.days':'日',
+      'analysis.total_days':'合計: ','analysis.days':'日','analysis.week':'Week ','analysis.day_abbr':'Day ',
       'toast.last_tent':'最後のテントは削除できません','toast.input_error':'⚠ 入力値を確認してください',
       'toast.import_ok':'インポート完了 ✓',
       'toast.import_bad_format':'⚠ 不正なファイル形式です','toast.import_error':'⚠ 読み込みエラー: ',
@@ -1409,6 +1408,10 @@
       'howto.4':'✦ AIチャットでVPD・栄養・栽培管理について質問できます',
       'toast.reminder':'💧 給水の時間です！',
       'chat.placeholder':'VPD・栄養素・栽培について質問…',
+      'rename.tent':'テント名を変更','rename.fertilizer':'肥料名を変更',
+      'mode.theory':'理論値','mode.myspot':'マイスポット',
+      'feed.title':'栄養素ログ','feed.ec_toggle':'EC 計測','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
+      'feed.press_hold':'長押しで保存',
     },
     en: {
       'tab.monitor':'📊 Monitor','tab.log':'💧 Feeding','tab.analysis':'📈 Analysis','tab.table':'📋 Reference',
@@ -1426,7 +1429,7 @@
       'analysis.stage_progress':'STAGE PROGRESS',
       'analysis.no_logs':'No records',
       'analysis.empty':'No data yet.<br>Enter values in the Environ tab<br>and press Save.',
-      'analysis.total_days':'Total: ','analysis.days':' days',
+      'analysis.total_days':'Total: ','analysis.days':' days','analysis.week':'Week ','analysis.day_abbr':'Day ',
       'toast.last_tent':'Cannot delete the last tent','toast.input_error':'⚠ Please check your input values',
       'toast.import_ok':'Import complete ✓',
       'toast.import_bad_format':'⚠ Invalid file format','toast.import_error':'⚠ Load error: ',
@@ -1458,6 +1461,10 @@
       'howto.4':'✦ AI chat for VPD, nutrients, and grow questions',
       'toast.reminder':'💧 Time to water!',
       'chat.placeholder':'Ask about VPD, nutrients, grow stages…',
+      'rename.tent':'Rename Tent','rename.fertilizer':'Rename Fertilizer',
+      'mode.theory':'Theory','mode.myspot':'My Spot',
+      'feed.title':'Nutrient Log','feed.ec_toggle':'EC Measurement','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
+      'feed.press_hold':'press & hold',
     }
   };
   const tr = k => (STRINGS[appLang]?.[k]) ?? (STRINGS.ja[k] ?? k);
@@ -2115,7 +2122,7 @@
     const days = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
     const week = Math.ceil(days / 7);
     if (days >= 1) {
-      el.textContent = endDateStr ? `Week ${week} Day ${days}✓` : `Week ${week} Day ${days}`;
+      el.textContent = endDateStr ? `${tr('analysis.week')}${week} ${tr('analysis.day_abbr')}${days}✓` : `${tr('analysis.week')}${week} ${tr('analysis.day_abbr')}${days}`;
       el.style.display = dayCountVisible ? '' : 'none';
     } else {
       el.textContent = '';
@@ -2339,7 +2346,7 @@
         const days = Math.floor((end - start) / (1000*60*60*24)) + 1;
         const week = Math.ceil(days / 7);
         if (days >= 1) {
-          feedDC.textContent = linked.end ? `Week ${week} Day ${days}✓` : `Week ${week} Day ${days}`;
+          feedDC.textContent = linked.end ? `${tr('analysis.week')}${week} ${tr('analysis.day_abbr')}${days}✓` : `${tr('analysis.week')}${week} ${tr('analysis.day_abbr')}${days}`;
           feedDC.style.display = dayCountVisible ? '' : 'none';
         } else { feedDC.textContent = ''; feedDC.style.display = 'none'; }
         }
@@ -2348,7 +2355,7 @@
     if (refEl) {
       const s = stages[t.stage];
       if (s && s.ecInput) {
-        refEl.textContent = `Input EC: ${s.ecInput[0]}–${s.ecInput[1]} mS  |  Runoff EC: ${s.ecRunoff[0]}–${s.ecRunoff[1]} mS`;
+        refEl.textContent = `${tr('feed.input_ec')}: ${s.ecInput[0]}–${s.ecInput[1]} mS  |  ${tr('feed.runoff_ec')}: ${s.ecRunoff[0]}–${s.ecRunoff[1]} mS`;
       } else {
         refEl.textContent = '';
       }
@@ -2757,7 +2764,7 @@
         const hi = Math.round(range[1] * h * 3600 / 1e6);
         const dliState = dli < lo ? 'low' : dli > hi ? 'high' : 'ok';
         el.style.color = dliState === 'ok' ? 'var(--accent)' : dliState === 'low' ? 'var(--warning)' : 'var(--danger)';
-        tgtEl.textContent = ` / ${lo}–${hi} target`;
+        tgtEl.textContent = appLang === 'en' ? ` / ${lo}–${hi} target` : ` / 目標 ${lo}–${hi}`;
       } else {
         tgtEl.textContent = '';
       }
