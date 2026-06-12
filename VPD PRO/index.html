@@ -1123,7 +1123,7 @@
         <div class="stepper-center">
           <span class="stepper-label">Water</span>
           <input id="waterTempInput" class="stepper-val" type="text" inputmode="numeric" placeholder="20" onfocus="this.select()">
-          <span class="stepper-unit">°C</span>
+          <span id="waterTempUnit" class="stepper-unit">°C</span>
         </div>
         <button class="stepper-btn" onclick="adjustWaterTemp(0.5)">+</button>
       </div>
@@ -1830,6 +1830,15 @@
     document.getElementById('humVal').value  = Math.round(t.hum);
     const leafOff = (t.leafOffset !== undefined && t.leafOffset !== null) ? t.leafOffset : -2.0;
     document.getElementById('leafOffsetInput').value = useFahrenheit ? (leafOff * 9/5).toFixed(1) : leafOff.toFixed(1);
+    const wtUnit = document.getElementById('waterTempUnit');
+    if (wtUnit) wtUnit.textContent = useFahrenheit ? '°F' : '°C';
+    const wtInput = document.getElementById('waterTempInput');
+    if (wtInput) wtInput.placeholder = useFahrenheit ? '68' : '20';
+    const _tUnit = useFahrenheit ? '°F' : '℃';
+    const _tLabel = document.getElementById('tempUnitLabel');
+    if (_tLabel) _tLabel.textContent = _tUnit;
+    const _lfLabel = document.getElementById('leafUnitLabel');
+    if (_lfLabel) _lfLabel.textContent = _tUnit;
     document.getElementById('ppfdVal').value = t.ppfd || 0;
     _updateDayNightBtn(t.dayNight);
     document.getElementById('btnLeaf').classList.toggle('active-leaf', t.leaf);
@@ -2217,9 +2226,10 @@
   }
 
   /* === 温度単位 === */
-  let useFahrenheit = false;
+  let useFahrenheit = localStorage.getItem('useFahrenheit') === 'true';
   function toggleTempUnit() {
     useFahrenheit = !useFahrenheit;
+    localStorage.setItem('useFahrenheit', useFahrenheit);
     const unit = useFahrenheit ? '°F' : '℃';
     document.getElementById('tempUnitLabel').textContent = unit;
     const leafLabel = document.getElementById('leafUnitLabel');
@@ -2229,6 +2239,15 @@
     const offset = tents[currentTent].leafOffset || -2.0;
     const offsetEl = document.getElementById('leafOffsetInput');
     if (offsetEl) offsetEl.value = useFahrenheit ? (offset * 9/5).toFixed(1) : offset.toFixed(1);
+    // Water temp unit label + convert displayed value
+    const wtUnit = document.getElementById('waterTempUnit');
+    if (wtUnit) wtUnit.textContent = useFahrenheit ? '°F' : '°C';
+    const wtInput = document.getElementById('waterTempInput');
+    if (wtInput && wtInput.value) {
+      const wv = parseFloat(wtInput.value);
+      if (!isNaN(wv)) wtInput.value = useFahrenheit ? (wv * 9/5 + 32).toFixed(1) : ((wv - 32) * 5/9).toFixed(1);
+    }
+    wtInput && (wtInput.placeholder = useFahrenheit ? '68' : '20');
     buildMatrix();
   }
 
@@ -3096,6 +3115,13 @@
     const cell = (t, i) => `<div style="font-size:0.7rem;color:var(--text);text-align:center;white-space:nowrap;border-left:${i===0?'none':vline};padding:0 2px;min-width:0;">${t}</div>`;
     const fv = (n) => Number.isInteger(n) ? String(n) : n.toFixed(1);
     const tempUnit = useFahrenheit ? '°F' : '°C';
+    // Update water temp note to match current unit
+    const _wtNote = document.getElementById('waterTempNote');
+    if (_wtNote) {
+      _wtNote.textContent = useFahrenheit
+        ? (appLang === 'en' ? '💧 Water temp: 64–72°F (for root health & dissolved oxygen)' : '💧 水温目安: 64〜72°F（根の健康・溶存酸素量の観点から）')
+        : tr('ref.water_temp');
+    }
     const hdrs = [tempUnit,'%RH','kPa',refCo2?'µmol*':'µmol','In EC','Out EC','pH'];
     let html = `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div style="min-width:430px;">`;
     html += `<div style="display:grid;grid-template-columns:56px 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;padding:4px 0 8px;border-bottom:1px solid rgba(255,255,255,0.2);">
@@ -3305,7 +3331,7 @@
       stages[log.stage] ? `🌱 ${stages[log.stage].name}` : '',
       `🌡 Temp: ${dispTemp}　💧 Humidity: ${log.hum}%　VPD: ${log.vpd} kPa`,
       log.ph ? `💧 pH: ${log.ph}` : '',
-      log.waterTemp ? `🌡 Water: ${log.waterTemp}°C` : '',
+      log.waterTemp ? `🌡 Water: ${log.waterTemp}${useFahrenheit ? '°F' : '°C'}` : '',
       log.ec ? `⚡ Input EC: ${log.ec} mS${log.runoffEc ? '　🔄 Runoff: ' + log.runoffEc + ' mS' : ''}` : '',
       fertNames ? `🌿 ${fertNames}` : ''
     ].filter(Boolean));
@@ -3428,7 +3454,7 @@
             const parts = [];
             if (l.vpd != null) parts.push(`VPD <strong style="color:var(--accent)">${parseFloat(l.vpd).toFixed(2)}</strong>`);
             if (l.ph) parts.push(`pH <strong style="color:var(--text)">${l.ph}</strong>`);
-            if (l.waterTemp) parts.push(`${tr('recent.water_temp')} <strong style="color:var(--text)">${l.waterTemp}°C</strong>`);
+            if (l.waterTemp) parts.push(`${tr('recent.water_temp')} <strong style="color:var(--text)">${l.waterTemp}${useFahrenheit ? '°F' : '°C'}</strong>`);
             if (l.ec) parts.push(`EC <strong style="color:var(--text)">${l.ec}</strong>${l.runoffEc ? `→${l.runoffEc}` : ''}`);
             return `<div style="display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px solid rgba(255,255,255,0.05);">
               <div style="flex:1;min-width:0;">
@@ -3619,9 +3645,13 @@
   }
   function adjustWaterTemp(delta) {
     const input = document.getElementById('waterTempInput');
-    let val = parseFloat(input.value || input.placeholder || '20');
-    if (isNaN(val)) val = 20;
-    val = Math.max(0, Math.min(40, Math.round((val + delta) * 10) / 10));
+    const defaultVal = useFahrenheit ? 68 : 20;
+    let val = parseFloat(input.value || String(defaultVal));
+    if (isNaN(val)) val = defaultVal;
+    const step = useFahrenheit ? delta * 2 : delta;
+    const min = useFahrenheit ? 32 : 0;
+    const max = useFahrenheit ? 104 : 40;
+    val = Math.max(min, Math.min(max, Math.round((val + step) * 10) / 10));
     input.value = val.toFixed(1);
   }
 
@@ -3629,7 +3659,7 @@
   async function exportData() {
     const tentsData = tents.slice();
     const logs = await dbGetAll('logs');
-    const settingsKeys = ['appLang','vpdTheme','dayCountVisible','spotTolTemp','spotTolHum','spotTolPpfd','dryTemp','dryHum','dryVpd','showRunoffEc','aiEnabled','lmUrl'];
+    const settingsKeys = ['appLang','vpdTheme','dayCountVisible','spotTolTemp','spotTolHum','spotTolPpfd','dryTemp','dryHum','dryVpd','showEcRows','aiEnabled','lmUrl','useFahrenheit'];
     const settings = {};
     settingsKeys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) settings[k] = v; });
     const payload = { tents: tentsData, logs, settings };
@@ -3706,6 +3736,9 @@
           Object.entries(data.settings).forEach(([k, v]) => localStorage.setItem(k, v));
           appLang = localStorage.getItem('appLang') || 'ja';
           loadDrySettings();
+          _showEcRows = localStorage.getItem('showEcRows') === 'true';
+          applyEcRows();
+          useFahrenheit = localStorage.getItem('useFahrenheit') === 'true';
         }
         currentTent = 0;
         buildTentBar();
@@ -3975,8 +4008,8 @@ function classifyVpd(vpd, lo, hi) {
             const isPhotoOnly = false;
             const isMonitor = l.type === 'monitor';
             const details = isMonitor
-              ? [l.temp ? `${Math.round(l.temp * 10) / 10}°C` : '', l.hum ? `${Math.round(l.hum)}%` : '', l.leafVpd ? `VPD ${l.leafVpd}` : '', l.ppfd ? `PPFD ${l.ppfd}` : ''].filter(Boolean).join('　')
-              : [l.ph ? `pH ${l.ph}` : '', l.waterTemp ? `💧${l.waterTemp}°C` : '', l.ec ? `EC ${l.ec}` : '', l.runoffEc ? `→${l.runoffEc}` : ''].filter(Boolean).join('　');
+              ? [l.temp ? `${useFahrenheit ? Math.round(l.temp * 9/5 + 32) + '°F' : (Math.round(l.temp * 10) / 10) + '°C'}` : '', l.hum ? `${Math.round(l.hum)}%` : '', l.leafVpd ? `VPD ${l.leafVpd}` : '', l.ppfd ? `PPFD ${l.ppfd}` : ''].filter(Boolean).join('　')
+              : [l.ph ? `pH ${l.ph}` : '', l.waterTemp ? `💧${l.waterTemp}${useFahrenheit ? '°F' : '°C'}` : '', l.ec ? `EC ${l.ec}` : '', l.runoffEc ? `→${l.runoffEc}` : ''].filter(Boolean).join('　');
             const label = isMonitor ? '📊' : '💧';
             const fertTags = !isMonitor && l.fertilizers && l.fertilizers.length
               ? `<div style="display:flex;justify-content:flex-end;opacity:1;font-size:0.72rem;color:var(--text);margin-top:0;padding-right:0;width:100%;box-sizing:border-box;">${(l.fertilizers).map(f => `${esc(f.name) || '?'}${f.amountMl ? ' ' + f.amountMl + 'ml' : ''}`).join('　')}</div>`
@@ -4021,7 +4054,7 @@ function classifyVpd(vpd, lo, hi) {
     html += '</div>';
     el.innerHTML = html;
     const emptyEl = document.getElementById('analysisEmptyState');
-    if (emptyEl) emptyEl.style.display = _logs.filter(l => l.tentId === tents[currentTent]?.id).length === 0 ? '' : 'none';
+    if (emptyEl) emptyEl.style.display = (_logs || []).filter(l => l.tentId === tents[currentTent]?.id).length === 0 ? '' : 'none';
   }
   async function deleteStageLog(id, stageKey) {
 
@@ -4079,8 +4112,10 @@ function classifyVpd(vpd, lo, hi) {
       <input id="el_time" type="time" value="${_timeStr}"
              style="background:transparent;border:none;border-bottom:1px solid var(--muted);color:var(--accent);font-size:0.9rem;outline:none;padding:4px 0;font-family:inherit;">
     </div>`;
+    const _editTempVal = log.temp != null && useFahrenheit ? parseFloat((log.temp * 9/5 + 32).toFixed(1)) : log.temp;
+    const _editTempUnit = useFahrenheit ? '°F' : '°C';
     if (isMonitor) {
-      rows += row('🌡 Temp',     'el_temp',    log.temp,    '°C');
+      rows += row('🌡 Temp',     'el_temp',    _editTempVal, _editTempUnit);
       rows += row('💧 Humidity', 'el_hum',     log.hum,     '%');
       rows += row('🌿 Leaf VPD', 'el_leafVpd', log.leafVpd, 'kPa');
       rows += row('💡 PPFD',     'el_ppfd',    log.ppfd,    'µmol');
@@ -4088,7 +4123,7 @@ function classifyVpd(vpd, lo, hi) {
         rows += row('💨 CO₂',    'el_co2val',  log.co2val,  'ppm');
     } else if (!isPhotoOnly) {
       rows += row('💧 pH',       'el_ph',       log.ph,       '');
-      rows += row('🌡 Water Temp','el_waterTemp', log.waterTemp,'°C', '1');
+      rows += row('🌡 Water Temp','el_waterTemp', log.waterTemp, _editTempUnit, '1');
       rows += row('⚡ EC',        'el_ec',       log.ec,       'mS');
       rows += row('🔄 Runoff',   'el_runoffEc', log.runoffEc, 'mS');
       if (log.fertilizers && log.fertilizers.length) {
@@ -4131,7 +4166,10 @@ function classifyVpd(vpd, lo, hi) {
     const num = fid => { const x = parseFloat(vv(fid)); return isNaN(x) ? null : x; };
 
     if (log.type === 'monitor') {
-      if (document.getElementById('el_temp'))    log.temp    = num('el_temp')    ?? log.temp;
+      if (document.getElementById('el_temp')) {
+        const rawT = num('el_temp');
+        if (rawT != null) log.temp = useFahrenheit ? Math.round((rawT - 32) * 5/9 * 10) / 10 : rawT;
+      }
       if (document.getElementById('el_hum'))     log.hum     = num('el_hum')     ?? log.hum;
       if (document.getElementById('el_leafVpd')) log.leafVpd = num('el_leafVpd') ?? log.leafVpd;
       if (document.getElementById('el_ppfd'))    log.ppfd    = num('el_ppfd')    ?? log.ppfd;
@@ -5014,13 +5052,15 @@ function classifyVpd(vpd, lo, hi) {
     const result = document.getElementById('aiAdviceResult');
     if (!result) return;
     result.style.display = 'block';
-    result.textContent = '考え中…';
+    result.textContent = appLang === 'en' ? 'Thinking…' : '考え中…';
     if (btn) btn.disabled = true;
+    const _dispTemp = useFahrenheit ? `${Math.round(t.temp * 9/5 + 32)}°F` : `${t.temp}°C`;
+    const _sysLang2 = appLang === 'en' ? 'Always respond in English.' : 'Always respond in Japanese.';
     const prompt = `You are a cannabis grow expert. Current conditions:
-Stage: ${stage} | Temp: ${t.temp}°C | RH: ${t.hum}% | VPD: ${vpdVal} kPa | PPFD: ${t.ppfd} µmol | ${t.dayNight === 'night' ? 'Night' : 'Day'} | CO2: ${t.co2 ? 'ON' : 'OFF'}
+Stage: ${stage} | Temp: ${_dispTemp} | RH: ${t.hum}% | VPD: ${vpdVal} kPa | PPFD: ${t.ppfd} µmol | ${t.dayNight === 'night' ? 'Night' : 'Day'} | CO2: ${t.co2 ? 'ON' : 'OFF'}
 Give 2-3 concise, actionable tips to optimize this environment. Be specific with numbers. Max 120 words.`;
     try {
-      const reply = await askLLM([{ role: 'system', content: 'You are a concise, expert cannabis cultivation assistant. Always respond in Japanese.' }, { role: 'user', content: prompt }]);
+      const reply = await askLLM([{ role: 'system', content: `You are a concise, expert cannabis cultivation assistant. ${_sysLang2}` }, { role: 'user', content: prompt }]);
       result.textContent = reply;
     } catch(e) {
       result.textContent = '⚠ LM Studio に接続できません。設定 → AI でURLを確認してください。';
@@ -5040,13 +5080,15 @@ Give 2-3 concise, actionable tips to optimize this environment. Be specific with
     const result = document.getElementById('aiFeedingResult');
     if (!result) return;
     result.style.display = 'block';
-    result.textContent = '考え中…';
+    result.textContent = appLang === 'en' ? 'Thinking…' : '考え中…';
     if (btn) btn.disabled = true;
+    const _wtUnit = useFahrenheit ? '°F' : '°C';
+    const _sysLang3 = appLang === 'en' ? 'Always respond in English.' : 'Always respond in Japanese.';
     const prompt = `Cannabis feeding review:
-Stage: ${stage} | Input EC: ${ec} mS | Runoff EC: ${runoff} mS | pH: ${ph} | Water Temp: ${waterTemp}°C
+Stage: ${stage} | Input EC: ${ec} mS | Runoff EC: ${runoff} mS | pH: ${ph} | Water Temp: ${waterTemp}${_wtUnit}
 Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed. Max 100 words.`;
     try {
-      const reply = await askLLM([{ role: 'system', content: 'You are a concise, expert cannabis cultivation assistant. Always respond in Japanese.' }, { role: 'user', content: prompt }]);
+      const reply = await askLLM([{ role: 'system', content: `You are a concise, expert cannabis cultivation assistant. ${_sysLang3}` }, { role: 'user', content: prompt }]);
       result.textContent = reply;
     } catch(e) {
       result.textContent = '⚠ LM Studio に接続できません。設定 → AI でURLを確認してください。';
@@ -5060,8 +5102,10 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
     if (!modal) return;
     modal.style.display = 'flex';
     if (_aiChatHistory.length === 0) {
-      _aiChatHistory.push({ role: 'system', content: 'You are a concise cannabis cultivation expert. Always respond in Japanese. Answer questions about VPD, nutrients, growing stages, and plant health. Keep answers under 150 words.' });
-      appendChatBubble('assistant', 'こんにちは！VPD・栄養素・栽培ステージ・植物の健康について何でも聞いてください。');
+      const _sysLang = appLang === 'en' ? 'Always respond in English.' : 'Always respond in Japanese.';
+      const _greeting = appLang === 'en' ? 'Hello! Ask me anything about VPD, nutrients, grow stages, or plant health.' : 'こんにちは！VPD・栄養素・栽培ステージ・植物の健康について何でも聞いてください。';
+      _aiChatHistory.push({ role: 'system', content: `You are a concise cannabis cultivation expert. ${_sysLang} Answer questions about VPD, nutrients, growing stages, and plant health. Keep answers under 150 words.` });
+      appendChatBubble('assistant', _greeting);
     }
     setTimeout(() => document.getElementById('aiChatInput').focus(), 100);
   }
