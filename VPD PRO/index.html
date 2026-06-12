@@ -2346,9 +2346,10 @@
 
 
   function prefillLastWatering() {
-    const phEl = document.getElementById('phInput');
-    const wtEl = document.getElementById('waterTempInput');
-    const ecEl = document.getElementById('ecInput');
+    const phEl  = document.getElementById('phInput');
+    const wtEl  = document.getElementById('waterTempInput');
+    const ecEl  = document.getElementById('ecInput');
+    const roEl  = document.getElementById('runoffEcInput');
     if (!phEl) return;
     if (phEl.value && wtEl?.value && ecEl?.value) return; // already filled
     dbGetAll('logs').then(all => {
@@ -2356,9 +2357,10 @@
       const last = all.filter(l => l.tentId === tent.id && (l.ph || l.waterTemp || l.ec))
                       .sort((a, b) => (b.ts || 0) - (a.ts || 0))[0];
       if (!last) return;
-      if (!phEl.value && last.ph)          { phEl.value = last.ph; }
-      if (wtEl && !wtEl.value && last.waterTemp) { wtEl.value = last.waterTemp; }
-      if (ecEl && !ecEl.value && last.ec)  { ecEl.value = last.ec; }
+      if (!phEl.value && last.ph)                      { phEl.value = last.ph; }
+      if (wtEl && !wtEl.value && last.waterTemp != null) { wtEl.value = useFahrenheit ? parseFloat((last.waterTemp * 9/5 + 32).toFixed(1)) : last.waterTemp; }
+      if (ecEl && !ecEl.value && last.ec)              { ecEl.value = last.ec; }
+      if (roEl && !roEl.value && last.runoffEc)        { roEl.value = last.runoffEc; }
     });
   }
 
@@ -3302,7 +3304,7 @@
       ph:        (el => el?.value.trim() || null)(document.getElementById('phInput')),
       ec:        (el => el?.value.trim() || null)(document.getElementById('ecInput')),
       runoffEc:  (el => el?.value.trim() || null)(document.getElementById('runoffEcInput')),
-      waterTemp: (el => el?.value.trim() || null)(document.getElementById('waterTempInput')),
+      waterTemp: (() => { const el = document.getElementById('waterTempInput'); const v = el?.value.trim(); if (!v) return null; const n = parseFloat(v); return isNaN(n) ? null : (useFahrenheit ? Math.round((n - 32) * 5/9 * 10) / 10 : n); })(),
       ppfd: String(t.ppfd || ''),
       vpd: parseFloat(calcVPD(t.temp, t.hum).toFixed(3)),
       leafVpd: parseFloat(calcLeafVPD(t.temp, t.hum, t.leafOffset || 0).toFixed(3)),
@@ -3333,7 +3335,7 @@
       stages[log.stage] ? `🌱 ${stages[log.stage].name}` : '',
       `🌡 Temp: ${dispTemp}　💧 Humidity: ${log.hum}%　VPD: ${log.vpd} kPa`,
       log.ph ? `💧 pH: ${log.ph}` : '',
-      log.waterTemp ? `🌡 Water: ${log.waterTemp}${useFahrenheit ? '°F' : '°C'}` : '',
+      log.waterTemp != null ? `🌡 Water: ${useFahrenheit ? (log.waterTemp * 9/5 + 32).toFixed(1) + '°F' : log.waterTemp + '°C'}` : '',
       log.ec ? `⚡ Input EC: ${log.ec} mS${log.runoffEc ? '　🔄 Runoff: ' + log.runoffEc + ' mS' : ''}` : '',
       fertNames ? `🌿 ${fertNames}` : ''
     ].filter(Boolean));
@@ -3456,7 +3458,7 @@
             const parts = [];
             if (l.vpd != null) parts.push(`VPD <strong style="color:var(--accent)">${parseFloat(l.vpd).toFixed(2)}</strong>`);
             if (l.ph) parts.push(`pH <strong style="color:var(--text)">${l.ph}</strong>`);
-            if (l.waterTemp) parts.push(`${tr('recent.water_temp')} <strong style="color:var(--text)">${l.waterTemp}${useFahrenheit ? '°F' : '°C'}</strong>`);
+            if (l.waterTemp != null) { const _wt = useFahrenheit ? (l.waterTemp * 9/5 + 32).toFixed(1) : l.waterTemp; parts.push(`${tr('recent.water_temp')} <strong style="color:var(--text)">${_wt}${useFahrenheit ? '°F' : '°C'}</strong>`); }
             if (l.ec) parts.push(`EC <strong style="color:var(--text)">${l.ec}</strong>${l.runoffEc ? `→${l.runoffEc}` : ''}`);
             return `<div style="display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px solid rgba(255,255,255,0.05);">
               <div style="flex:1;min-width:0;">
@@ -3543,8 +3545,13 @@
   async function startNewCycle() {
     const t = tents[currentTent];
     const cur = t.cycle || 1;
-    const yieldNote = t.yield != null ? `\n（収量 ${t.yield}g を記録済み）` : '';
-    if (!(await customConfirm(`サイクル ${cur} を終了して、新しいサイクル ${cur + 1} を開始しますか？\n過去のログは保存されたまま残ります。${yieldNote}`))) return;
+    const yieldNote = t.yield != null
+      ? (appLang === 'en' ? `\n(Yield ${t.yield}g recorded)` : `\n（収量 ${t.yield}g を記録済み）`)
+      : '';
+    const cycleMsg = appLang === 'en'
+      ? `End Cycle ${cur} and start Cycle ${cur + 1}?\nAll past logs are preserved.${yieldNote}`
+      : `サイクル ${cur} を終了して、新しいサイクル ${cur + 1} を開始しますか？\n過去のログは保存されたまま残ります。${yieldNote}`;
+    if (!(await customConfirm(cycleMsg))) return;
     t.cycle = cur + 1;
     t.stage = 'clone';
     t.stageDates = {};
@@ -3699,7 +3706,7 @@
         let key = _cryptoKey;
         // 同一端末・同一saltなら現在の鍵で復号可。違えばPINを聞いて鍵を導出
         if (!key || localStorage.getItem(_SALT_KEY) !== data.salt) {
-          const pin = window.prompt('このバックアップを作成したときのPINを入力してください');
+          const pin = window.prompt(appLang === 'en' ? 'Enter the PIN used when this backup was created' : 'このバックアップを作成したときのPINを入力してください');
           if (!pin) { showToast(appLang === 'en' ? 'Import cancelled' : 'インポートを中止しました'); e.target.value=''; return; }
           key = await _deriveKey(pin, data.salt);
         }
@@ -4012,7 +4019,7 @@ function classifyVpd(vpd, lo, hi) {
             const isMonitor = l.type === 'monitor';
             const details = isMonitor
               ? [l.temp ? `${useFahrenheit ? Math.round(l.temp * 9/5 + 32) + '°F' : (Math.round(l.temp * 10) / 10) + '°C'}` : '', l.hum ? `${Math.round(l.hum)}%` : '', l.leafVpd ? `VPD ${l.leafVpd}` : '', l.ppfd ? `PPFD ${l.ppfd}` : ''].filter(Boolean).join('　')
-              : [l.ph ? `pH ${l.ph}` : '', l.waterTemp ? `💧${l.waterTemp}${useFahrenheit ? '°F' : '°C'}` : '', l.ec ? `EC ${l.ec}` : '', l.runoffEc ? `→${l.runoffEc}` : ''].filter(Boolean).join('　');
+              : [l.ph ? `pH ${l.ph}` : '', l.waterTemp != null ? `💧${useFahrenheit ? (l.waterTemp * 9/5 + 32).toFixed(1) : l.waterTemp}${useFahrenheit ? '°F' : '°C'}` : '', l.ec ? `EC ${l.ec}` : '', l.runoffEc ? `→${l.runoffEc}` : ''].filter(Boolean).join('　');
             const label = isMonitor ? '📊' : '💧';
             const fertTags = !isMonitor && l.fertilizers && l.fertilizers.length
               ? `<div style="display:flex;justify-content:flex-end;opacity:1;font-size:0.72rem;color:var(--text);margin-top:0;padding-right:0;width:100%;box-sizing:border-box;">${(l.fertilizers).map(f => `${esc(f.name) || '?'}${f.amountMl ? ' ' + f.amountMl + 'ml' : ''}`).join('　')}</div>`
@@ -4126,7 +4133,8 @@ function classifyVpd(vpd, lo, hi) {
         rows += row('💨 CO₂',    'el_co2val',  log.co2val,  'ppm');
     } else if (!isPhotoOnly) {
       rows += row('💧 pH',       'el_ph',       log.ph,       '');
-      rows += row('🌡 Water Temp','el_waterTemp', log.waterTemp, _editTempUnit, '1');
+      const _editWtVal = log.waterTemp != null && useFahrenheit ? parseFloat((log.waterTemp * 9/5 + 32).toFixed(1)) : log.waterTemp;
+      rows += row('🌡 Water Temp','el_waterTemp', _editWtVal, _editTempUnit, '1');
       rows += row('⚡ EC',        'el_ec',       log.ec,       'mS');
       rows += row('🔄 Runoff',   'el_runoffEc', log.runoffEc, 'mS');
       if (log.fertilizers && log.fertilizers.length) {
@@ -4182,7 +4190,10 @@ function classifyVpd(vpd, lo, hi) {
       if (document.getElementById('el_ph'))       log.ph       = vv('el_ph')       || null;
       if (document.getElementById('el_ec'))       log.ec       = vv('el_ec')       || null;
       if (document.getElementById('el_runoffEc'))  log.runoffEc  = vv('el_runoffEc')  || null;
-      if (document.getElementById('el_waterTemp')) log.waterTemp = vv('el_waterTemp') || null;
+      if (document.getElementById('el_waterTemp')) {
+        const rawWt = num('el_waterTemp');
+        log.waterTemp = rawWt != null ? (useFahrenheit ? Math.round((rawWt - 32) * 5/9 * 10) / 10 : rawWt) : null;
+      }
       if (log.fertilizers && log.fertilizers.length) {
         log.fertilizers = log.fertilizers.map((f, i) => ({
           ...f,
@@ -4578,13 +4589,13 @@ function classifyVpd(vpd, lo, hi) {
     lock.style.cssText = 'flex:1;padding:7px 4px;text-align:center;font-size:0.72rem;cursor:pointer;' + (mode === 'lock' ? on : off);
     wipe.style.cssText = 'flex:1;padding:7px 4px;text-align:center;font-size:0.72rem;cursor:pointer;border-left:1px solid var(--border);' + (mode === 'wipe' ? 'background:rgba(255,68,68,0.18);color:var(--danger);font-weight:700;' : off);
     if (note) note.textContent = mode === 'wipe'
-      ? '⚠ 3回失敗で全データが復元不可能な形で消去されます。バックアップ（EXPORT JSON）を定期的に。'
-      : 'データを保持したまま24時間入力できなくなります。';
+      ? (appLang === 'en' ? '⚠ 3 failures wipes all data permanently. Export JSON backup regularly.' : '⚠ 3回失敗で全データが復元不可能な形で消去されます。バックアップ（EXPORT JSON）を定期的に。')
+      : (appLang === 'en' ? 'Data is kept; input locked for 24h after 3 failures.' : 'データを保持したまま24時間入力できなくなります。');
   }
 
   async function setPinFailMode(mode) {
     if (mode === 'wipe' && _pinFailMode() !== 'wipe') {
-      if (!(await customConfirm('PIN 3回失敗で全データを消去するモードに切り替えますか？\n誤入力でもデータは戻りません。'))) return;
+      if (!(await customConfirm(appLang === 'en' ? 'Switch to wipe-all mode on 3 PIN failures?\nData cannot be recovered.' : 'PIN 3回失敗で全データを消去するモードに切り替えますか？\n誤入力でもデータは戻りません。'))) return;
     }
     localStorage.setItem('vpdPinFailMode', mode);
     _updateFailModeUI();
@@ -5072,7 +5083,7 @@ Give 2-3 concise, actionable tips to optimize this environment. Be specific with
       const reply = await askLLM([{ role: 'system', content: `You are a concise, expert cannabis cultivation assistant. ${_sysLang2}` }, { role: 'user', content: prompt }]);
       result.textContent = reply;
     } catch(e) {
-      result.textContent = '⚠ LM Studio に接続できません。設定 → AI でURLを確認してください。';
+      result.textContent = appLang === 'en' ? '⚠ Cannot connect to LM Studio. Check URL in Settings → AI.' : '⚠ LM Studio に接続できません。設定 → AI でURLを確認してください。';
     } finally {
       if (btn) btn.disabled = false;
     }
@@ -5100,7 +5111,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
       const reply = await askLLM([{ role: 'system', content: `You are a concise, expert cannabis cultivation assistant. ${_sysLang3}` }, { role: 'user', content: prompt }]);
       result.textContent = reply;
     } catch(e) {
-      result.textContent = '⚠ LM Studio に接続できません。設定 → AI でURLを確認してください。';
+      result.textContent = appLang === 'en' ? '⚠ Cannot connect to LM Studio. Check URL in Settings → AI.' : '⚠ LM Studio に接続できません。設定 → AI でURLを確認してください。';
     } finally {
       if (btn) btn.disabled = false;
     }
@@ -5150,7 +5161,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
       _aiChatHistory.push({ role: 'assistant', content: reply });
       if (typing) typing.textContent = reply;
     } catch(e) {
-      if (typing) typing.textContent = '⚠ LM Studio に接続できません。設定でURLを確認してください。';
+      if (typing) typing.textContent = appLang === 'en' ? '⚠ Cannot connect to LM Studio. Check URL in Settings.' : '⚠ LM Studio に接続できません。設定でURLを確認してください。';
     }
   }
 
