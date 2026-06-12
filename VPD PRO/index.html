@@ -763,7 +763,7 @@
       <!-- About -->
       <div style="margin-top:16px;padding:12px 14px;background:var(--surface2);border-radius:12px;text-align:center;">
         <div style="font-size:0.75rem;font-weight:700;color:var(--accent);letter-spacing:0.12em;margin-bottom:4px;">VPD PRO</div>
-        <div style="font-size:0.62rem;color:var(--muted);line-height:1.6;">Cannabis Grow Environment Monitor<br>v1.0 · 完全オフライン PWA<br><span style="color:var(--text2);">note で配布中</span></div>
+        <div style="font-size:0.62rem;color:var(--muted);line-height:1.6;">Cannabis Grow Environment Monitor<br>v1.0 · 完全オフライン PWA<br><a href="https://note.com/thefix/m/m87e3c847fbef" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">note で配布中 →</a></div>
       </div>
 
       <!-- PIN 3回失敗時の動作 -->
@@ -912,7 +912,7 @@
         <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
       </div>
       <div id="statusBadge" class="status-badge status-ok">—</div>
-      <div id="rec" style="font-size:0.72rem;color:var(--text2);text-align:center;min-height:0;margin-top:3px;white-space:pre-line;line-height:1.5;"></div>
+      <div id="rec" style="font-size:0.72rem;color:var(--text2);text-align:center;min-height:0;margin-top:4px;line-height:1.5;display:flex;flex-wrap:wrap;justify-content:center;gap:2px;"></div>
       <div id="vpdDiff" style="display:none"></div>
       <div id="targetHum" style="display:none"></div>
       <div id="ppfdNow" style="display:none"></div>
@@ -1229,6 +1229,17 @@
       <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">④</span><span data-i18n="howto.4">✦ AIチャットでVPD・栄養・栽培管理について質問できます</span></div>
     </div>
   </div>
+
+  <!-- VPD Stats Summary -->
+  <div class="card" style="margin-top:10px;">
+    <div class="card-title" style="margin-bottom:10px;">VPD STATS</div>
+    <div id="vpdStatsGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+      <div><div id="statAvgVpd" style="font-size:1.2rem;font-weight:700;color:var(--accent);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;">AVG VPD</div></div>
+      <div><div id="statOkPct" style="font-size:1.2rem;font-weight:700;color:var(--ok);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;">OK RATE</div></div>
+      <div><div id="statLogCount" style="font-size:1.2rem;font-weight:700;color:var(--text2);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;">SAVES</div></div>
+    </div>
+    <div id="statTrend" style="margin-top:8px;font-size:0.65rem;color:var(--muted);text-align:center;"></div>
+  </div>
 </div>
 
 <div id="toast" class="toast"></div>
@@ -1375,6 +1386,11 @@
       'reminder.countdown':'後に通知',
       'recent.title':'RECENT LOGS',
       'recent.water_temp':'水温',
+      'nutrient.empty':'栄養素未登録 — 右上の ＋ で追加',
+      'recent.last':'最終:',
+      'recent.just_now':'直前',
+      'recent.hours_ago':'時間前',
+      'recent.days_ago':'日前',
       'howto.title':'HOW TO USE',
       'howto.1':'環境タブで Temp / Humidity / PPFD を入力し Save → 各ステージに記録が積まれます',
       'howto.2':'ステージ行をタップ → 保存済みの記録一覧と写真が展開されます',
@@ -1418,6 +1434,11 @@
       'reminder.countdown':'from now',
       'recent.title':'RECENT LOGS',
       'recent.water_temp':'Water',
+      'nutrient.empty':'No nutrients — tap ＋ to add',
+      'recent.last':'Last:',
+      'recent.just_now':'just now',
+      'recent.hours_ago':'h ago',
+      'recent.days_ago':'d ago',
       'howto.title':'HOW TO USE',
       'howto.1':'Enter Temp / Humidity / PPFD in the Environ tab → Save → records stack per stage',
       'howto.2':'Tap a stage row → expand saved records and photos',
@@ -2299,6 +2320,21 @@
 
 
 
+  function prefillLastWatering() {
+    const phEl = document.getElementById('phInput');
+    const wtEl = document.getElementById('waterTempInput');
+    if (!phEl || !wtEl) return;
+    if (phEl.value && wtEl.value) return; // already filled
+    dbGetAll('logs').then(all => {
+      const tent = tents[currentTent];
+      const last = all.filter(l => l.tentId === tent.id && (l.ph || l.waterTemp))
+                      .sort((a, b) => (b.ts || 0) - (a.ts || 0))[0];
+      if (!last) return;
+      if (!phEl.value && last.ph)        { phEl.value = last.ph; }
+      if (!wtEl.value && last.waterTemp) { wtEl.value = last.waterTemp; }
+    });
+  }
+
   let currentFertTab = 0;
   const _fertLastTap = {};  // renderFertilizerTabs再作成でもリセットされないよう外部管理
 
@@ -2311,7 +2347,7 @@
 
     // タブバー
     if (!list.length) {
-      bar.innerHTML = '<div style="font-size:0.72rem;color:var(--muted);padding:2px 0;">栄養素未登録 — 右上の ＋ で追加</div>';
+      bar.innerHTML = `<div style="font-size:0.72rem;color:var(--muted);padding:2px 0;">${tr('nutrient.empty')}</div>`;
       content.style.display = 'none';
       return;
     }
@@ -2886,7 +2922,7 @@
       badge.classList.add('status-danger','pulse');
       badge.textContent = check < lo ? tr('vpd.too_low') : tr('vpd.too_high');
       const ppfdRange = getPpfdRange(t.stage, t.co2);
-      recEl.textContent = generateAction(check, lo, hi, temp, hum, Number(t.ppfd || 0), t.dayNight === 'night' ? null : ppfdRange, null, null);
+      renderActionButtons(generateAction(check, lo, hi, temp, hum, Number(t.ppfd || 0), t.dayNight === 'night' ? null : ppfdRange, null, null), recEl);
       if (airEl) airEl.style.color = 'var(--danger)';
     } else if (state === 'warning') {
       badge.classList.add('status-warning');
@@ -3094,16 +3130,21 @@
     // データ行
     hums.forEach(h => {
       html += `<tr><td style="${stickyTD}">${h}%</td>`;
+      const tent = tents[currentTent];
+      const curTemp = Math.round(tent.temp || 25);
+      const curHum5 = Math.round((tent.hum || 60) / 5) * 5;
       temps.forEach(t => {
         const v = calcVPD(t, h);
         let bg;
-        if (v < 0.4)      bg = '#4a1e6b'; // purple - 低すぎ
-        else if (v < 0.8) bg = '#1a5c6b'; // blue - やや低
-        else if (v < 1.2) bg = '#2e8b3a'; // green - 理想
-        else if (v < 1.5) bg = '#8b8b2e'; // yellow-green - やや高
-        else if (v < 1.8) bg = '#a06a2e'; // orange - 高
-        else              bg = '#8b2e2e'; // red - 高すぎ
-        html += `<td style="background:${bg};${cellTD}">${v.toFixed(2)}</td>`;
+        if (v < 0.4)      bg = '#4a1e6b';
+        else if (v < 0.8) bg = '#1a5c6b';
+        else if (v < 1.2) bg = '#2e8b3a';
+        else if (v < 1.5) bg = '#8b8b2e';
+        else if (v < 1.8) bg = '#a06a2e';
+        else              bg = '#8b2e2e';
+        const isCur = t === curTemp && h === curHum5;
+        const extra = isCur ? 'box-shadow:inset 0 0 0 2px #fff;font-weight:900;font-size:0.7rem;' : '';
+        html += `<td style="background:${bg};${cellTD}${extra}">${isCur ? '▶' + v.toFixed(2) : v.toFixed(2)}</td>`;
       });
       html += '</tr>';
     });
@@ -3243,6 +3284,40 @@
     ].filter(Boolean));
   }
 
+  function renderVpdStats() {
+    const avgEl = document.getElementById('statAvgVpd');
+    const okEl = document.getElementById('statOkPct');
+    const cntEl = document.getElementById('statLogCount');
+    const trendEl = document.getElementById('statTrend');
+    if (!avgEl) return;
+    dbGetAll('logs').then(all => {
+      const tent = tents[currentTent];
+      const rows = all.filter(r => r.tentId === currentTent && r.vpd != null).sort((a,b) => b.ts - a.ts).slice(0, 50);
+      if (!rows.length) { avgEl.textContent = '—'; okEl.textContent = '—'; cntEl.textContent = '0'; trendEl.textContent = ''; return; }
+      const avg = rows.reduce((s,r) => s + r.vpd, 0) / rows.length;
+      const stage = tent.stage || 'veg';
+      const stages = { clone:{min:0.4,max:0.8}, seedling:{min:0.4,max:0.8}, veg:{min:0.8,max:1.2}, flower:{min:1.0,max:1.5}, lateflower:{min:1.2,max:1.6}, dry:{min:0.8,max:1.2}, harvest:{min:0,max:99} };
+      const range = stages[stage] || stages.veg;
+      const okCount = rows.filter(r => r.vpd >= range.min && r.vpd <= range.max).length;
+      avgEl.textContent = avg.toFixed(2);
+      okEl.textContent = Math.round(okCount / rows.length * 100) + '%';
+      cntEl.textContent = rows.length;
+      const okPct = okCount / rows.length;
+      avgEl.style.color = okPct > 0.7 ? 'var(--ok)' : okPct > 0.4 ? 'var(--warn)' : 'var(--danger)';
+      // trend: compare latest 10 vs previous 10
+      if (rows.length >= 20) {
+        const r10 = rows.slice(0,10).reduce((s,r) => s+r.vpd,0)/10;
+        const p10 = rows.slice(10,20).reduce((s,r) => s+r.vpd,0)/10;
+        const diff = r10 - p10;
+        trendEl.textContent = diff > 0.05 ? `↑ 直近10件の平均 ${r10.toFixed(2)} kPa（前10件比 +${diff.toFixed(2)}）` :
+                              diff < -0.05 ? `↓ 直近10件の平均 ${r10.toFixed(2)} kPa（前10件比 ${diff.toFixed(2)}）` :
+                              `→ 直近10件の平均 ${r10.toFixed(2)} kPa（安定）`;
+      } else {
+        trendEl.textContent = `直近${rows.length}件の記録から集計`;
+      }
+    });
+  }
+
   function renderFeedRecentLogs() {
     const el = document.getElementById('feedRecentLogs');
     if (!el) return;
@@ -3254,8 +3329,14 @@
         .sort((a, b) => (b.ts || 0) - (a.ts || 0))
         .slice(0, 5);
       if (!recent.length) { el.innerHTML = ''; return; }
+      const latestTs = recent[0].ts || 0;
+      const hoursAgo = latestTs ? ((Date.now() - latestTs) / 3600000) : null;
+      const sinceStr = hoursAgo === null ? '' : hoursAgo < 1 ? tr('recent.just_now') : hoursAgo < 24 ? `${Math.floor(hoursAgo)}${tr('recent.hours_ago')}` : `${Math.floor(hoursAgo/24)}${tr('recent.days_ago')}`;
       el.innerHTML = `<div class="card" style="margin-top:0;">
-        <div class="card-title" style="margin-bottom:8px;font-size:0.63rem;letter-spacing:0.1em;">${tr('recent.title')}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div class="card-title" style="font-size:0.63rem;letter-spacing:0.1em;margin:0;">${tr('recent.title')}</div>
+          ${sinceStr ? `<div style="font-size:0.6rem;color:var(--muted);">${tr('recent.last')} <span style="color:var(--text2);">${sinceStr}</span></div>` : ''}
+        </div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           ${recent.map(l => {
             const date = l.timestamp ? l.timestamp.replace(/\d{4}\//, '').replace(/:\d{2}$/, '') : '—';
@@ -3269,9 +3350,12 @@
                 <div style="font-size:0.68rem;color:var(--text2);line-height:1.4;">${parts.join('　')}</div>
                 ${l.note ? `<div style="font-size:0.6rem;color:var(--muted);margin-top:1px;">📝 ${esc(l.note)}</div>` : ''}
               </div>
-              <div style="text-align:right;flex-shrink:0;">
-                <div style="font-size:0.6rem;color:var(--accent);font-weight:600;">${esc(stage)}</div>
-                <div style="font-size:0.55rem;color:var(--muted);">${esc(date)}</div>
+              <div style="text-align:right;flex-shrink:0;display:flex;align-items:center;gap:6px;">
+                <div>
+                  <div style="font-size:0.6rem;color:var(--accent);font-weight:600;">${esc(stage)}</div>
+                  <div style="font-size:0.55rem;color:var(--muted);">${esc(date)}</div>
+                </div>
+                <button onclick="deleteLogEntry(${l.id})" style="background:none;border:none;color:var(--muted);font-size:0.9rem;cursor:pointer;padding:2px 4px;line-height:1;" title="削除">✕</button>
               </div>
             </div>`;
           }).join('')}
@@ -3369,7 +3453,7 @@
   async function exportCsv() {
     const logs = await dbGetAll('logs');
     if (!logs.length) { showToast('ログがありません'); return; }
-    const tentName = id => (tents.find(x => x.id === id) || {}).name || id;
+    const tentName = id => (tents[id] && tents[id].name) ? tents[id].name : `Tent ${id + 1}`;
     const cols = ['timestamp','tent','cycle','type','stage','temp_c','hum_pct','ppfd','co2_ppm','leaf_vpd','ph','ec_in','ec_runoff','water_temp','note'];
     const esc = v => {
       if (v == null || v === '') return '';
@@ -3391,6 +3475,12 @@
     a.click();
     URL.revokeObjectURL(a.href);
     showToast(`📊 ${logs.length}件をCSV出力`);
+  }
+
+  async function deleteLogEntry(id) {
+    await dbDelete('logs', id);
+    renderFeedRecentLogs();
+    renderVpdStats();
   }
 
   async function clearLogs(skipConfirm = false) {
@@ -3596,33 +3686,66 @@ function classifyVpd(vpd, lo, hi) {
     const priority = [];
 
     if (vpd > vpdMax) {
-      priority.push({ rank: 1, text: `${tr('action.hum_up')}${calcHumAdjust(vpd, vpdMax)}%` });
-      priority.push({ rank: 1, text: tr('action.temp_down') });
+      const adj = calcHumAdjust(vpd, vpdMax);
+      priority.push({ rank: 1, text: `${tr('action.hum_up')}${adj}%`, fn: () => { adjustHumidity(adj); } });
+      priority.push({ rank: 1, text: tr('action.temp_down'), fn: () => { adjustTemp(-1.0); } });
     } else if (vpd < vpdMin) {
-      priority.push({ rank: 1, text: `${tr('action.hum_down')}${calcHumAdjust(vpdMin, vpd)}%` });
-      priority.push({ rank: 1, text: tr('action.temp_up') });
+      const adj = calcHumAdjust(vpdMin, vpd);
+      priority.push({ rank: 1, text: `${tr('action.hum_down')}${adj}%`, fn: () => { adjustHumidity(-adj); } });
+      priority.push({ rank: 1, text: tr('action.temp_up'), fn: () => { adjustTemp(1.0); } });
     }
 
     if (ppfdRange && Array.isArray(ppfdRange)) {
       if (ppfd < ppfdRange[0]) {
-        priority.push({ rank: 3, text: `PPFD +${calcPpfdAdjust(ppfd, ppfdRange[0])}` });
+        const d = calcPpfdAdjust(ppfd, ppfdRange[0]);
+        priority.push({ rank: 3, text: `PPFD +${d}`, fn: () => { adjustPpfd(d); } });
       } else if (ppfd > ppfdRange[1]) {
-        priority.push({ rank: 3, text: `PPFD -${calcPpfdAdjust(ppfdRange[1], ppfd)}` });
+        const d = calcPpfdAdjust(ppfdRange[1], ppfd);
+        priority.push({ rank: 3, text: `PPFD -${d}`, fn: () => { adjustPpfd(-d); } });
       }
     }
 
-    if (!priority.length) return tr('action.no_change');
+    if (!priority.length) return null;
 
     const unique = [];
     const seen = new Set();
     for (const item of priority.sort((a, b) => a.rank - b.rank)) {
-      if (!seen.has(item.text)) {
-        seen.add(item.text);
-        unique.push(item);
-      }
+      if (!seen.has(item.text)) { seen.add(item.text); unique.push(item); }
     }
+    return unique.slice(0, 3);
+  }
 
-    return unique.slice(0, 3).map((x, i) => `${i + 1}. ${x.text}`).join("\n");
+  function adjustHumidity(delta) {
+    const t = tents[currentTent];
+    t.hum = Math.max(0, Math.min(100, Math.round(t.hum + delta)));
+    document.getElementById('humInput').value = t.hum;
+    update();
+  }
+  function adjustTemp(delta) {
+    const t = tents[currentTent];
+    t.temp = Math.round((t.temp + delta) * 10) / 10;
+    document.getElementById('tempInput').value = t.temp;
+    update();
+  }
+  function adjustPpfd(delta) {
+    const t = tents[currentTent];
+    t.ppfd = Math.max(0, Math.round(t.ppfd + delta));
+    document.getElementById('ppfdInput').value = t.ppfd;
+    updateDli();
+    update();
+  }
+
+  function renderActionButtons(actions, recEl) {
+    if (!recEl) return;
+    if (!actions) { recEl.innerHTML = `<span style="color:var(--ok);font-size:0.72rem;">${tr('action.no_change')}</span>`; return; }
+    recEl.innerHTML = actions.map((a, i) => {
+      const id = `_act_btn_${i}`;
+      return `<button id="${id}" style="display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;padding:3px 9px;background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.3);border-radius:20px;color:var(--accent);cursor:pointer;margin:2px 3px;font-family:inherit;white-space:nowrap;">${i+1}. ${a.text}</button>`;
+    }).join('');
+    actions.forEach((a, i) => {
+      const btn = document.getElementById(`_act_btn_${i}`);
+      if (btn) btn.onclick = () => { a.fn(); btn.style.background = 'rgba(52,199,89,0.3)'; setTimeout(() => { if(btn) btn.style.background = 'rgba(52,199,89,0.12)'; }, 600); };
+    });
   }
 
   /* === Analysis 新機能 === */
@@ -4674,8 +4797,8 @@ function classifyVpd(vpd, lo, hi) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     const tc = document.getElementById('tab-' + target);
     if (tc) tc.classList.add('active');
-    if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); renderFeedRecentLogs(); }
-    if (target === 'analysis') { dbGetAll('logs').then(logs => { renderStageTimeline(logs); }); }
+    if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); renderFeedRecentLogs(); prefillLastWatering(); }
+    if (target === 'analysis') { dbGetAll('logs').then(logs => { renderStageTimeline(logs); }); renderVpdStats(); }
     if (target === 'table') { buildStageTable(); buildMatrix(); }
     // AI Chat FAB: show only on analysis/table tabs (avoid conflicting with inline AI buttons)
     const chatFab = document.getElementById('aiChatFab');
