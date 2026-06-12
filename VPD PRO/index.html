@@ -1216,7 +1216,7 @@
     <div id="stageTimeline"></div>
     <div id="analysisEmptyState" style="display:none;text-align:center;padding:24px 16px;">
       <div style="font-size:2rem;margin-bottom:8px;">📊</div>
-      <div style="font-size:0.85rem;color:var(--text2);line-height:1.6;" data-i18n="analysis.empty">No data yet.<br>Enter values in the Environ tab<br>and press Save.</div>
+      <div style="font-size:0.85rem;color:var(--text2);line-height:1.6;" data-i18n-html="analysis.empty">まだデータがありません。<br>環境タブで値を入力して<br>Save してください。</div>
     </div>
   </div>
   <!-- How to use hint -->
@@ -3226,7 +3226,7 @@
       html += `<div style="display:grid;grid-template-columns:clamp(44px,14.5vw,56px) 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);${zebra}">
         <div style="display:flex;align-items:center;gap:3px;">
           <div style="width:3px;height:18px;background:${s.color};border-radius:2px;flex-shrink:0;"></div>
-          <span style="font-size:0.65rem;font-weight:700;color:${s.color};">${s.name}</span>
+          <span style="font-size:0.65rem;font-weight:700;color:${s.color};">${tr('stage.'+key)||s.name}</span>
         </div>
         ${vals.map((v,i) => cell(v,i)).join('')}
       </div>`;
@@ -4155,7 +4155,7 @@ function classifyVpd(vpd, lo, hi) {
           <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;${glow}"></div>
           <div style="flex:1;background:${isCurrent ? color + '33' : 'rgba(255,255,255,0.07)'};border-radius:6px;padding:6px 10px;${border}${glow}">
             <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleStageLog('slog-${key}','sicon-${key}')" >
-              <span style="font-size:0.8rem;font-weight:${isCurrent ? '700' : '600'};color:${isCurrent ? color : 'var(--text)'};">${s.name}${isCurrent ? ' ◀' : ''}</span>
+              <span style="font-size:0.8rem;font-weight:${isCurrent ? '700' : '600'};color:${isCurrent ? color : 'var(--text)'};">${tr('stage.'+key)||s.name}${isCurrent ? ' ◀' : ''}</span>
               <span style="display:flex;align-items:center;gap:6px;">
                 <span style="font-size:0.72rem;color:var(--text);opacity:0.9;white-space:nowrap;">
                   <span style="color:#fff;opacity:${isCurrent ? '0.9' : '0.4'};">${dateStr ? dateStr.replace(/-/g, '/') : (key === 'harvest' ? '' : '—')}</span>${daysText ? `　<span style="color:var(--accent);font-weight:700;opacity:${isCurrent ? '1' : '0.4'};">${daysText}</span>` : ''}
@@ -5013,6 +5013,9 @@ function classifyVpd(vpd, lo, hi) {
     document.querySelectorAll('[data-i18n]').forEach(el => {
       el.textContent = tr(el.getAttribute('data-i18n'));
     });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      el.innerHTML = tr(el.getAttribute('data-i18n-html'));
+    });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
       el.placeholder = tr(el.getAttribute('data-i18n-placeholder'));
     });
@@ -5404,6 +5407,6 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
   </div>
 
   <!-- AI Chat Floating Button -->
-  <button id="aiChatFab" onclick="openAiChat()" style="position:fixed;left:16px;bottom:calc(80px + env(safe-area-inset-bottom));width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,rgba(52,199,89,0.25) 0%,rgba(52,199,89,0.12) 100%);border:1.5px solid rgba(52,199,89,0.55);color:var(--accent);font-size:1.35rem;cursor:pointer;z-index:5000;box-shadow:0 4px 18px rgba(52,199,89,0.28),0 2px 8px rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);" aria-label="AI Chat">✦</button>
+  <button id="aiChatFab" onclick="openAiChat()" style="position:fixed;right:16px;bottom:calc(80px + env(safe-area-inset-bottom));width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,rgba(52,199,89,0.25) 0%,rgba(52,199,89,0.12) 100%);border:1.5px solid rgba(52,199,89,0.55);color:var(--accent);font-size:1.35rem;cursor:pointer;z-index:5000;box-shadow:0 4px 18px rgba(52,199,89,0.28),0 2px 8px rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);" aria-label="AI Chat">✦</button>
 </body>
 </html>
