@@ -3381,11 +3381,16 @@
         const r10 = rows.slice(0,10).reduce((s,r) => s+r.vpd,0)/10;
         const p10 = rows.slice(10,20).reduce((s,r) => s+r.vpd,0)/10;
         const diff = r10 - p10;
-        trendEl.textContent = diff > 0.05 ? `↑ 直近10件の平均 ${r10.toFixed(2)} kPa（前10件比 +${diff.toFixed(2)}）` :
-                              diff < -0.05 ? `↓ 直近10件の平均 ${r10.toFixed(2)} kPa（前10件比 ${diff.toFixed(2)}）` :
-                              `→ 直近10件の平均 ${r10.toFixed(2)} kPa（安定）`;
+        const signStr = diff > 0 ? `+${diff.toFixed(2)}` : diff.toFixed(2);
+        const trendArrow = diff > 0.05 ? '↑' : diff < -0.05 ? '↓' : '→';
+        const trendLabel = appLang === 'en'
+          ? `${trendArrow} avg last 10: ${r10.toFixed(2)} kPa (${signStr} vs prev 10)`
+          : `${trendArrow} 直近10件の平均 ${r10.toFixed(2)} kPa（前10件比 ${signStr}）`;
+        trendEl.textContent = trendLabel;
       } else {
-        trendEl.textContent = `直近${rows.length}件の記録から集計`;
+        trendEl.textContent = appLang === 'en'
+          ? `Based on last ${rows.length} records`
+          : `直近${rows.length}件の記録から集計`;
       }
     });
   }

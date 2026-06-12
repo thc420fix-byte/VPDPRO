@@ -8,6 +8,9 @@
   "background_color": "#0a0a0a",
   "theme_color": "#22c55e",
   "orientation": "portrait",
+  "categories": ["health", "lifestyle", "utilities"],
+  "lang": "ja",
+  "dir": "ltr",
   "icons": [
     {
       "src": "icon-192.png",
