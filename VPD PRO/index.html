@@ -3215,6 +3215,8 @@
           leafOffset: t.leafOffset,
           ph: null, ec: null, runoffEc: null,
           ppfd: String(t.ppfd), note: '',
+          vpd: parseFloat(calcVPD(t.temp, t.hum).toFixed(3)),
+          leafVpd: parseFloat(calcLeafVPD(t.temp, t.hum, t.leafOffset || 0).toFixed(3)),
           photo: compressed, fertilizers: []
         };
         await dbPut('logs', log);
@@ -5150,16 +5152,18 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
       stage: t.stage,
       timestamp: now.toLocaleString('ja-JP'),
       ts: now.getTime(),
-      temp, hum, ppfd, co2val, leafVpd, note
+      temp, hum, ppfd, co2val, leafVpd, note,
+      vpd: parseFloat(calcVPD(temp, hum).toFixed(3))
     };
     await dbPut('logs', log);
     if (noteEl) noteEl.value = '';
-    const airVpdNow = calcVPD(temp, hum).toFixed(2);
+    const airVpdNow = log.vpd.toFixed(2);
     renderVpdSparkline();
     renderVpdStats();
+    const dispMonTemp = useFahrenheit ? (log.temp * 9/5 + 32).toFixed(1) + '°F' : log.temp + '°C';
     showSavePopup('Monitor Saved ✅', [
       `📅 ${log.timestamp}`,
-      `🌡 Temp: ${log.temp}°C　💧 Humidity: ${log.hum}%`,
+      `🌡 Temp: ${dispMonTemp}　💧 Humidity: ${log.hum}%`,
       `📊 Air VPD: ${airVpdNow} kPa　🌿 Leaf: ${log.leafVpd} kPa`,
       `💡 PPFD: ${log.ppfd} µmol`,
       log.co2val ? `💨 CO₂: ${log.co2val} ppm` : ''
