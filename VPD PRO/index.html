@@ -2927,7 +2927,9 @@
       badge.classList.add('status-danger','pulse');
       badge.textContent = check < lo ? tr('vpd.too_low') : tr('vpd.too_high');
       const ppfdRange = getPpfdRange(t.stage, t.co2);
-      renderActionButtons(generateAction(check, lo, hi, temp, hum, Number(t.ppfd || 0), t.dayNight === 'night' ? null : ppfdRange, null, null), recEl);
+      const ecIn = parseFloat(document.getElementById('ecInput')?.value) || null;
+      const ecRun = parseFloat(document.getElementById('runoffEcInput')?.value) || null;
+      renderActionButtons(generateAction(check, lo, hi, temp, hum, Number(t.ppfd || 0), t.dayNight === 'night' ? null : ppfdRange, ecIn, ecRun), recEl);
       if (airEl) airEl.style.color = 'var(--danger)';
     } else if (state === 'warning') {
       badge.classList.add('status-warning');
@@ -3312,7 +3314,7 @@
       const py = (v) => H - pad - ((v - min) / range) * (H - pad*2);
       // range bands
       const stage = tent.stage || 'veg';
-      const stageData = { clone:{min:0.4,max:0.8}, seedling:{min:0.4,max:0.8}, veg:{min:0.8,max:1.2}, flower:{min:1.0,max:1.5}, lateflower:{min:1.2,max:1.6}, dry:{min:0.8,max:1.2}, harvest:{min:0,max:99} };
+      const stageData = { clone:{min:0.4,max:0.8}, seedling:{min:0.4,max:0.8}, veg:{min:0.8,max:1.1}, flower:{min:0.8,max:1.5}, lateflower:{min:1.2,max:1.6}, dry:{min:0.6,max:0.8}, harvest:{min:0.6,max:0.9} };
       const r = stageData[stage] || stageData.veg;
       const bandY1 = py(Math.min(r.max, max));
       const bandY2 = py(Math.max(r.min, min));
@@ -3339,8 +3341,8 @@
       if (!rows.length) { avgEl.textContent = '—'; okEl.textContent = '—'; cntEl.textContent = '0'; trendEl.textContent = ''; return; }
       const avg = rows.reduce((s,r) => s + r.vpd, 0) / rows.length;
       const stage = tent.stage || 'veg';
-      const stages = { clone:{min:0.4,max:0.8}, seedling:{min:0.4,max:0.8}, veg:{min:0.8,max:1.2}, flower:{min:1.0,max:1.5}, lateflower:{min:1.2,max:1.6}, dry:{min:0.8,max:1.2}, harvest:{min:0,max:99} };
-      const range = stages[stage] || stages.veg;
+      const stageVpdMap = { clone:{min:0.4,max:0.8}, seedling:{min:0.4,max:0.8}, veg:{min:0.8,max:1.1}, flower:{min:0.8,max:1.5}, lateflower:{min:1.2,max:1.6}, dry:{min:0.6,max:0.8}, harvest:{min:0.6,max:0.9} };
+      const range = stageVpdMap[stage] || stageVpdMap.veg;
       const okCount = rows.filter(r => r.vpd >= range.min && r.vpd <= range.max).length;
       avgEl.textContent = avg.toFixed(2);
       okEl.textContent = Math.round(okCount / rows.length * 100) + '%';
@@ -3751,14 +3753,22 @@ function classifyVpd(vpd, lo, hi) {
   function generateAction(vpd, vpdMin, vpdMax, temp, hum, ppfd, ppfdRange, inputEc, runoffEc) {
     const priority = [];
 
+    const tempUnit = useFahrenheit ? '°F' : '°C';
+    const tempDelta = useFahrenheit ? 1.8 : 1.0;
     if (vpd > vpdMax) {
       const adj = calcHumAdjust(vpd, vpdMax);
       priority.push({ rank: 1, text: `${tr('action.hum_up')}${adj}%`, fn: () => { adjustHumidity(adj); } });
-      priority.push({ rank: 1, text: tr('action.temp_down'), fn: () => { adjustTemp(-1.0); } });
+      priority.push({ rank: 1, text: `Temp -${tempDelta.toFixed(1)}${tempUnit}`, fn: () => { adjustTemp(-1.0); } });
     } else if (vpd < vpdMin) {
       const adj = calcHumAdjust(vpdMin, vpd);
       priority.push({ rank: 1, text: `${tr('action.hum_down')}${adj}%`, fn: () => { adjustHumidity(-adj); } });
-      priority.push({ rank: 1, text: tr('action.temp_up'), fn: () => { adjustTemp(1.0); } });
+      priority.push({ rank: 1, text: `Temp +${tempDelta.toFixed(1)}${tempUnit}`, fn: () => { adjustTemp(1.0); } });
+    }
+
+    if (inputEc != null && runoffEc != null) {
+      const diff = parseFloat(runoffEc) - parseFloat(inputEc);
+      if (diff > 0.5) priority.push({ rank: 2, text: tr('action.flush'), fn: () => {} });
+      else if (diff < -0.3) priority.push({ rank: 2, text: tr('action.ec_up'), fn: () => {} });
     }
 
     if (ppfdRange && Array.isArray(ppfdRange)) {
