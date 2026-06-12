@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>VPD PRO — Grow Environment Monitor</title>
+  <title>Canopy — Grow Environment Monitor</title>
   <!-- PWA manifest -->
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#000000">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="VPD PRO">
+  <meta name="apple-mobile-web-app-title" content="Canopy">
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
   <!-- Icons for Apple devices -->
@@ -110,15 +110,23 @@
     }
     html { touch-action: manipulation; }
     h1 {
-      font-size: 1.05rem;
+      font-size: 1.7rem;
       font-weight: 800;
       text-align: center;
       color: var(--accent);
-      margin: 0 0 2px 0;
-      letter-spacing: 0.22em;
-      text-shadow: 0 0 18px rgba(52,199,89,0.45);
+      margin: 6px 0 2px 0;
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 22px rgba(52,199,89,0.5);
     }
-    .subtitle { display: none; }
+    .subtitle {
+      display: block;
+      text-align: center;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
     /* テントバー */
     .tent-bar {
       display: flex;
@@ -627,7 +635,7 @@
 <body>
   <!-- ===== PIN Lock Overlay ===== -->
   <div id="pinOverlay" style="display:none;">
-    <div style="font-size:1.4rem;font-weight:700;color:var(--accent);letter-spacing:0.15em;">VPD PRO</div>
+    <div style="font-size:1.4rem;font-weight:700;color:var(--accent);letter-spacing:0.1em;">Canopy</div>
     <div id="pinMessage" style="font-size:0.88rem;color:var(--text);opacity:0.75;min-height:20px;text-align:center;"></div>
     <div class="pin-dots" id="pinDots"></div>
     <div class="pin-keypad">
@@ -770,8 +778,8 @@
 
       <!-- About -->
       <div style="margin-top:16px;padding:12px 14px;background:var(--surface2);border-radius:12px;text-align:center;">
-        <div style="font-size:0.75rem;font-weight:700;color:var(--accent);letter-spacing:0.12em;margin-bottom:4px;">VPD PRO</div>
-        <div style="font-size:0.62rem;color:var(--muted);line-height:1.6;">Cannabis Grow Environment Monitor<br>v1.5 · 完全オフライン PWA<br><a href="https://note.com/thefix/m/m87e3c847fbef" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">note で配布中 →</a></div>
+        <div style="font-size:0.75rem;font-weight:700;color:var(--accent);letter-spacing:0.1em;margin-bottom:4px;">Canopy</div>
+        <div style="font-size:0.62rem;color:var(--muted);line-height:1.6;">Grow Environment Monitor<br>v1.5 · 完全オフライン PWA<br><a href="https://note.com/thefix/m/m87e3c847fbef" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">note で配布中 →</a></div>
       </div>
 
       <!-- PIN 3回失敗時の動作 -->
@@ -887,7 +895,7 @@
       <button style="width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:0.78rem;cursor:pointer;" onclick="closeLuxConverter()" data-i18n="lightmeter.close">Close</button>
     </div>
   </div>
-  <h1>VPD PRO</h1>
+  <h1>Canopy</h1>
   <div class="subtitle" data-i18n="app.subtitle">Grow Environment Monitor</div>
 
   <div class="tent-bar" id="tentBar"></div>
@@ -1371,6 +1379,7 @@
       'spot.in':'スポット内 ✓','spot.out':'スポット外','spot.in_range':'マイスポットの範囲内です',
       'spot.approach':' でマイスポットに近づきます','spot.unsaved':'このステージのスポット未保存',
       'spot.label':'📌 スポット: ','spot.temp_adj':'温度: ','spot.hum_adj':'湿度: ','spot.light_adj':'光量: ',
+      'ref.co2_on':'CO₂ ON','ref.co2_off':'CO₂ OFF',
       'ref.stage_guide':'STAGE CHART','ref.soil':'土壌','ref.hydro':'ハイドロ/ココ',
       'ref.water_temp':'💧 水温目安: 18〜22°C（根の健康・溶存酸素量の観点から）',
       'analysis.stage_progress':'STAGE PROGRESS',
@@ -1444,6 +1453,7 @@
       'spot.in':'In Spot ✓','spot.out':'Off Spot','spot.in_range':'Within your My Spot range',
       'spot.approach':' to reach My Spot','spot.unsaved':'No spot saved for this stage',
       'spot.label':'📌 Spot: ','spot.temp_adj':'Temp: ','spot.hum_adj':'RH: ','spot.light_adj':'Light: ',
+      'ref.co2_on':'CO₂ ON','ref.co2_off':'CO₂ OFF',
       'ref.stage_guide':'STAGE CHART','ref.soil':'Soil','ref.hydro':'Hydro/Coco',
       'ref.water_temp':'💧 Water temp: 18–22°C (for root health & dissolved oxygen)',
       'analysis.stage_progress':'STAGE PROGRESS',
@@ -2067,6 +2077,8 @@
     if (dc) dc.textContent = '';
     _updateClearDateBtn();
     if (typeof buildStageTable === 'function') buildStageTable();
+    dbGetAll('logs').then(renderStageTimeline);
+    showToast(appLang === 'en' ? '🗑 Stage dates cleared' : '🗑 ステージ日付を削除しました');
   }
 
   // 🗑 button: double tap = clear current stage date, long press = clear all
@@ -3174,7 +3186,7 @@
   function toggleRefCo2() {
     refCo2 = !refCo2;
     const btn = document.getElementById('refCo2Btn');
-    if (btn) btn.textContent = refCo2 ? 'CO₂ ON' : 'CO₂ OFF';
+    if (btn) btn.textContent = refCo2 ? tr('ref.co2_on') : tr('ref.co2_off');
     if (btn) btn.style.color = refCo2 ? 'var(--accent)' : 'var(--text)';
     if (btn) btn.style.borderColor = refCo2 ? 'var(--accent)' : 'var(--border)';
     buildStageTable();
@@ -3686,6 +3698,7 @@
     renderFeedRecentLogs();
     renderVpdStats();
     renderVpdSparkline();
+    dbGetAll('logs').then(renderStageTimeline);
   }
 
   async function clearLogs(skipConfirm = false) {

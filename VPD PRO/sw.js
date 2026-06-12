@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'vpd-pro-v79';
+const CACHE_VERSION = 'canopy-v81';
 const ASSETS = [
   './',
   './index.html',

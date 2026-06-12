@@ -1,7 +1,7 @@
 {
-  "name": "VPD PRO",
-  "short_name": "VPD PRO",
-  "description": "Cannabis VPD & grow environment monitor — offline PWA",
+  "name": "Canopy",
+  "short_name": "Canopy",
+  "description": "Cannabis grow environment monitor — offline PWA",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
