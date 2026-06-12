@@ -653,26 +653,26 @@
   <!-- Settings Modal -->
   <div id="settingsModal" role="dialog" aria-modal="true" onclick="closeSettings(event)">
     <div id="settingsPanel">
-      <div style="font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">Settings</div>
+      <div style="font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;" data-i18n="settings.title">Settings</div>
 
       <!-- General -->
       <div style="background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:8px;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
-          <span style="font-size:0.88rem;color:var(--text);">Dark Mode</span>
+          <span style="font-size:0.88rem;color:var(--text);" data-i18n="settings.dark_mode">Dark Mode</span>
           <div id="themeToggle" onclick="toggleTheme()" style="width:42px;height:26px;border-radius:13px;background:var(--accent);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;">
             <div id="themeThumb" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
           </div>
         </div>
         <div style="height:1px;background:var(--border);margin:0 14px;"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
-          <span style="font-size:0.88rem;color:var(--text);">Week / Day count</span>
+          <span style="font-size:0.88rem;color:var(--text);" data-i18n="settings.week_day_count">Week / Day count</span>
           <div id="dayCountToggle" onclick="toggleDayCount()" style="width:42px;height:26px;border-radius:13px;background:var(--accent);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;">
             <div id="dayCountThumb" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
           </div>
         </div>
         <div style="height:1px;background:var(--border);margin:0 14px;"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
-          <span style="font-size:0.88rem;color:var(--text);">Temperature</span>
+          <span style="font-size:0.88rem;color:var(--text);" data-i18n="settings.temperature">Temperature</span>
           <div style="display:flex;background:var(--surface);border-radius:16px;overflow:hidden;">
             <div id="unitC" onclick="if(useFahrenheit)toggleTempUnit()" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">°C</div>
             <div id="unitF" onclick="if(!useFahrenheit)toggleTempUnit()" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">°F</div>
@@ -680,7 +680,7 @@
         </div>
         <div style="height:1px;background:var(--border);margin:0 14px;"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
-          <span style="font-size:0.88rem;color:var(--text);">Language</span>
+          <span style="font-size:0.88rem;color:var(--text);" data-i18n="settings.language">Language</span>
           <div style="display:flex;background:var(--surface);border-radius:16px;overflow:hidden;">
             <div id="langJA" onclick="setLang('ja')" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">JA</div>
             <div id="langEN" onclick="setLang('en')" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">EN</div>
@@ -689,79 +689,79 @@
       </div>
 
       <!-- Backup -->
-      <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;">Backup</div>
+      <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;" data-i18n="settings.backup">Backup</div>
       <div style="background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:8px;">
         <div onclick="exportData()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;">
-          <span style="font-size:0.88rem;color:var(--accent);">Export JSON</span>
+          <span style="font-size:0.88rem;color:var(--accent);" data-i18n="settings.export_json">Export JSON</span>
           <span style="font-size:0.75rem;color:var(--text2);">›</span>
         </div>
         <div style="height:1px;background:var(--border);margin:0 14px;"></div>
         <div onclick="exportCsv()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;">
-          <span style="font-size:0.88rem;color:var(--accent);">Export CSV</span>
+          <span style="font-size:0.88rem;color:var(--accent);" data-i18n="settings.export_csv">Export CSV</span>
           <span style="font-size:0.75rem;color:var(--text2);">›</span>
         </div>
         <div style="height:1px;background:var(--border);margin:0 14px;"></div>
         <div onclick="importData()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;">
-          <span style="font-size:0.88rem;color:var(--accent);">Import JSON</span>
+          <span style="font-size:0.88rem;color:var(--accent);" data-i18n="settings.import_json">Import JSON</span>
           <span style="font-size:0.75rem;color:var(--text2);">›</span>
         </div>
       </div>
       <input type="file" accept="application/json" id="importFile" style="display:none" onchange="handleImport(event)">
 
       <!-- Data -->
-      <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;">Data</div>
+      <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;" data-i18n="settings.data">Data</div>
       <div style="background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:8px;">
         <div onclick="startNewCycle()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;">
-          <span style="font-size:0.88rem;color:var(--accent);">New Cycle</span>
+          <span style="font-size:0.88rem;color:var(--accent);" data-i18n="settings.new_cycle">New Cycle</span>
           <span style="font-size:0.75rem;color:var(--text2);">›</span>
         </div>
         <div style="height:1px;background:var(--border);margin:0 14px;"></div>
         <div onclick="clearLogs()" style="padding:11px 14px;cursor:pointer;">
-          <span style="font-size:0.88rem;color:var(--danger);">Clear Log</span>
+          <span style="font-size:0.88rem;color:var(--danger);" data-i18n="settings.clear_log">Clear Log</span>
         </div>
         <div style="height:1px;background:var(--border);margin:0 14px;"></div>
         <div onclick="eraseAllData()" style="padding:11px 14px;cursor:pointer;">
-          <span style="font-size:0.88rem;color:var(--danger);">Erase All Data</span>
+          <span style="font-size:0.88rem;color:var(--danger);" data-i18n="settings.erase_all">Erase All Data</span>
         </div>
       </div>
 
       <!-- Security -->
-      <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;">Security</div>
+      <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;" data-i18n="settings.security">Security</div>
       <div style="background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:4px;">
         <div id="pinSetupBtn" onclick="setupPin()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;">
-          <span style="font-size:0.88rem;color:var(--accent);">Set PIN</span>
+          <span style="font-size:0.88rem;color:var(--accent);" data-i18n="settings.set_pin">Set PIN</span>
           <span style="font-size:0.75rem;color:var(--text2);">›</span>
         </div>
         <div id="pinRemoveBtn" onclick="removePin()" style="display:none;height:1px;background:var(--border);margin:0 14px;"></div>
         <div id="pinRemoveRow" onclick="removePin()" style="display:none;padding:11px 14px;cursor:pointer;">
-          <span style="font-size:0.88rem;color:var(--danger);">Remove PIN</span>
+          <span style="font-size:0.88rem;color:var(--danger);" data-i18n="settings.remove_pin">Remove PIN</span>
         </div>
         <div style="height:1px;background:var(--border);margin:0 14px;"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
-          <span style="font-size:0.88rem;color:var(--text);">Decoy Screen</span>
+          <span style="font-size:0.88rem;color:var(--text);" data-i18n="settings.decoy_screen">Decoy Screen</span>
           <div id="decoyToggle" onclick="toggleDecoyMode()" style="width:42px;height:26px;border-radius:13px;background:rgba(255,255,255,0.15);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;">
             <div id="decoyThumb" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
           </div>
         </div>
       </div>
-      <div style="font-size:0.65rem;color:var(--muted);line-height:1.5;padding:0 4px;margin-bottom:6px;">100% offline — no account, no server.</div>
+      <div style="font-size:0.65rem;color:var(--muted);line-height:1.5;padding:0 4px;margin-bottom:6px;" data-i18n="settings.offline_note">100% offline — no account, no server.</div>
 
       <!-- AI / Local LLM -->
-      <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;">AI (Local LLM)</div>
+      <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;" data-i18n="settings.ai_section">AI (Local LLM)</div>
       <div style="background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:8px;">
         <div style="padding:11px 14px;">
-          <div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px;">LM Studio URL</div>
+          <div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px;" data-i18n="settings.lm_url">LM Studio URL</div>
           <input id="lmUrlInput" type="url" placeholder="http://localhost:11234" value=""
             style="width:100%;box-sizing:border-box;padding:7px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8rem;outline:none;"
             oninput="localStorage.setItem('lmUrl',this.value.trim())">
           <div style="display:flex;gap:8px;margin-top:8px;">
-            <button onclick="testLmConnection()" style="flex:1;padding:7px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:0.75rem;cursor:pointer;">Test</button>
+            <button onclick="testLmConnection()" style="flex:1;padding:7px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:0.75rem;cursor:pointer;" data-i18n="settings.test_btn">Test</button>
             <div id="lmStatus" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:0.72rem;color:var(--text2);">—</div>
           </div>
         </div>
         <div style="height:1px;background:var(--border);margin:0 14px;"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
-          <span style="font-size:0.88rem;color:var(--text);">AI Advice</span>
+          <span style="font-size:0.88rem;color:var(--text);" data-i18n="settings.ai_advice">AI Advice</span>
           <div id="aiToggleSwitch" onclick="toggleAi()" style="width:42px;height:26px;border-radius:13px;background:rgba(255,255,255,0.12);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;">
             <div id="aiToggleThumb" style="width:20px;height:20px;border-radius:50%;background:var(--text2);position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
           </div>
@@ -776,11 +776,11 @@
 
       <!-- PIN 3回失敗時の動作 -->
       <div id="pinFailModeSection" style="display:none;margin-top:8px;">
-        <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;">PIN Fail Action</div>
+        <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;" data-i18n="settings.pin_fail_action">PIN Fail Action</div>
         <div style="background:var(--surface2);border-radius:12px;overflow:hidden;">
-          <div id="failModeLock" onclick="setPinFailMode('lock')" style="padding:10px 14px;cursor:pointer;font-size:0.82rem;color:var(--text);">Lock 24h</div>
+          <div id="failModeLock" onclick="setPinFailMode('lock')" style="padding:10px 14px;cursor:pointer;font-size:0.82rem;color:var(--text);" data-i18n="settings.lock_24h">Lock 24h</div>
           <div style="height:1px;background:var(--border);margin:0 14px;"></div>
-          <div id="failModeWipe" onclick="setPinFailMode('wipe')" style="padding:10px 14px;cursor:pointer;font-size:0.82rem;color:var(--danger);">Wipe All Data</div>
+          <div id="failModeWipe" onclick="setPinFailMode('wipe')" style="padding:10px 14px;cursor:pointer;font-size:0.82rem;color:var(--danger);" data-i18n="settings.wipe_all">Wipe All Data</div>
         </div>
         <div id="failModeNote" style="font-size:0.62rem;color:var(--muted);line-height:1.5;margin-top:4px;padding:0 4px;"></div>
       </div>
@@ -1421,6 +1421,14 @@
       'daynightbtn.on':'💡 ライトON','daynightbtn.off':'🌑 ライトOFF',
       'stepper.temp':'温度','stepper.humidity':'湿度','stepper.leafdt':'葉温差','stepper.water':'水温',
       'stats.avg_vpd':'平均 VPD','stats.ok_rate':'OK 率','stats.saves':'記録数',
+      'settings.title':'設定','settings.dark_mode':'ダークモード','settings.week_day_count':'週 / 日 カウント',
+      'settings.temperature':'温度単位','settings.language':'言語',
+      'settings.backup':'バックアップ','settings.export_json':'JSON 書き出し','settings.export_csv':'CSV 書き出し','settings.import_json':'JSON 読み込み',
+      'settings.data':'データ','settings.new_cycle':'新しいサイクル','settings.clear_log':'ログを消去','settings.erase_all':'全データを削除',
+      'settings.security':'セキュリティ','settings.set_pin':'PIN を設定','settings.remove_pin':'PIN を削除','settings.decoy_screen':'デコイ画面',
+      'settings.offline_note':'完全オフライン — アカウント不要、サーバー不要。',
+      'settings.ai_section':'AI (ローカル LLM)','settings.lm_url':'LM Studio URL','settings.test_btn':'テスト','settings.ai_advice':'AI アドバイス',
+      'settings.pin_fail_action':'PIN 失敗時の動作','settings.lock_24h':'24時間ロック','settings.wipe_all':'全データを消去',
     },
     en: {
       'tab.monitor':'📊 Monitor','tab.log':'💧 Feeding','tab.analysis':'📈 Analysis','tab.table':'📋 Reference',
@@ -1483,6 +1491,14 @@
       'daynightbtn.on':'💡 Light ON','daynightbtn.off':'🌑 Light OFF',
       'stepper.temp':'Temp','stepper.humidity':'Humidity','stepper.leafdt':'Leaf ΔT','stepper.water':'Water',
       'stats.avg_vpd':'AVG VPD','stats.ok_rate':'OK RATE','stats.saves':'SAVES',
+      'settings.title':'Settings','settings.dark_mode':'Dark Mode','settings.week_day_count':'Week / Day count',
+      'settings.temperature':'Temperature','settings.language':'Language',
+      'settings.backup':'Backup','settings.export_json':'Export JSON','settings.export_csv':'Export CSV','settings.import_json':'Import JSON',
+      'settings.data':'Data','settings.new_cycle':'New Cycle','settings.clear_log':'Clear Log','settings.erase_all':'Erase All Data',
+      'settings.security':'Security','settings.set_pin':'Set PIN','settings.remove_pin':'Remove PIN','settings.decoy_screen':'Decoy Screen',
+      'settings.offline_note':'100% offline — no account, no server.',
+      'settings.ai_section':'AI (Local LLM)','settings.lm_url':'LM Studio URL','settings.test_btn':'Test','settings.ai_advice':'AI Advice',
+      'settings.pin_fail_action':'PIN Fail Action','settings.lock_24h':'Lock 24h','settings.wipe_all':'Wipe All Data',
     }
   };
   const tr = k => (STRINGS[appLang]?.[k]) ?? (STRINGS.ja[k] ?? k);
@@ -1757,6 +1773,10 @@
     loadTentToUI(currentTent);
     update();
     buildStageTable();
+    renderFeedRecentLogs();
+    renderVpdStats();
+    renderVpdSparkline();
+    showToast(appLang === 'en' ? '🗑 Tent deleted' : '🗑 テントを削除しました');
   }
 
   let _renameTentIndex = 0;
@@ -4132,6 +4152,7 @@ function classifyVpd(vpd, lo, hi) {
       if (el) { el.style.display = ''; if (ic) ic.textContent = '▼'; }
     });
     window.scrollTo(0, scrollY);
+    showToast(appLang === 'en' ? '🗑 Log deleted' : '🗑 ログを削除しました');
   }
   /* === ログ編集（分析画面から全フィールドを編集可能に） === */
   let _editingLogId = null;
@@ -4318,7 +4339,9 @@ function classifyVpd(vpd, lo, hi) {
       const ic = document.getElementById('sicon-' + key);
       if (el) { el.style.display = ''; if (ic) ic.textContent = '▼'; }
     });
+    buildTentBar();
     window.scrollTo(0, scrollY);
+    showToast(appLang === 'en' ? '🗑 Photo deleted' : '🗑 写真を削除しました');
   }
 
   /* === PIN Lock System === */
