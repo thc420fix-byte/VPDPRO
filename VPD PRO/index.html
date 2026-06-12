@@ -114,31 +114,31 @@
     /* テントバー */
     .tent-bar {
       display: flex;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       background: var(--surface2);
       border-radius: 10px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      padding: 2px;
+      padding: 3px;
       gap: 2px;
     }
     .tent-bar::-webkit-scrollbar { display: none; }
     .tent-btn {
       flex: 1 0 auto;
-      min-width: 52px;
-      max-width: 86px;
-      padding: 5px 4px;
+      min-width: 56px;
+      max-width: 90px;
+      padding: 7px 6px;
       background: transparent;
       border: none;
       color: var(--text2);
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       font-weight: 600;
       text-align: center;
       cursor: pointer;
       white-space: pre-line;
       font-family: inherit;
-      border-radius: 8px;
+      border-radius: 7px;
       transition: background 0.15s, color 0.15s;
     }
     .tent-btn.solo { max-width: none; }
@@ -891,6 +891,37 @@
   </div>
   <div class="tab-content active" id="tab-monitor">
     <div class="card">
+      <div id="vpdCardBody">
+      <div class="vpd-row">
+        <div class="vpd-block">
+          <div class="vpd-label" data-i18n="vpd.air_label">Air VPD</div>
+          <div class="vpd-num" id="vpdAir">—</div>
+          <div style="font-size:0.7rem;color:var(--muted);">kPa</div>
+        </div>
+        <div class="vpd-block" id="leafBlock">
+          <div class="vpd-label" data-i18n="vpd.leaf_label">Leaf VPD</div>
+          <div class="vpd-num" id="vpdLeaf" style="color:var(--leaf)">—</div>
+          <div style="font-size:0.7rem;color:var(--muted);">kPa</div>
+        </div>
+      </div>
+      <div class="vpd-zonebar-wrap">
+        <div class="vpd-zonebar">
+          <div id="vpdZoneTarget" class="vpd-zone-target"></div>
+          <div id="vpdZoneMarker" class="vpd-zone-marker"></div>
+        </div>
+        <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
+      </div>
+      <div id="statusBadge" class="status-badge status-ok">—</div>
+      <svg id="vpdSparkline" viewBox="0 0 200 28" preserveAspectRatio="none" style="width:100%;height:28px;margin:4px 0 0;display:none;overflow:visible;"></svg>
+      <div id="rec" style="font-size:0.72rem;color:var(--text2);text-align:center;min-height:0;margin-top:4px;line-height:1.5;display:flex;flex-wrap:wrap;justify-content:center;gap:2px;"></div>
+      <div id="vpdDiff" style="display:none"></div>
+      <div id="targetHum" style="display:none"></div>
+      <div id="ppfdNow" style="display:none"></div>
+      <div id="targetPpfd" style="display:none"></div>
+      <div id="ppfdAdvice" style="display:none"></div>
+      </div>
+    </div>
+    <div class="card">
       <div style="display:flex;align-items:center;margin-bottom:8px;">
         <span style="flex:1;font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;" data-i18n="env.title">Environment</span>
         <div style="display:none;">
@@ -1020,37 +1051,6 @@
             <button id="deleteSpotBtn" style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.85rem;width:28px;height:28px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 0.1s;">🗑</button>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="card">
-      <div id="vpdCardBody">
-      <div class="vpd-row">
-        <div class="vpd-block">
-          <div class="vpd-label" data-i18n="vpd.air_label">Air VPD</div>
-          <div class="vpd-num" id="vpdAir">—</div>
-          <div style="font-size:0.7rem;color:var(--muted);">kPa</div>
-        </div>
-        <div class="vpd-block" id="leafBlock">
-          <div class="vpd-label" data-i18n="vpd.leaf_label">Leaf VPD</div>
-          <div class="vpd-num" id="vpdLeaf" style="color:var(--leaf)">—</div>
-          <div style="font-size:0.7rem;color:var(--muted);">kPa</div>
-        </div>
-      </div>
-      <div class="vpd-zonebar-wrap">
-        <div class="vpd-zonebar">
-          <div id="vpdZoneTarget" class="vpd-zone-target"></div>
-          <div id="vpdZoneMarker" class="vpd-zone-marker"></div>
-        </div>
-        <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
-      </div>
-      <div id="statusBadge" class="status-badge status-ok">—</div>
-      <svg id="vpdSparkline" viewBox="0 0 200 28" preserveAspectRatio="none" style="width:100%;height:28px;margin:4px 0 0;display:none;overflow:visible;"></svg>
-      <div id="rec" style="font-size:0.72rem;color:var(--text2);text-align:center;min-height:0;margin-top:4px;line-height:1.5;display:flex;flex-wrap:wrap;justify-content:center;gap:2px;"></div>
-      <div id="vpdDiff" style="display:none"></div>
-      <div id="targetHum" style="display:none"></div>
-      <div id="ppfdNow" style="display:none"></div>
-      <div id="targetPpfd" style="display:none"></div>
-      <div id="ppfdAdvice" style="display:none"></div>
       </div>
     </div>
   </div>
