@@ -823,7 +823,7 @@
       <div id="lmError" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center;padding:24px;">
         <div style="font-size:2rem;">📷</div>
         <div style="color:#fff;font-size:0.85rem;line-height:1.6;" id="lmErrorMsg">Camera access unavailable</div>
-        <button onclick="startLightMeter()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.5);border-radius:8px;color:var(--accent);font-size:0.85rem;padding:8px 20px;cursor:pointer;">Retry</button>
+        <button onclick="startLightMeter()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.5);border-radius:8px;color:var(--accent);font-size:0.85rem;padding:8px 20px;cursor:pointer;" data-i18n="lightmeter.retry">Retry</button>
       </div>
     </div>
     <!-- 下部コントロール -->
@@ -849,7 +849,7 @@
       </div>
       <div style="font-size:0.6rem;color:rgba(255,255,255,0.32);text-align:center;margin-bottom:10px;line-height:1.5;">Accuracy depends on your camera. Compare against Photone readings to calibrate the correction factor.</div>
       <!-- アクションボタン -->
-      <button id="lmApplyBtn" onclick="lmApply()" style="width:100%;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#000;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;">Apply to PPFD</button>
+      <button id="lmApplyBtn" onclick="lmApply()" style="width:100%;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#000;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;" data-i18n="lightmeter.apply">Apply to PPFD</button>
     </div>
   </div>
 
@@ -883,7 +883,7 @@
         <option value="0.0185">太陽光</option>
       </select>
       <div style="text-align:center;font-size:0.85rem;color:var(--text);margin-bottom:14px;">→ <span id="luxResult" style="color:var(--accent);font-size:1.3rem;font-weight:700;font-family:'Rajdhani',sans-serif;">—</span> µmol/m²/s</div>
-      <button style="width:100%;margin-bottom:8px;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.85rem;font-weight:700;cursor:pointer;" onclick="applyLuxResult()">Apply to PPFD</button>
+      <button style="width:100%;margin-bottom:8px;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.85rem;font-weight:700;cursor:pointer;" onclick="applyLuxResult()" data-i18n="lightmeter.apply">Apply to PPFD</button>
       <button style="width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:0.78rem;cursor:pointer;" onclick="closeLuxConverter()" data-i18n="lightmeter.close">Close</button>
     </div>
   </div>
@@ -1411,6 +1411,7 @@
       'rename.tent':'テント名を変更','rename.fertilizer':'肥料名を変更',
       'edit.title':'ログ編集','edit.fertilizers':'🌿 肥料','edit.delete_photo':'🗑 写真を削除','edit.deleted':'🗑 削除済み',
       'lightmeter.close':'✕ 閉じる','lightmeter.subtitle':'カメラでリアルタイム計測','lightmeter.stage_target':'ステージ目標: ',
+      'lightmeter.apply':'PPFD に適用','lightmeter.retry':'再試行',
       'mode.theory':'理論値','mode.myspot':'マイスポット',
       'feed.title':'栄養素ログ','feed.ec_toggle':'EC 計測','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
       'feed.press_hold':'長押しで保存',
@@ -1466,6 +1467,7 @@
       'rename.tent':'Rename Tent','rename.fertilizer':'Rename Fertilizer',
       'edit.title':'EDIT LOG','edit.fertilizers':'🌿 Fertilizers','edit.delete_photo':'🗑 Delete Photo','edit.deleted':'🗑 Deleted',
       'lightmeter.close':'✕ Close','lightmeter.subtitle':'Real-time camera light measurement','lightmeter.stage_target':'Stage target: ',
+      'lightmeter.apply':'Apply to PPFD','lightmeter.retry':'Retry',
       'mode.theory':'Theory','mode.myspot':'My Spot',
       'feed.title':'Nutrient Log','feed.ec_toggle':'EC Measurement','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
       'feed.press_hold':'press & hold',
@@ -5274,8 +5276,11 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
       temp, hum, ppfd, co2val, leafVpd, note,
       vpd: parseFloat(calcVPD(temp, hum).toFixed(3))
     };
+    tents[currentTent].logs = tents[currentTent].logs || [];
+    tents[currentTent].logs.push(log.id);
     await dbPut('logs', log);
     if (noteEl) noteEl.value = '';
+    buildTentBar();
     const airVpdNow = log.vpd.toFixed(2);
     renderVpdSparkline();
     renderVpdStats();
