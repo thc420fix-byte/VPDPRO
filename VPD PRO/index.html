@@ -1891,7 +1891,7 @@
     const n = parseFloat(v);
     t.yield = (!isNaN(n) && n >= 0) ? n : null;
     await dbPut('tents', t);
-    if (t.yield != null) showToast(`🏆 収量 ${t.yield}g を記録`);
+    if (t.yield != null) showToast(appLang === 'en' ? `🏆 Yield recorded: ${t.yield}g` : `🏆 収量 ${t.yield}g を記録`);
   }
 
   // Stage grouping: Growth (Clone, Veg) | Flower | Dry | Harvest
@@ -2469,6 +2469,8 @@
     await dbPut('tents', t);
     updateSpotDisplay();
     update();
+    const dispT = useFahrenheit ? Math.round(t.temp * 9/5 + 32) + '°F' : t.temp + '°C';
+    showToast(appLang === 'en' ? `📌 Spot saved: ${dispT} / ${t.hum}% / ${t.ppfd}µmol` : `📌 スポット保存: ${dispT} / ${t.hum}% / ${t.ppfd}µmol`);
   }
 
   async function deleteStageSpot() {
@@ -2500,7 +2502,7 @@
       await dbPut('tents', t);
       updateSpotDisplay();
       update();
-      showToast('All stage spots cleared');
+      showToast(appLang === 'en' ? 'All stage spots cleared' : '全ステージのスポットをクリア');
     }
 
     window.addEventListener('load', () => {
@@ -2609,7 +2611,7 @@
     await dbPut('tents', t);
     updateFeedingSpotDisplay();
     updateFeedingHeader();
-    showToast('All feeding spots cleared');
+    showToast(appLang === 'en' ? 'All feeding spots cleared' : '全ステージの給水スポットをクリア');
   }
 
   // 🗑 deleteFeedingSpotBtn: double tap = current stage, long press = all stages
@@ -2779,7 +2781,7 @@
     if (inp) inp.value = ppfd;
     await dbPut('tents', t);
     update();
-    showToast(`☀️ PPFD ${ppfd} µmol を反映`);
+    showToast(appLang === 'en' ? `☀️ PPFD ${ppfd} µmol applied` : `☀️ PPFD ${ppfd} µmol を反映`);
   }
 
   /* === ライトメーター（カメラ輝度計測） === */
@@ -2903,7 +2905,7 @@
     if (inp) inp.value = ppfd;
     await dbPut('tents', t);
     update();
-    showToast(`☀️ PPFD ${ppfd} µmol を反映`);
+    showToast(appLang === 'en' ? `☀️ PPFD ${ppfd} µmol applied` : `☀️ PPFD ${ppfd} µmol を反映`);
   }
 
   function stopLightMeter() {
@@ -3559,13 +3561,13 @@
     renderStageTimeline(logs);
     renderVpdStats();
     renderVpdSparkline();
-    showToast(`🌱 サイクル ${t.cycle} を開始`);
+    showToast(appLang === 'en' ? `🌱 Cycle ${t.cycle} started` : `🌱 サイクル ${t.cycle} を開始`);
   }
 
   /* === CSVエクスポート === */
   async function exportCsv() {
     const logs = await dbGetAll('logs');
-    if (!logs.length) { showToast('ログがありません'); return; }
+    if (!logs.length) { showToast(appLang === 'en' ? 'No logs yet' : 'ログがありません'); return; }
     const tentName = id => { const t = tents.find(x => x.id === id); return t ? t.name : `Tent`; };
     const cols = ['timestamp','tent','cycle','type','stage','temp_c','hum_pct','vpd_kpa','leaf_vpd_kpa','ppfd','ph','ec_in','ec_runoff','water_temp','note'];
     const esc = v => {
@@ -3591,10 +3593,11 @@
     a.download = `vpd_logs_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(a.href);
-    showToast(`📊 ${logs.length}件をCSV出力`);
+    showToast(appLang === 'en' ? `📊 ${logs.length} entries exported to CSV` : `📊 ${logs.length}件をCSV出力`);
   }
 
   async function deleteLogEntry(id) {
+    if (!(await customConfirm(tr('confirm.delete_log')))) return;
     await dbDelete('logs', id);
     renderFeedRecentLogs();
     renderVpdStats();
@@ -3697,13 +3700,13 @@
         // 同一端末・同一saltなら現在の鍵で復号可。違えばPINを聞いて鍵を導出
         if (!key || localStorage.getItem(_SALT_KEY) !== data.salt) {
           const pin = window.prompt('このバックアップを作成したときのPINを入力してください');
-          if (!pin) { showToast('インポートを中止しました'); e.target.value=''; return; }
+          if (!pin) { showToast(appLang === 'en' ? 'Import cancelled' : 'インポートを中止しました'); e.target.value=''; return; }
           key = await _deriveKey(pin, data.salt);
         }
         try {
           data = await _decJSON(data.blob, key);
         } catch(err) {
-          showToast('PINが違うか、データが破損しています');
+          showToast(appLang === 'en' ? 'Wrong PIN or corrupted data' : 'PINが違うか、データが破損しています');
           e.target.value=''; return;
         }
       }
@@ -4457,7 +4460,7 @@ function classifyVpd(vpd, lo, hi) {
         await _encryptExistingData();
         localStorage.setItem('vpdEncMigrated', 'true');
         _hidePinOverlay();
-        showToast('🔒 PIN set — data encrypted');
+        showToast(appLang === 'en' ? '🔒 PIN set — data encrypted' : '🔒 PIN設定完了 — データを暗号化しました');
         _updatePinSettingsUI();
       } else {
         document.getElementById('pinMessage').textContent = 'Mismatch — try again';
@@ -4480,7 +4483,7 @@ function classifyVpd(vpd, lo, hi) {
         await _pinStore(buf);
         await _rekeyExistingData(buf);   // 新PINの鍵で全データを再暗号化
         _hidePinOverlay();
-        showToast('🔒 PIN updated');
+        showToast(appLang === 'en' ? '🔒 PIN updated' : '🔒 PIN変更完了');
       } else {
         document.getElementById('pinMessage').textContent = 'Mismatch — try again';
         _pinShake();
@@ -4494,7 +4497,7 @@ function classifyVpd(vpd, lo, hi) {
         localStorage.removeItem('vpdEncMigrated');
         localStorage.setItem(_PIN_FAILS, '0');
         _hidePinOverlay();
-        showToast('🔓 PIN removed — data no longer encrypted');
+        showToast(appLang === 'en' ? '🔓 PIN removed — data no longer encrypted' : '🔓 PIN削除完了 — データの暗号化を解除しました');
         _updatePinSettingsUI();
       } else {
         document.getElementById('pinMessage').textContent = 'Wrong PIN';
@@ -4585,7 +4588,9 @@ function classifyVpd(vpd, lo, hi) {
     }
     localStorage.setItem('vpdPinFailMode', mode);
     _updateFailModeUI();
-    showToast(mode === 'wipe' ? '💥 3回失敗で全データ消去に設定' : '🔒 3回失敗で24時間ロックに設定');
+    showToast(mode === 'wipe'
+      ? (appLang === 'en' ? '💥 3 failures → wipe all data' : '💥 3回失敗で全データ消去に設定')
+      : (appLang === 'en' ? '🔒 3 failures → 24h lock' : '🔒 3回失敗で24時間ロックに設定'));
   }
 
   /* === 初期化 === */
@@ -4644,7 +4649,7 @@ function classifyVpd(vpd, lo, hi) {
     // First-run hint
     if (!localStorage.getItem('vpdFirstRunSeen')) {
       localStorage.setItem('vpdFirstRunSeen', '1');
-      setTimeout(() => showToast('👋 ステージ選択 → 値を入力 → 長押し Save'), 800);
+      setTimeout(() => showToast(appLang === 'en' ? '👋 Select stage → enter values → hold Save' : '👋 ステージ選択 → 値を入力 → 長押し Save'), 800);
     }
   }
 
@@ -4916,7 +4921,9 @@ function classifyVpd(vpd, lo, hi) {
   function toggleDecoyMode() {
     localStorage.setItem('decoyMode', _decoyEnabled() ? 'false' : 'true');
     _updateDecoyToggleUI();
-    showToast(_decoyEnabled() ? '🔦 次回起動時からデコイ画面を表示' : 'デコイ画面をOFFにしました');
+    showToast(_decoyEnabled()
+      ? (appLang === 'en' ? '🔦 Decoy screen enabled from next launch' : '🔦 次回起動時からデコイ画面を表示')
+      : (appLang === 'en' ? 'Decoy screen disabled' : 'デコイ画面をOFFにしました'));
   }
   function loadDrySettings() {
     stages.dry.temp = JSON.parse(localStorage.getItem('dryTemp') || '[15,16]');
@@ -5007,7 +5014,9 @@ function classifyVpd(vpd, lo, hi) {
     _aiEnabled = !_aiEnabled;
     localStorage.setItem('aiEnabled', _aiEnabled);
     applyAiToggle();
-    showToast(_aiEnabled ? 'AI Advice enabled' : 'AI Advice disabled');
+    showToast(_aiEnabled
+      ? (appLang === 'en' ? 'AI Advice enabled' : 'AI アドバイス ON')
+      : (appLang === 'en' ? 'AI Advice disabled' : 'AI アドバイス OFF'));
   }
 
   async function askLLM(messages) {
