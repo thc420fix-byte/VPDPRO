@@ -3549,6 +3549,7 @@
     await dbDelete('logs', id);
     renderFeedRecentLogs();
     renderVpdStats();
+    renderVpdSparkline();
   }
 
   async function clearLogs(skipConfirm = false) {
@@ -3574,6 +3575,8 @@
     buildTentBar();
     const logs2 = await dbGetAll('logs');
     renderStageTimeline(logs2);
+    renderVpdStats();
+    renderVpdSparkline();
   }
 
   /* === 入力調整関数 === */
