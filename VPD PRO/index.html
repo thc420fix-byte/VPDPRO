@@ -939,7 +939,7 @@
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
         <button id="stageSelectorBtn" onclick="toggleStageDropdown()" style="flex:1;min-width:0;padding:6px 12px;background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.25);border-radius:8px;color:var(--text);font-weight:600;display:flex;align-items:center;cursor:pointer;gap:5px;overflow:hidden;font-family:inherit;font-size:inherit;line-height:inherit;">
-          <span style="color:var(--text2);font-size:0.68rem;flex-shrink:0;text-transform:uppercase;letter-spacing:0.06em;">Stage</span>
+          <span style="color:var(--text2);font-size:0.68rem;flex-shrink:0;text-transform:uppercase;letter-spacing:0.06em;" data-i18n="feed.stage_label">Stage</span>
           <span id="stageSelectorLabel" style="color:var(--accent);font-size:0.88rem;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;">Clone</span>
           <span id="stageDropArrow" style="font-size:0.75rem;color:var(--text2);flex-shrink:0;">▾</span>
         </button>
@@ -976,7 +976,7 @@
         <div class="stepper-row">
           <button class="stepper-btn" onclick="adjustTemp(-1)">−</button>
           <div class="stepper-center">
-            <span class="stepper-label">Temp</span>
+            <span class="stepper-label" data-i18n="stepper.temp">Temp</span>
             <input id="tempVal" class="stepper-val" type="text" inputmode="decimal" value="24" onfocus="this.select()" onchange="applyInlineVal('temp', this.value)">
             <span id="tempUnitLabel" class="stepper-unit" onclick="toggleTempUnit()" style="cursor:pointer;user-select:none;">℃</span>
           </div>
@@ -986,7 +986,7 @@
         <div class="stepper-row">
           <button class="stepper-btn" onclick="adjustHum(-1)">−</button>
           <div class="stepper-center">
-            <span class="stepper-label">Humidity</span>
+            <span class="stepper-label" data-i18n="stepper.humidity">Humidity</span>
             <input id="humVal" class="stepper-val" type="text" inputmode="decimal" value="60" onfocus="this.select()" onchange="applyInlineVal('hum', this.value)">
             <span class="stepper-unit">%RH</span>
           </div>
@@ -1029,7 +1029,7 @@
           <div class="stepper-row" style="border-bottom:none;">
             <button class="stepper-btn" onclick="adjustLeafOffset(-0.5)">−</button>
             <div class="stepper-center">
-              <span class="stepper-label">Leaf ΔT</span>
+              <span class="stepper-label" data-i18n="stepper.leafdt">Leaf ΔT</span>
               <input id="leafOffsetInput" class="stepper-val" type="text" inputmode="decimal" value="-2.0" onfocus="this.select()" onchange="applyLeafOffset(this.value)">
               <span id="leafUnitLabel" class="stepper-unit" onclick="toggleTempUnit()" style="cursor:pointer;user-select:none;">℃</span>
             </div>
@@ -1098,7 +1098,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
       <div style="flex:1;padding:6px 12px;background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.25);border-radius:8px;display:flex;align-items:center;gap:5px;">
-        <span style="color:var(--text2);font-size:0.68rem;flex-shrink:0;text-transform:uppercase;letter-spacing:0.06em;">Stage</span>
+        <span style="color:var(--text2);font-size:0.68rem;flex-shrink:0;text-transform:uppercase;letter-spacing:0.06em;" data-i18n="feed.stage_label">Stage</span>
         <span id="feedingStageName" style="color:var(--accent);font-size:0.88rem;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
       </div>
       <div id="feedingDayCount" style="display:none;flex-shrink:0;font-size:0.78rem;color:var(--text2);font-weight:600;white-space:nowrap;"></div>
@@ -1106,7 +1106,7 @@
     <!-- Fertilizer管理 -->
     <div style="border-top:1px solid rgba(0,255,136,0.12);padding-top:8px;margin:6px 0 4px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <span style="font-size:0.65rem;color:var(--text2);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">Nutrient</span>
+        <span style="font-size:0.65rem;color:var(--text2);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;" data-i18n="feed.nutrient_label">Nutrient</span>
         <button onclick="addFertilizer()" style="width:22px;height:22px;border-radius:50%;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);color:var(--accent);font-size:1rem;line-height:1;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
       </div>
       <!-- タブバー -->
@@ -1129,7 +1129,7 @@
       <div class="stepper-row">
         <button class="stepper-btn" onclick="adjustWaterTemp(-0.5)">−</button>
         <div class="stepper-center">
-          <span class="stepper-label">Water</span>
+          <span class="stepper-label" data-i18n="stepper.water">Water</span>
           <input id="waterTempInput" class="stepper-val" type="text" inputmode="numeric" placeholder="20" onfocus="this.select()">
           <span id="waterTempUnit" class="stepper-unit">°C</span>
         </div>
@@ -1243,9 +1243,9 @@
   <div class="card" style="margin-top:10px;">
     <div class="card-title" style="margin-bottom:10px;">VPD STATS</div>
     <div id="vpdStatsGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
-      <div><div id="statAvgVpd" style="font-size:1.2rem;font-weight:700;color:var(--accent);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;">AVG VPD</div></div>
-      <div><div id="statOkPct" style="font-size:1.2rem;font-weight:700;color:var(--ok);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;">OK RATE</div></div>
-      <div><div id="statLogCount" style="font-size:1.2rem;font-weight:700;color:var(--text2);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;">SAVES</div></div>
+      <div><div id="statAvgVpd" style="font-size:1.2rem;font-weight:700;color:var(--accent);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;" data-i18n="stats.avg_vpd">AVG VPD</div></div>
+      <div><div id="statOkPct" style="font-size:1.2rem;font-weight:700;color:var(--ok);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;" data-i18n="stats.ok_rate">OK RATE</div></div>
+      <div><div id="statLogCount" style="font-size:1.2rem;font-weight:700;color:var(--text2);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;" data-i18n="stats.saves">SAVES</div></div>
     </div>
     <svg id="vpdStatsSparkline" viewBox="0 0 300 36" preserveAspectRatio="none" style="width:100%;height:36px;margin:8px 0 0;display:none;overflow:visible;"></svg>
     <div id="statTrend" style="margin-top:6px;font-size:0.65rem;color:var(--muted);text-align:center;"></div>
@@ -1417,6 +1417,10 @@
       'mode.theory':'理論値','mode.myspot':'マイスポット',
       'feed.title':'栄養素ログ','feed.ec_toggle':'EC 計測','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
       'feed.press_hold':'長押しで保存',
+      'feed.stage_label':'ステージ','feed.nutrient_label':'栄養素',
+      'daynightbtn.on':'💡 ライトON','daynightbtn.off':'🌑 ライトOFF',
+      'stepper.temp':'温度','stepper.humidity':'湿度','stepper.leafdt':'葉温差','stepper.water':'水温',
+      'stats.avg_vpd':'平均 VPD','stats.ok_rate':'OK 率','stats.saves':'記録数',
     },
     en: {
       'tab.monitor':'📊 Monitor','tab.log':'💧 Feeding','tab.analysis':'📈 Analysis','tab.table':'📋 Reference',
@@ -1475,6 +1479,10 @@
       'mode.theory':'Theory','mode.myspot':'My Spot',
       'feed.title':'Nutrient Log','feed.ec_toggle':'EC Measurement','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
       'feed.press_hold':'press & hold',
+      'feed.stage_label':'Stage','feed.nutrient_label':'Nutrient',
+      'daynightbtn.on':'💡 Light ON','daynightbtn.off':'🌑 Light OFF',
+      'stepper.temp':'Temp','stepper.humidity':'Humidity','stepper.leafdt':'Leaf ΔT','stepper.water':'Water',
+      'stats.avg_vpd':'AVG VPD','stats.ok_rate':'OK RATE','stats.saves':'SAVES',
     }
   };
   const tr = k => (STRINGS[appLang]?.[k]) ?? (STRINGS.ja[k] ?? k);
@@ -1767,6 +1775,7 @@
       tents[_renameTentIndex].name = newName;
       await dbPut('tents', tents[_renameTentIndex]);
       buildTentBar();
+      showToast(appLang === 'en' ? `✓ Renamed to "${newName}"` : `✓ 「${newName}」に変更しました`);
     }
     closeRenameModal();
   }
@@ -1795,6 +1804,7 @@
       t.fertilizerList[_renameFertilizerIndex].name = newName;
       await dbPut('tents', t);
       renderFertilizerTabs();
+      showToast(appLang === 'en' ? `✓ Renamed to "${newName}"` : `✓ 「${newName}」に変更しました`);
     }
     closeRenameFertilizerModal();
   }
@@ -2146,7 +2156,7 @@
     btn.classList.toggle('active-day', isDay);
     btn.classList.toggle('active-night', !isDay);
     btn.setAttribute('aria-pressed', isDay);
-    btn.textContent = isDay ? '💡 Light ON' : '🌑 Light OFF';
+    btn.textContent = isDay ? tr('daynightbtn.on') : tr('daynightbtn.off');
   }
   async function toggleDayNight() {
     const t = tents[currentTent];
@@ -3666,6 +3676,7 @@
     renderStageTimeline(logs2);
     renderVpdStats();
     renderVpdSparkline();
+    renderFeedRecentLogs();
     document.getElementById('settingsModal').classList.remove('open');
     showToast(appLang === 'en' ? `🗑 Logs cleared for ${tentName}` : `🗑 ${tentName} のログを削除しました`);
   }
