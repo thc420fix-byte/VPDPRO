@@ -959,12 +959,12 @@
         <input id="stageStartDate" type="date" style="width:110px;flex-shrink:0;font-size:0.78rem;height:24px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(52,199,89,0.3);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
         <button id="clearDateBtn" oncontextmenu="return false;" style="background:transparent;border:none;color:rgba(255,120,120,0.6);font-size:0.7rem;width:22px;height:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;display:none;">✕</button>
       </div>
-      <div id="addDateRow" onclick="document.getElementById('stageStartDate').click()" style="text-align:center;margin-bottom:4px;cursor:pointer;font-size:0.68rem;color:var(--muted);letter-spacing:0.04em;">+ Set start date</div>
+      <div id="addDateRow" onclick="document.getElementById('stageStartDate').click()" style="text-align:center;margin-bottom:4px;cursor:pointer;font-size:0.68rem;color:var(--muted);letter-spacing:0.04em;" data-i18n="stage.set_date">+ Set start date</div>
       <!-- 収量記録 (Harvestステージのみ) -->
       <div id="yieldRow" class="input-row" style="display:none;margin-bottom:2px;align-items:center;gap:8px;justify-content:center;">
-        <label style="font-size:0.95rem;color:var(--text);font-weight:700;flex-shrink:0;">🏆 収量</label>
+        <label style="font-size:0.95rem;color:var(--text);font-weight:700;flex-shrink:0;" data-i18n="yield.label">🏆 収量</label>
         <input id="yieldInput" type="text" inputmode="decimal" placeholder="—" style="width:80px;flex-shrink:0;font-size:1.1rem;font-weight:700;font-family:'Rajdhani',sans-serif;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(0,255,136,0.4);outline:none;text-align:center;" onfocus="this.select()" onchange="applyYield(this.value)">
-        <span style="font-size:0.85rem;color:var(--text);flex-shrink:0;">g（乾燥重量）</span>
+        <span style="font-size:0.85rem;color:var(--text);flex-shrink:0;" data-i18n="yield.unit">g（乾燥重量）</span>
       </div>
       <div class="toggle-row">
         <div class="toggle-btn active-day" id="btnDayNight" role="button" aria-pressed="true" onclick="toggleDayNight()">💡 Light ON</div>
@@ -1412,6 +1412,8 @@
       'edit.title':'ログ編集','edit.fertilizers':'🌿 肥料','edit.delete_photo':'🗑 写真を削除','edit.deleted':'🗑 削除済み',
       'lightmeter.close':'✕ 閉じる','lightmeter.subtitle':'カメラでリアルタイム計測','lightmeter.stage_target':'ステージ目標: ',
       'lightmeter.apply':'PPFD に適用','lightmeter.retry':'再試行',
+      'stage.set_date':'+ 開始日を設定',
+      'yield.label':'🏆 収量','yield.unit':'g（乾燥重量）',
       'mode.theory':'理論値','mode.myspot':'マイスポット',
       'feed.title':'栄養素ログ','feed.ec_toggle':'EC 計測','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
       'feed.press_hold':'長押しで保存',
@@ -1468,6 +1470,8 @@
       'edit.title':'EDIT LOG','edit.fertilizers':'🌿 Fertilizers','edit.delete_photo':'🗑 Delete Photo','edit.deleted':'🗑 Deleted',
       'lightmeter.close':'✕ Close','lightmeter.subtitle':'Real-time camera light measurement','lightmeter.stage_target':'Stage target: ',
       'lightmeter.apply':'Apply to PPFD','lightmeter.retry':'Retry',
+      'stage.set_date':'+ Set start date',
+      'yield.label':'🏆 Yield','yield.unit':'g (dry weight)',
       'mode.theory':'Theory','mode.myspot':'My Spot',
       'feed.title':'Nutrient Log','feed.ec_toggle':'EC Measurement','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
       'feed.press_hold':'press & hold',
@@ -3662,6 +3666,8 @@
     renderStageTimeline(logs2);
     renderVpdStats();
     renderVpdSparkline();
+    document.getElementById('settingsModal').classList.remove('open');
+    showToast(appLang === 'en' ? `🗑 Logs cleared for ${tentName}` : `🗑 ${tentName} のログを削除しました`);
   }
 
   /* === 入力調整関数 === */
@@ -3823,6 +3829,7 @@
     renderFeedRecentLogs();
     renderVpdStats();
     renderVpdSparkline();
+    document.getElementById('settingsModal').classList.remove('open');
     showToast(appLang === 'en' ? '🗑 All data reset' : '🗑 全データをリセットしました');
   }
 
