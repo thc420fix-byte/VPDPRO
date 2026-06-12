@@ -894,12 +894,12 @@
       <div id="vpdCardBody">
       <div class="vpd-row">
         <div class="vpd-block">
-          <div class="vpd-label">Air VPD</div>
+          <div class="vpd-label" data-i18n="vpd.air_label">Air VPD</div>
           <div class="vpd-num" id="vpdAir">—</div>
           <div style="font-size:0.7rem;color:var(--muted);">kPa</div>
         </div>
         <div class="vpd-block" id="leafBlock">
-          <div class="vpd-label">Leaf VPD</div>
+          <div class="vpd-label" data-i18n="vpd.leaf_label">Leaf VPD</div>
           <div class="vpd-num" id="vpdLeaf" style="color:var(--leaf)">—</div>
           <div style="font-size:0.7rem;color:var(--muted);">kPa</div>
         </div>
@@ -923,7 +923,7 @@
     </div>
     <div class="card">
       <div style="display:flex;align-items:center;margin-bottom:8px;">
-        <span style="flex:1;font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;">Environment</span>
+        <span style="flex:1;font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;" data-i18n="env.title">Environment</span>
         <div style="flex-shrink:0;display:flex;background:var(--surface2);border-radius:16px;overflow:hidden;">
           <div id="modeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')" data-i18n="mode.theory">Theory</div>
           <div id="modeMySpot" class="mode-pill" onclick="setSpotMode('myspot')" data-i18n="mode.myspot">My Spot</div>
@@ -1071,7 +1071,7 @@
     </div>
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div class="card-title" style="margin-bottom:0;">VPD REFERENCE CHART</div>
+        <div class="card-title" style="margin-bottom:0;" data-i18n="ref.vpd_chart">VPD REFERENCE CHART</div>
         <span style="font-size:0.58rem;color:var(--muted);letter-spacing:0.04em;">← scroll →</span>
       </div>
       <div id="vpdMatrix"></div>
@@ -1233,7 +1233,7 @@
 
   <!-- VPD Stats Summary -->
   <div class="card" style="margin-top:10px;">
-    <div class="card-title" style="margin-bottom:10px;">VPD STATS</div>
+    <div class="card-title" style="margin-bottom:10px;" data-i18n="monitor.stats_title">VPD STATS</div>
     <div id="vpdStatsGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
       <div><div id="statAvgVpd" style="font-size:1.2rem;font-weight:700;color:var(--accent);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;" data-i18n="stats.avg_vpd">AVG VPD</div></div>
       <div><div id="statOkPct" style="font-size:1.2rem;font-weight:700;color:var(--ok);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;" data-i18n="stats.ok_rate">OK RATE</div></div>
@@ -1356,6 +1356,9 @@
       'tab.monitor':'📊 環境','tab.log':'💧 給水','tab.analysis':'📈 分析','tab.table':'📋 参考',
       'bnav.monitor':'環境','bnav.log':'給水','bnav.analysis':'分析','bnav.table':'参考',
       'settings.tolTemp':'温度 ±°C','settings.tolHum':'湿度 ±%RH',
+      'env.title':'環境',
+      'vpd.air_label':'Air VPD','vpd.leaf_label':'Leaf VPD',
+      'monitor.stats_title':'VPD 統計','ref.vpd_chart':'VPD 参考チャート',
       'monitor.target_hum':'目標湿度:','monitor.ppfd_now':'現在PPFD:','monitor.ppfd_target':'/ 目標:',
       'vpd.too_low':'⚠ 低すぎ','vpd.too_high':'⚠ 高すぎ','vpd.warning':'注意','vpd.ok':'適正',
       'vpd.rec_warning':'境界付近です。急変に注意して微調整してください',
@@ -1430,6 +1433,9 @@
       'tab.monitor':'📊 Monitor','tab.log':'💧 Feeding','tab.analysis':'📈 Analysis','tab.table':'📋 Reference',
       'bnav.monitor':'Environ','bnav.log':'Feeding','bnav.analysis':'Analysis','bnav.table':'Reference',
       'settings.tolTemp':'Temp ±°C','settings.tolHum':'Humidity ±%RH',
+      'env.title':'Environment',
+      'vpd.air_label':'Air VPD','vpd.leaf_label':'Leaf VPD',
+      'monitor.stats_title':'VPD STATS','ref.vpd_chart':'VPD REFERENCE CHART',
       'monitor.target_hum':'Target RH:','monitor.ppfd_now':'PPFD:','monitor.ppfd_target':'/ Target:',
       'vpd.too_low':'⚠ Too Low','vpd.too_high':'⚠ Too High','vpd.warning':'Caution','vpd.ok':'Optimal',
       'vpd.rec_warning':'Near boundary. Watch for sudden changes and fine-tune.',
