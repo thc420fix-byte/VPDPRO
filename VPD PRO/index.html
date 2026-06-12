@@ -3519,6 +3519,8 @@
     buildTentBar();
     const logs = await dbGetAll('logs');
     renderStageTimeline(logs);
+    renderVpdStats();
+    renderVpdSparkline();
     showToast(`🌱 サイクル ${t.cycle} を開始`);
   }
 
@@ -3735,6 +3737,8 @@
     buildStageTable();
     renderStageTimeline([]);
     renderFeedRecentLogs();
+    renderVpdStats();
+    renderVpdSparkline();
   }
 
   /**
