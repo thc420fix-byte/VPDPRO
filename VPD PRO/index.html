@@ -1409,7 +1409,7 @@
       'toast.reminder':'💧 給水の時間です！',
       'chat.placeholder':'VPD・栄養素・栽培について質問…',
       'rename.tent':'テント名を変更','rename.fertilizer':'肥料名を変更',
-      'edit.title':'ログ編集','edit.fertilizers':'🌿 肥料','edit.delete_photo':'🗑 写真を削除','edit.deleted':'🗑 削除済み',
+      'edit.title':'ログ編集','edit.fertilizers':'🌿 肥料','edit.delete_photo':'🗑 写真を削除','edit.deleted':'🗑 削除済み','edit.note_label':'メモ',
       'lightmeter.close':'✕ 閉じる','lightmeter.subtitle':'カメラでリアルタイム計測','lightmeter.stage_target':'ステージ目標: ',
       'lightmeter.apply':'PPFD に適用','lightmeter.retry':'再試行',
       'stage.set_date':'+ 開始日を設定',
@@ -1482,7 +1482,7 @@
       'toast.reminder':'💧 Time to water!',
       'chat.placeholder':'Ask about VPD, nutrients, grow stages…',
       'rename.tent':'Rename Tent','rename.fertilizer':'Rename Fertilizer',
-      'edit.title':'EDIT LOG','edit.fertilizers':'🌿 Fertilizers','edit.delete_photo':'🗑 Delete Photo','edit.deleted':'🗑 Deleted',
+      'edit.title':'EDIT LOG','edit.fertilizers':'🌿 Fertilizers','edit.delete_photo':'🗑 Delete Photo','edit.deleted':'🗑 Deleted','edit.note_label':'Note',
       'lightmeter.close':'✕ Close','lightmeter.subtitle':'Real-time camera light measurement','lightmeter.stage_target':'Stage target: ',
       'lightmeter.apply':'Apply to PPFD','lightmeter.retry':'Retry',
       'stage.set_date':'+ Set start date',
@@ -4212,8 +4212,8 @@ function classifyVpd(vpd, lo, hi) {
     const _editTempVal = log.temp != null && useFahrenheit ? parseFloat((log.temp * 9/5 + 32).toFixed(1)) : log.temp;
     const _editTempUnit = useFahrenheit ? '°F' : '°C';
     if (isMonitor) {
-      rows += row('🌡 Temp',     'el_temp',    _editTempVal, _editTempUnit);
-      rows += row('💧 Humidity', 'el_hum',     log.hum,     '%');
+      rows += row(`🌡 ${tr('stepper.temp')}`, 'el_temp',    _editTempVal, _editTempUnit);
+      rows += row(`💧 ${tr('stepper.humidity')}`, 'el_hum', log.hum,     '%');
       rows += row('🌿 Leaf VPD', 'el_leafVpd', log.leafVpd, 'kPa');
       rows += row('💡 PPFD',     'el_ppfd',    log.ppfd,    'µmol');
       if (log.co2val || tents[currentTent]?.co2)
@@ -4221,9 +4221,9 @@ function classifyVpd(vpd, lo, hi) {
     } else if (!isPhotoOnly) {
       rows += row('💧 pH',       'el_ph',       log.ph,       '');
       const _editWtVal = log.waterTemp != null && useFahrenheit ? parseFloat((log.waterTemp * 9/5 + 32).toFixed(1)) : log.waterTemp;
-      rows += row('🌡 Water Temp','el_waterTemp', _editWtVal, _editTempUnit, '1');
+      rows += row(`🌡 ${tr('stepper.water')}`, 'el_waterTemp', _editWtVal, _editTempUnit, '1');
       rows += row('⚡ EC',        'el_ec',       log.ec,       'mS');
-      rows += row('🔄 Runoff',   'el_runoffEc', log.runoffEc, 'mS');
+      rows += row(`🔄 ${tr('feed.runoff_ec')}`, 'el_runoffEc', log.runoffEc, 'mS');
       if (log.fertilizers && log.fertilizers.length) {
         rows += `<div style="font-size:0.7rem;color:var(--text);opacity:0.8;margin:10px 0 4px;">${tr('edit.fertilizers')}</div>`;
         log.fertilizers.forEach((f, i) => {
@@ -4239,7 +4239,7 @@ function classifyVpd(vpd, lo, hi) {
     }
 
     rows += `<div style="margin-top:10px;">
-      <label style="font-size:0.75rem;color:var(--text);">📝 Note</label>
+      <label style="font-size:0.75rem;color:var(--text);">📝 ${tr('edit.note_label')}</label>
       <textarea id="el_note" rows="2" maxlength="200"
                 style="width:100%;box-sizing:border-box;margin-top:4px;background:transparent;border:1px solid var(--muted);border-radius:6px;color:var(--text);font-size:0.85rem;padding:6px;outline:none;resize:none;font-family:inherit;">${esc(log.note || '')}</textarea>
     </div>`;
