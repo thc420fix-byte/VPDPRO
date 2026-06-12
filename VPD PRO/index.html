@@ -763,7 +763,7 @@
       <!-- About -->
       <div style="margin-top:16px;padding:12px 14px;background:var(--surface2);border-radius:12px;text-align:center;">
         <div style="font-size:0.75rem;font-weight:700;color:var(--accent);letter-spacing:0.12em;margin-bottom:4px;">VPD PRO</div>
-        <div style="font-size:0.62rem;color:var(--muted);line-height:1.6;">Cannabis Grow Environment Monitor<br>v1.0 · 完全オフライン PWA<br><a href="https://note.com/thefix/m/m87e3c847fbef" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">note で配布中 →</a></div>
+        <div style="font-size:0.62rem;color:var(--muted);line-height:1.6;">Cannabis Grow Environment Monitor<br>v1.5 · 完全オフライン PWA<br><a href="https://note.com/thefix/m/m87e3c847fbef" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">note で配布中 →</a></div>
       </div>
 
       <!-- PIN 3回失敗時の動作 -->
@@ -1239,7 +1239,8 @@
       <div><div id="statOkPct" style="font-size:1.2rem;font-weight:700;color:var(--ok);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;">OK RATE</div></div>
       <div><div id="statLogCount" style="font-size:1.2rem;font-weight:700;color:var(--text2);">—</div><div style="font-size:0.6rem;color:var(--muted);margin-top:2px;">SAVES</div></div>
     </div>
-    <div id="statTrend" style="margin-top:8px;font-size:0.65rem;color:var(--muted);text-align:center;"></div>
+    <svg id="vpdStatsSparkline" viewBox="0 0 300 36" preserveAspectRatio="none" style="width:100%;height:36px;margin:8px 0 0;display:none;overflow:visible;"></svg>
+    <div id="statTrend" style="margin-top:6px;font-size:0.65rem;color:var(--muted);text-align:center;"></div>
   </div>
 </div>
 
@@ -1785,6 +1786,7 @@
     updateFeedingHeader();
     renderFeedRecentLogs();
     renderVpdStats();
+    renderVpdSparkline();
     const logs = await dbGetAll('logs');
     renderStageTimeline(logs);
   }
@@ -3257,6 +3259,8 @@
       runoffEc:  (el => el?.value.trim() || null)(document.getElementById('runoffEcInput')),
       waterTemp: (el => el?.value.trim() || null)(document.getElementById('waterTempInput')),
       ppfd: String(t.ppfd || ''),
+      vpd: parseFloat(calcVPD(t.temp, t.hum).toFixed(3)),
+      leafVpd: parseFloat(calcLeafVPD(t.temp, t.hum, t.leafOffset || 0).toFixed(3)),
       note: (document.getElementById('feedingNoteInput')?.value || '').trim(),
       photo: pendingPhoto,
       fertilizers: (t.fertilizerList || []).filter(f => f.name || f.amountMl)
@@ -3278,10 +3282,11 @@
     renderVpdSparkline();
     renderVpdStats();
     const fertNames = (log.fertilizers || []).map(f => esc(f.name)).filter(Boolean).join('、');
+    const dispTemp = useFahrenheit ? (log.temp * 9/5 + 32).toFixed(1) + '°F' : log.temp + '°C';
     showSavePopup('Feeding Saved ✅', [
       `📅 ${log.timestamp}`,
       stages[log.stage] ? `🌱 ${stages[log.stage].name}` : '',
-      `🌡 Temp: ${log.temp}°C　💧 Humidity: ${log.hum}%`,
+      `🌡 Temp: ${dispTemp}　💧 Humidity: ${log.hum}%　VPD: ${log.vpd} kPa`,
       log.ph ? `💧 pH: ${log.ph}` : '',
       log.waterTemp ? `🌡 Water: ${log.waterTemp}°C` : '',
       log.ec ? `⚡ Input EC: ${log.ec} mS${log.runoffEc ? '　🔄 Runoff: ' + log.runoffEc + ' mS' : ''}` : '',
@@ -3342,6 +3347,25 @@
       cntEl.textContent = rows.length;
       const okPct = okCount / rows.length;
       avgEl.style.color = okPct > 0.7 ? 'var(--ok)' : okPct > 0.4 ? 'var(--warn)' : 'var(--danger)';
+      // draw stats sparkline
+      const statSvg = document.getElementById('vpdStatsSparkline');
+      if (statSvg && rows.length >= 2) {
+        const pts = rows.slice().reverse().slice(-20);
+        const vals = pts.map(r => r.vpd);
+        const minV = Math.min(...vals, range.min * 0.8);
+        const maxV = Math.max(...vals, range.max * 1.2);
+        const W = 300, H = 36, PAD = 2;
+        const x = i => PAD + (i / (pts.length - 1)) * (W - PAD * 2);
+        const y = v => H - PAD - (v - minV) / (maxV - minV || 1) * (H - PAD * 2);
+        const okY1 = y(range.max), okY2 = y(range.min);
+        const polyline = pts.map((r, i) => `${x(i).toFixed(1)},${y(r.vpd).toFixed(1)}`).join(' ');
+        const dotColor = r => r.vpd >= range.min && r.vpd <= range.max ? 'var(--ok)' : r.vpd > range.max ? 'var(--warn)' : 'var(--danger)';
+        statSvg.innerHTML = `
+          <rect x="${PAD}" y="${Math.min(okY1,okY2).toFixed(1)}" width="${W-PAD*2}" height="${Math.abs(okY2-okY1).toFixed(1)}" fill="rgba(34,197,94,0.12)"/>
+          <polyline points="${polyline}" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2"/>
+          ${pts.map((r,i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(r.vpd).toFixed(1)}" r="2" fill="${dotColor(r)}"/>`).join('')}`;
+        statSvg.style.display = 'block';
+      } else if (statSvg) { statSvg.style.display = 'none'; }
       // trend: compare latest 10 vs previous 10
       if (rows.length >= 20) {
         const r10 = rows.slice(0,10).reduce((s,r) => s+r.vpd,0)/10;
@@ -3491,8 +3515,8 @@
   async function exportCsv() {
     const logs = await dbGetAll('logs');
     if (!logs.length) { showToast('ログがありません'); return; }
-    const tentName = id => (tents[id] && tents[id].name) ? tents[id].name : `Tent ${id + 1}`;
-    const cols = ['timestamp','tent','cycle','type','stage','temp_c','hum_pct','ppfd','co2_ppm','leaf_vpd','ph','ec_in','ec_runoff','water_temp','note'];
+    const tentName = id => { const t = tents.find(x => x.id === id); return t ? t.name : `Tent`; };
+    const cols = ['timestamp','tent','cycle','type','stage','temp_c','hum_pct','vpd_kpa','leaf_vpd_kpa','ppfd','ph','ec_in','ec_runoff','water_temp','note'];
     const esc = v => {
       if (v == null || v === '') return '';
       const s = String(v);
@@ -3500,11 +3524,15 @@
     };
     const rows = logs
       .sort((a, b) => (a.ts || 0) - (b.ts || 0))
-      .map(l => [
-        l.timestamp, tentName(l.tentId), l.cycle || 1, l.type || 'feeding', l.stage || '',
-        l.temp ?? '', l.hum ?? '', l.ppfd ?? '', l.co2val ?? '', l.leafVpd ?? '',
-        l.ph ?? '', l.ec ?? '', l.runoffEc ?? '', l.waterTemp ?? '', l.note ?? ''
-      ].map(esc).join(','));
+      .map(l => {
+        const vpd = l.vpd ?? (l.temp != null && l.hum != null ? parseFloat(calcVPD(l.temp, l.hum).toFixed(3)) : '');
+        const leafVpd = l.leafVpd ?? (l.temp != null && l.hum != null ? parseFloat(calcLeafVPD(l.temp, l.hum, l.leafOffset || 0).toFixed(3)) : '');
+        return [
+          l.timestamp, tentName(l.tentId), l.cycle || 1, l.type || 'feeding', l.stage || '',
+          l.temp ?? '', l.hum ?? '', vpd, leafVpd, l.ppfd ?? '',
+          l.ph ?? '', l.ec ?? '', l.runoffEc ?? '', l.waterTemp ?? '', l.note ?? ''
+        ].map(esc).join(',');
+      });
     const csv = '﻿' + cols.join(',') + '\n' + rows.join('\n'); // BOM付き=Excel日本語対応
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a');
@@ -3753,24 +3781,11 @@ function classifyVpd(vpd, lo, hi) {
     return unique.slice(0, 3);
   }
 
-  function adjustHumidity(delta) {
-    const t = tents[currentTent];
-    t.hum = Math.max(0, Math.min(100, Math.round(t.hum + delta)));
-    document.getElementById('humInput').value = t.hum;
-    update();
-  }
-  function adjustTemp(delta) {
-    const t = tents[currentTent];
-    t.temp = Math.round((t.temp + delta) * 10) / 10;
-    document.getElementById('tempInput').value = t.temp;
-    update();
-  }
+  function adjustHumidity(delta) { adjustHum(delta); }
+  // adjustTemp already defined above (line ~2160) — no duplicate needed
   function adjustPpfd(delta) {
-    const t = tents[currentTent];
-    t.ppfd = Math.max(0, Math.round(t.ppfd + delta));
-    document.getElementById('ppfdInput').value = t.ppfd;
-    updateDli();
-    update();
+    const cur = parseInt(document.getElementById('ppfdVal').value || '0', 10) || 0;
+    applyInlineVal('ppfd', cur + delta);
   }
 
   function renderActionButtons(actions, recEl) {
@@ -4542,6 +4557,7 @@ function classifyVpd(vpd, lo, hi) {
     applyAiToggle();
     _resumeReminder();
     renderVpdSparkline();
+    renderVpdStats();
     // First-run hint
     if (!localStorage.getItem('vpdFirstRunSeen')) {
       localStorage.setItem('vpdFirstRunSeen', '1');
@@ -4836,8 +4852,9 @@ function classifyVpd(vpd, lo, hi) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     const tc = document.getElementById('tab-' + target);
     if (tc) tc.classList.add('active');
+    if (target === 'monitor') { renderVpdSparkline(); }
     if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); renderFeedRecentLogs(); prefillLastWatering(); }
-    if (target === 'analysis') { dbGetAll('logs').then(logs => { renderStageTimeline(logs); }); renderVpdStats(); }
+    if (target === 'analysis') { dbGetAll('logs').then(logs => { renderStageTimeline(logs); }); renderVpdStats(); renderVpdSparkline(); }
     if (target === 'table') { buildStageTable(); buildMatrix(); }
     // AI Chat FAB: show only on analysis/table tabs (avoid conflicting with inline AI buttons)
     const chatFab = document.getElementById('aiChatFab');
