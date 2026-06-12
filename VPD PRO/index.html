@@ -3704,6 +3704,7 @@
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    showToast(appLang === 'en' ? `💾 Backup saved (${logs.length} logs, ${tentsData.length} tents)` : `💾 バックアップ保存 (${logs.length}件のログ、${tentsData.length}テント)`);
   }
   function importData() {
     document.getElementById('importFile').click();
@@ -3762,11 +3763,13 @@
           _showEcRows = localStorage.getItem('showEcRows') === 'true';
           applyEcRows();
           useFahrenheit = localStorage.getItem('useFahrenheit') === 'true';
+          _applyUnitUI();
         }
         currentTent = 0;
         buildTentBar();
         loadTentToUI(0);
         buildStageTable();
+        buildMatrix();
         update();
         applyLang();
         renderVpdSparkline();
