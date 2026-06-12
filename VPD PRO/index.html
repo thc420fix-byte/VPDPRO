@@ -2792,11 +2792,11 @@
     } catch(e) {
       errEl.style.display = 'flex';
       if (e.name === 'NotAllowedError') {
-        errMsg.textContent = 'カメラの使用を許可してください。\nブラウザの設定からカメラアクセスをオンにしてください。';
+        errMsg.textContent = appLang === 'en' ? 'Camera access denied. Enable camera in browser settings.' : 'カメラの使用を許可してください。\nブラウザの設定からカメラアクセスをオンにしてください。';
       } else if (e.name === 'NotFoundError') {
-        errMsg.textContent = 'カメラが見つかりません。';
+        errMsg.textContent = appLang === 'en' ? 'No camera found.' : 'カメラが見つかりません。';
       } else {
-        errMsg.textContent = 'カメラにアクセスできません。\n' + e.message;
+        errMsg.textContent = (appLang === 'en' ? 'Camera error: ' : 'カメラにアクセスできません。\n') + e.message;
       }
     }
   }
