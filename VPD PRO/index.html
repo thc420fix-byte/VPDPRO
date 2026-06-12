@@ -3092,7 +3092,8 @@
     const hdr = (t, i) => `<div style="font-size:0.7rem;font-weight:700;color:var(--text);opacity:0.6;text-align:center;border-left:${i===0?'none':vline};padding:0 2px;min-width:0;">${t}</div>`;
     const cell = (t, i) => `<div style="font-size:0.7rem;color:var(--text);text-align:center;white-space:nowrap;border-left:${i===0?'none':vline};padding:0 2px;min-width:0;">${t}</div>`;
     const fv = (n) => Number.isInteger(n) ? String(n) : n.toFixed(1);
-    const hdrs = ['°C','%RH','kPa',refCo2?'µmol*':'µmol','In EC','Out EC','pH'];
+    const tempUnit = useFahrenheit ? '°F' : '°C';
+    const hdrs = [tempUnit,'%RH','kPa',refCo2?'µmol*':'µmol','In EC','Out EC','pH'];
     let html = `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div style="min-width:430px;">`;
     html += `<div style="display:grid;grid-template-columns:56px 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;padding:4px 0 8px;border-bottom:1px solid rgba(255,255,255,0.2);">
       <span></span>${hdrs.map((t,i) => hdr(t,i)).join('')}
@@ -3102,8 +3103,9 @@
       const isDry = key === 'dry';
       const isHarvest = key === 'harvest';
       const zebra = ri % 2 === 1 ? 'background:rgba(255,255,255,0.04);border-radius:4px;' : '';
+      const fmtTemp = (c) => useFahrenheit ? Math.round(c * 9/5 + 32) : c;
       const vals = [
-        s.temp ? `${s.temp[0]}–${s.temp[1]}` : '—',
+        s.temp ? `${fmtTemp(s.temp[0])}–${fmtTemp(s.temp[1])}` : '—',
         s.hum  ? `${s.hum[0]}–${s.hum[1]}`   : '—',
         `${fv(s.vpd[0])}–${fv(s.vpd[1])}`,
         (isDry || isHarvest) ? '—' : (refCo2 ? `${s.ppfdCo2[0]}–${s.ppfdCo2[1]}` : `${s.ppfd[0]}–${s.ppfd[1]}`),
