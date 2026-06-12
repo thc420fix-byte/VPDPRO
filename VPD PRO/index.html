@@ -3409,10 +3409,10 @@
     showSavePopup(appLang === 'en' ? 'Feeding Saved ✅' : '給水を記録しました ✅', [
       `📅 ${log.timestamp}`,
       stages[log.stage] ? `🌱 ${stages[log.stage].name}` : '',
-      `🌡 Temp: ${dispTemp}　💧 Humidity: ${log.hum}%　VPD: ${log.vpd} kPa`,
+      `🌡 ${tr('stepper.temp')}: ${dispTemp}　💧 ${tr('stepper.humidity')}: ${log.hum}%　VPD: ${log.vpd} kPa`,
       log.ph ? `💧 pH: ${log.ph}` : '',
-      log.waterTemp != null ? `🌡 Water: ${useFahrenheit ? (log.waterTemp * 9/5 + 32).toFixed(1) + '°F' : log.waterTemp + '°C'}` : '',
-      log.ec ? `⚡ Input EC: ${log.ec} mS${log.runoffEc ? '　🔄 Runoff: ' + log.runoffEc + ' mS' : ''}` : '',
+      log.waterTemp != null ? `🌡 ${tr('stepper.water')}: ${useFahrenheit ? (log.waterTemp * 9/5 + 32).toFixed(1) + '°F' : log.waterTemp + '°C'}` : '',
+      log.ec ? `⚡ ${tr('feed.input_ec')}: ${log.ec} mS${log.runoffEc ? `　🔄 ${tr('feed.runoff_ec')}: ` + log.runoffEc + ' mS' : ''}` : '',
       fertNames ? `🌿 ${fertNames}` : ''
     ].filter(Boolean));
   }
@@ -5349,9 +5349,10 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
     renderVpdSparkline();
     renderVpdStats();
     const dispMonTemp = useFahrenheit ? (log.temp * 9/5 + 32).toFixed(1) + '°F' : log.temp + '°C';
-    showSavePopup(appLang === 'en' ? 'Monitor Saved ✅' : '環境を記録しました ✅', [
+    const _L = appLang === 'en';
+    showSavePopup(_L ? 'Monitor Saved ✅' : '環境を記録しました ✅', [
       `📅 ${log.timestamp}`,
-      `🌡 Temp: ${dispMonTemp}　💧 Humidity: ${log.hum}%`,
+      `🌡 ${tr('stepper.temp')}: ${dispMonTemp}　💧 ${tr('stepper.humidity')}: ${log.hum}%`,
       `📊 Air VPD: ${airVpdNow} kPa　🌿 Leaf: ${log.leafVpd} kPa`,
       `💡 PPFD: ${log.ppfd} µmol`,
       log.co2val ? `💨 CO₂: ${log.co2val} ppm` : ''
