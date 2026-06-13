@@ -206,17 +206,17 @@
     /* カード */
     .card {
       background: var(--surface);
-      border-radius: 14px;
-      padding: 12px 14px;
+      border-radius: 16px;
+      padding: 14px 16px;
       margin-bottom: 8px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.04) inset;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.04) inset;
     }
     .card-title {
-      font-size: 0.68rem;
-      color: var(--text2);
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.38);
       font-weight: 600;
       margin-bottom: 10px;
-      letter-spacing: 0.09em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
     }
     /* ステージボタン */
@@ -283,20 +283,20 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 4px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 7px 0;
+      border-bottom: 0.5px solid rgba(255,255,255,0.06);
     }
     .stepper-row:last-child { border-bottom: none; }
     .stepper-btn {
-      width: 40px;
-      height: 40px;
+      width: 34px;
+      height: 34px;
       flex-shrink: 0;
-      border-radius: 50%;
-      border: 1px solid rgba(52,199,89,0.2);
-      background: var(--surface2);
-      color: var(--accent);
-      font-size: 1.4rem;
-      font-weight: 400;
+      border-radius: 9px;
+      border: none;
+      background: rgba(255,255,255,0.09);
+      color: rgba(255,255,255,0.65);
+      font-size: 1.2rem;
+      font-weight: 300;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -305,27 +305,27 @@
       padding: 0;
       -webkit-tap-highlight-color: transparent;
       transition: background 0.1s, transform 0.08s;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
     }
-    .stepper-btn:active { background: var(--border); transform: scale(0.92); }
+    .stepper-btn:active { background: rgba(255,255,255,0.18); transform: scale(0.88); }
     .stepper-center {
       display: flex;
       align-items: baseline;
-      gap: 5px;
+      gap: 4px;
       width: 178px;
       justify-content: center;
     }
     .stepper-label {
-      font-size: 0.88rem;
-      color: var(--text2);
+      font-size: 0.74rem;
+      color: rgba(255,255,255,0.42);
       font-weight: 500;
-      min-width: 70px;
+      min-width: 66px;
       text-align: right;
+      letter-spacing: 0;
     }
     .stepper-val {
       width: 54px;
-      font-size: 1.5rem;
-      font-weight: 700;
+      font-size: 1.55rem;
+      font-weight: 600;
       background: transparent;
       color: var(--accent);
       -webkit-text-fill-color: var(--accent);
@@ -336,9 +336,10 @@
       padding: 0;
     }
     .stepper-unit {
-      font-size: 0.8rem;
-      color: var(--text2);
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.35);
       min-width: 34px;
+      letter-spacing: 0;
     }
     /* VPD zone bar: current value vs stage target range at a glance */
     .vpd-zonebar-wrap { width: 100%; margin: 8px 0 4px; padding: 0 4px; box-sizing: border-box; }
@@ -371,12 +372,12 @@
       margin-top: 3px; padding: 0 1px;
     }
     /* compact mode: Leaf VPD or CO2 row added → shrink all rows */
-    .stepper-rows.compact .stepper-row { padding: 2px 0; }
-    .stepper-rows.compact .stepper-btn { width: 32px; height: 32px; font-size: 1.1rem; }
-    .stepper-rows.compact .stepper-val { font-size: 1.2rem; width: 42px; }
+    .stepper-rows.compact .stepper-row { padding: 4px 0; }
+    .stepper-rows.compact .stepper-btn { width: 30px; height: 30px; font-size: 1.1rem; border-radius: 8px; }
+    .stepper-rows.compact .stepper-val { font-size: 1.25rem; width: 42px; }
     .stepper-rows.compact #co2LevelVal { width: 54px; }
-    .stepper-rows.compact .stepper-label { font-size: 0.78rem; }
-    .stepper-rows.compact .stepper-unit { font-size: 0.7rem; }
+    .stepper-rows.compact .stepper-label { font-size: 0.7rem; }
+    .stepper-rows.compact .stepper-unit { font-size: 0.65rem; }
 
     /* iPhone optimization */
     @media (max-width: 600px) {
@@ -401,10 +402,11 @@
       text-align: center;
     }
     .vpd-label {
-      font-size: 0.58rem;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      font-size: 0.62rem;
+      color: rgba(255,255,255,0.38);
+      letter-spacing: 0.03em;
+      text-transform: none;
+      font-weight: 500;
       margin-bottom: 1px;
     }
     .vpd-num {
@@ -430,41 +432,49 @@
     }
     .toggle-row {
       display: flex;
-      gap: 5px;
+      gap: 3px;
       flex-wrap: nowrap;
-      margin-bottom: 6px;
+      margin-bottom: 10px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 3px;
     }
     .toggle-btn {
       flex: 1;
-      padding: 5px 3px;
+      padding: 6px 3px;
       border: none;
       border-radius: 8px;
-      font-size: 0.62rem;
+      font-size: 0.63rem;
       font-weight: 600;
-      background: var(--surface2);
-      color: var(--text2);
+      background: transparent;
+      color: rgba(255,255,255,0.4);
       cursor: pointer;
       text-align: center;
-      transition: background 0.15s, color 0.15s;
+      transition: background 0.15s, color 0.15s, box-shadow 0.15s;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      -webkit-tap-highlight-color: transparent;
     }
     .toggle-btn.active-day {
-      background: rgba(52,199,89,0.18);
+      background: rgba(52,199,89,0.22);
       color: var(--accent);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     }
     .toggle-btn.active-night {
-      background: rgba(120,120,255,0.18);
+      background: rgba(120,120,255,0.22);
       color: #a0a0ff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     }
     .toggle-btn.active-leaf {
-      background: rgba(99,226,163,0.18);
+      background: rgba(99,226,163,0.22);
       color: var(--leaf);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     }
     .toggle-btn.active-co2 {
-      background: rgba(10,132,255,0.18);
+      background: rgba(10,132,255,0.22);
       color: var(--accent2);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     }
     /* 写真比較オーバーレイ */
     .photo-overlay {
@@ -533,20 +543,20 @@
     }
     .save-btn.holding::after { width:100%; transition:width 0.8s linear; }
     .ai-action-btn {
-      width:100%; padding:9px;
-      background: rgba(52,199,89,0.08);
-      border: 1px solid rgba(52,199,89,0.28);
-      border-radius: 10px;
+      width:100%; padding:10px;
+      background: rgba(52,199,89,0.07);
+      border: 0.5px solid rgba(52,199,89,0.25);
+      border-radius: 13px;
       color: var(--accent);
-      font-size: 0.82rem; font-weight: 600;
-      cursor: pointer; letter-spacing: 0.04em;
-      box-shadow: 0 0 0 0 rgba(52,199,89,0);
-      transition: background 0.15s, box-shadow 0.15s;
+      font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; letter-spacing: 0.02em;
+      box-shadow: none;
+      transition: background 0.15s;
       text-align: center;
+      -webkit-tap-highlight-color: transparent;
     }
     .ai-action-btn:active {
-      background: rgba(52,199,89,0.18);
-      box-shadow: 0 0 12px rgba(52,199,89,0.22);
+      background: rgba(52,199,89,0.16);
     }
     .ai-result-box {
       margin-top: 8px; padding: 12px 12px;
@@ -997,14 +1007,14 @@
           <button class="stepper-btn" onclick="adjustCurrentPpfd(10)">+</button>
         </div>
         <!-- DLI + Light tools -->
-        <div class="stepper-row" id="dliRow" style="gap:6px;flex-wrap:nowrap;justify-content:flex-start;padding:4px 2px;">
-          <span style="font-size:0.7rem;color:var(--text2);white-space:nowrap;flex:1;">DLI <span id="dliVal" style="color:var(--accent);font-weight:700;font-size:0.85rem;font-family:'Rajdhani',sans-serif;">—</span> <span style="opacity:0.6;font-size:0.65rem;">mol/m²/d</span><span id="dliTarget" style="opacity:0.6;font-size:0.65rem;"></span></span>
-          <span onclick="cyclePhotoperiod()" style="cursor:pointer;font-size:0.68rem;color:var(--text2);background:var(--surface2);border-radius:6px;padding:3px 7px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;"><span id="photoperiodLabel">18</span>h</span>
-          <span onclick="openLuxConverter()" style="cursor:pointer;font-size:0.68rem;color:var(--text2);background:var(--surface2);border-radius:6px;padding:3px 7px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;">lux</span>
-          <span onclick="openLightMeter()" style="cursor:pointer;font-size:0.68rem;color:var(--accent);background:rgba(52,199,89,0.12);border-radius:6px;padding:3px 7px;font-weight:700;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;">Meter</span>
+        <div class="stepper-row" id="dliRow" style="gap:6px;flex-wrap:nowrap;justify-content:flex-start;padding:6px 2px;">
+          <span style="font-size:0.7rem;color:rgba(255,255,255,0.42);white-space:nowrap;flex:1;">DLI <span id="dliVal" style="color:var(--accent);font-weight:600;font-size:0.9rem;font-family:'Rajdhani',sans-serif;">—</span> <span style="opacity:0.55;font-size:0.62rem;">mol/m²/d</span><span id="dliTarget" style="opacity:0.55;font-size:0.62rem;"></span></span>
+          <span onclick="cyclePhotoperiod()" style="cursor:pointer;font-size:0.65rem;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.08);border-radius:7px;padding:4px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;font-weight:500;"><span id="photoperiodLabel">18</span>h</span>
+          <span onclick="openLuxConverter()" style="cursor:pointer;font-size:0.65rem;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.08);border-radius:7px;padding:4px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;font-weight:500;">lux</span>
+          <span onclick="openLightMeter()" style="cursor:pointer;font-size:0.65rem;color:var(--accent);background:rgba(52,199,89,0.14);border-radius:7px;padding:4px 8px;font-weight:600;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;">Meter</span>
         </div>
-        <div style="padding:3px 0 0;">
-          <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" style="width:100%;box-sizing:border-box;padding:5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
+        <div style="padding:4px 0 0;">
+          <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" style="width:100%;box-sizing:border-box;padding:7px 10px;background:rgba(255,255,255,0.05);border:none;border-radius:8px;color:rgba(255,255,255,0.6);font-size:0.72rem;outline:none;margin-bottom:3px;">
         </div>
         <!-- CO2 Level (shown when CO2 is ON) -->
         <div id="co2LevelCard" style="display:none; border-top:1px solid rgba(255,255,255,0.06);">
@@ -1035,8 +1045,8 @@
           <button id="monitorSaveBtn" class="save-btn"
             onmousedown="startSaveHold('monitor',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
             ontouchstart="startSaveHold('monitor',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
-            style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;" data-i18n="btn.save">Save</button>
-          <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;" data-i18n="feed.press_hold">press &amp; hold</div>
+            style="width:100%;padding:11px;background:var(--accent);border:none;border-radius:13px;color:#000;font-size:0.88rem;font-weight:700;cursor:pointer;letter-spacing:0.02em;" data-i18n="btn.save">Save</button>
+          <div style="text-align:center;font-size:0.56rem;color:rgba(255,255,255,0.28);margin-top:4px;letter-spacing:0.04em;" data-i18n="feed.press_hold">press &amp; hold</div>
         </div>
         <!-- AI Advice Panel -->
         <div id="aiAdvicePanel" style="display:none;margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:6px;">
