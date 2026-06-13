@@ -130,7 +130,7 @@
       flex: 1 0 auto;
       min-width: 56px;
       max-width: 90px;
-      padding: 7px 6px;
+      padding: 5px 6px;
       background: transparent;
       border: none;
       color: var(--text2);
@@ -138,10 +138,13 @@
       font-weight: 600;
       text-align: center;
       cursor: pointer;
-      white-space: pre-line;
+      white-space: nowrap;
       font-family: inherit;
       border-radius: 7px;
       transition: background 0.15s, color 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .tent-btn.solo { max-width: none; }
     .tent-btn:first-child { border-radius: 8px; }
@@ -1032,7 +1035,7 @@
           <button id="monitorSaveBtn" class="save-btn"
             onmousedown="startSaveHold('monitor',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
             ontouchstart="startSaveHold('monitor',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
-            style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;">Save</button>
+            style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;" data-i18n="btn.save">Save</button>
           <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;" data-i18n="feed.press_hold">press &amp; hold</div>
         </div>
         <!-- AI Advice Panel -->
@@ -1163,7 +1166,7 @@
       <button id="feedingSaveBtn" class="save-btn"
         onmousedown="startSaveHold('feeding',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
         ontouchstart="startSaveHold('feeding',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
-        style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;">Save</button>
+        style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;" data-i18n="btn.save">Save</button>
       <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;" data-i18n="feed.press_hold">press &amp; hold</div>
     </div>
     <!-- Water Reminder -->
@@ -1427,6 +1430,7 @@
       'settings.pin_fail_action':'PIN 失敗時の動作','settings.lock_24h':'24時間ロック','settings.wipe_all':'全データを消去',
       'settings.change_pin':'PIN を変更',
       'ai.advice_btn':'✦ AI アドバイス','spot.save_btn':'📌 保存','chat.send_btn':'送信',
+      'btn.save':'保存',
       'app.subtitle':'植物環境モニター','lux.description':'Photoneや照度計のlux値を貼るだけで換算。係数は光源別の目安。',
     },
     en: {
@@ -1505,6 +1509,7 @@
       'settings.pin_fail_action':'PIN Fail Action','settings.lock_24h':'Lock 24h','settings.wipe_all':'Wipe All Data',
       'settings.change_pin':'Change PIN',
       'ai.advice_btn':'✦ AI Advice','spot.save_btn':'📌 Save','chat.send_btn':'Send',
+      'btn.save':'Save',
       'app.subtitle':'Grow Environment Monitor','lux.description':'Paste a lux reading from Photone or a light meter. Conversion factors are per light source.',
     }
   };
@@ -1722,31 +1727,81 @@
   function tgtHum(t, vpd) { return Math.round((1 - vpd / svp(t)) * 100); }
 
   /* === テント切替 === */
-  const _tentLastTap = {};  // buildTentBar再作成でもリセットされないよう外部管理
+  function showTentMenu(i, anchor) {
+    const existing = document.getElementById('tentCtxMenu');
+    if (existing) existing.remove();
+    const menu = document.createElement('div');
+    menu.id = 'tentCtxMenu';
+    const rect = anchor.getBoundingClientRect();
+    menu.style.cssText = 'position:fixed;z-index:9999;background:var(--surface2,#1e1e1e);border:1px solid var(--border,#333);border-radius:10px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.5);min-width:130px;';
+    const leftPos = Math.min(rect.left, window.innerWidth - 145);
+    menu.style.top  = (rect.bottom + 5) + 'px';
+    menu.style.left = leftPos + 'px';
+    const mkItem = (label, color, cb) => {
+      const d = document.createElement('div');
+      d.style.cssText = `padding:11px 14px;font-size:0.82rem;cursor:pointer;color:${color};-webkit-tap-highlight-color:transparent;`;
+      d.textContent = label;
+      d.onclick = () => { menu.remove(); cb(); };
+      return d;
+    };
+    menu.appendChild(mkItem(appLang==='ja'?'✏️ 名前変更':'✏️ Rename', 'var(--text)', () => renameTent(i)));
+    if (tents.length > 1) {
+      const sep = document.createElement('div');
+      sep.style.cssText = 'height:1px;background:var(--border,#333);';
+      menu.appendChild(sep);
+      menu.appendChild(mkItem(appLang==='ja'?'🗑 削除':'🗑 Delete', 'rgba(255,100,100,0.9)', () => deleteTent(i)));
+    }
+    document.body.appendChild(menu);
+    setTimeout(() => {
+      const close = e => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', close); document.removeEventListener('touchend', close); } };
+      document.addEventListener('click', close);
+      document.addEventListener('touchend', close);
+    }, 50);
+  }
+
   function buildTentBar() {
     const bar = document.getElementById('tentBar');
     bar.innerHTML = '';
-    tents.forEach((t,i) => {
+    tents.forEach((t, i) => {
       const btn = document.createElement('div');
       btn.className = 'tent-btn' + (i === currentTent ? ' active' : '') + (tents.length === 1 ? ' solo' : '');
-      btn.textContent = t.name;
       if (i > 0) btn.style.borderLeft = '1px solid var(--border)';
-      btn.onclick = () => {
-        const now = Date.now();
-        if (_tentLastTap[i] && now - _tentLastTap[i] < 350) {
-          _tentLastTap[i] = 0;
-          renameTent(i);
-        } else {
-          _tentLastTap[i] = now;
-          if (i !== currentTent) selectTent(i);
-        }
-      };
+
+      // VPD status dot
+      let dotColor = 'rgba(255,255,255,0.15)';
+      if (t.stage && stages[t.stage]) {
+        const airV  = calcVPD(t.temp, t.hum);
+        const leafV = calcLeafVPD(t.temp, t.hum, t.leafOffset || -2);
+        const range = t.co2 ? stages[t.stage].co2 : stages[t.stage].vpd;
+        const check = t.leaf ? leafV : airV;
+        const state = classifyVpd(check, range[0], range[1]);
+        dotColor = state === 'ok' ? 'var(--ok)' : state === 'warning' ? '#ff9500' : 'var(--danger)';
+      }
+      const stageLbl = tr('stage.' + t.stage) || t.stage || '';
+      btn.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;pointer-events:none;">
+        <div style="display:flex;align-items:center;gap:3px;">
+          <span style="font-size:0.74rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62px;">${esc(t.name)}</span>
+          <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${dotColor};flex-shrink:0;"></span>
+        </div>
+        <span style="font-size:0.57rem;opacity:0.55;font-weight:500;">${stageLbl}</span>
+      </div>`;
+
+      // Long-press → menu / tap → select
+      let _pt = null; let _lp = false;
+      const startP = () => { _lp = false; _pt = setTimeout(() => { _lp = true; showTentMenu(i, btn); }, 520); };
+      const cancelP = () => { if (_pt) { clearTimeout(_pt); _pt = null; } };
+      btn.addEventListener('mousedown',  startP);
+      btn.addEventListener('touchstart', startP, { passive: true });
+      btn.addEventListener('mouseleave', cancelP);
+      btn.addEventListener('mouseup',    cancelP);
+      btn.addEventListener('touchend',   () => { cancelP(); if (!_lp && i !== currentTent) selectTent(i); });
+      btn.addEventListener('click',      () => { if (!_lp && i !== currentTent) selectTent(i); });
       bar.appendChild(btn);
     });
     if (tents.length < MAX_TENTS) {
       const addBtn = document.createElement('div');
       addBtn.className = 'tent-btn';
-      addBtn.style.cssText = 'flex:0 0 36px;font-size:0.75rem;color:var(--accent);display:flex;align-items:center;justify-content:center;border-left:1px solid var(--border);padding:7px 4px;';
+      addBtn.style.cssText = 'flex:0 0 36px;font-size:1rem;color:var(--accent);display:flex;align-items:center;justify-content:center;border-left:1px solid var(--border);padding:7px 4px;';
       addBtn.textContent = '+';
       addBtn.onclick = addTent;
       bar.appendChild(addBtn);
