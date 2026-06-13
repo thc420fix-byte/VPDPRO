@@ -1763,10 +1763,10 @@
     }
     document.body.appendChild(menu);
     setTimeout(() => {
-      const close = e => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', close); document.removeEventListener('touchend', close); } };
+      const close = e => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', close); document.removeEventListener('touchstart', close); } };
       document.addEventListener('click', close);
-      document.addEventListener('touchend', close);
-    }, 50);
+      document.addEventListener('touchstart', close);
+    }, 300);
   }
 
   function buildTentBar() {
