@@ -129,15 +129,15 @@
     .tent-bar::-webkit-scrollbar { display: none; }
     .tent-btn {
       flex: 1 0 auto;
-      min-width: 56px;
-      max-width: 90px;
-      padding: 5px 6px;
+      min-width: 48px;
+      max-width: 72px;
+      padding: 5px 4px 5px 8px;
       background: transparent;
       border: none;
       color: var(--text2);
       font-size: 0.74rem;
       font-weight: 600;
-      text-align: center;
+      text-align: left;
       cursor: pointer;
       white-space: nowrap;
       font-family: inherit;
@@ -145,7 +145,16 @@
       transition: background 0.15s, color 0.15s;
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+      position: relative;
+      overflow: hidden;
+    }
+    .tent-btn-bar {
+      position: absolute;
+      left: 0; top: 6px; bottom: 6px;
+      width: 3px;
+      border-radius: 2px;
+      flex-shrink: 0;
     }
     .tent-btn.solo { max-width: none; }
     .tent-btn:first-child { border-radius: 8px; }
@@ -1789,12 +1798,13 @@
         dotColor = state === 'ok' ? 'var(--ok)' : state === 'warning' ? '#ff9500' : 'var(--danger)';
       }
       const stageLbl = tr('stage.' + t.stage) || t.stage || '';
-      btn.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;pointer-events:none;">
-        <div style="display:flex;align-items:center;gap:3px;">
-          <span style="font-size:0.74rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62px;">${esc(t.name)}</span>
-          <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${dotColor};flex-shrink:0;"></span>
-        </div>
-        <span style="font-size:0.57rem;opacity:0.55;font-weight:500;">${stageLbl}</span>
+      // テント番号だけ抽出 (例 "Tent 3" → "T3", "MyTent" → そのまま短縮)
+      const nameMatch = t.name.match(/(\d+)$/);
+      const shortName = nameMatch ? 'T' + nameMatch[1] : t.name.slice(0, 3);
+      btn.innerHTML = `<div class="tent-btn-bar" style="background:${dotColor};"></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;pointer-events:none;padding-left:2px;">
+        <span style="font-size:0.78rem;font-weight:700;line-height:1;">${esc(shortName)}</span>
+        <span style="font-size:0.56rem;opacity:0.5;font-weight:500;line-height:1;">${stageLbl}</span>
       </div>`;
 
       // Long-press → menu / tap → select
