@@ -969,7 +969,7 @@
         </div>
       </div>
       <div id="startDateRow" style="display:none;align-items:center;gap:6px;justify-content:center;margin-bottom:4px;">
-        <label style="font-size:0.68rem;color:var(--text2);font-weight:600;flex-shrink:0;letter-spacing:0.06em;text-transform:uppercase;">Start</label>
+        <label style="font-size:0.68rem;color:var(--text2);font-weight:600;flex-shrink:0;letter-spacing:0.06em;text-transform:uppercase;" data-i18n="stage.start_label">Start</label>
         <input id="stageStartDate" type="date" style="width:110px;flex-shrink:0;font-size:0.78rem;height:24px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(52,199,89,0.3);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
         <button id="clearDateBtn" oncontextmenu="return false;" style="background:transparent;border:none;color:rgba(255,120,120,0.6);font-size:0.7rem;width:22px;height:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;display:none;">✕</button>
       </div>
@@ -1452,6 +1452,7 @@
       'ai.advice_btn':'✦ AI アドバイス','ai.review_btn':'✦ AI レビュー','spot.save_btn':'📌 保存','chat.send_btn':'送信','btn.cancel':'キャンセル',
       'btn.save':'保存',
       'app.subtitle':'植物環境モニター','lux.description':'Photoneや照度計のlux値を貼るだけで換算。係数は光源別の目安。',
+      'stage.start_label':'開始','fert.water_lbl':'水量','fert.amount_lbl':'使用量','fert.dilution_lbl':'希釈率','lux.meter_btn':'Meter',
     },
     en: {
       'tab.monitor':'📊 Monitor','tab.log':'💧 Feeding','tab.analysis':'📈 Analysis','tab.table':'📋 Reference',
@@ -1531,6 +1532,7 @@
       'ai.advice_btn':'✦ AI Advice','ai.review_btn':'✦ AI Review','spot.save_btn':'📌 Save','chat.send_btn':'Send','btn.cancel':'Cancel',
       'btn.save':'Save',
       'app.subtitle':'Grow Environment Monitor','lux.description':'Paste a lux reading from Photone or a light meter. Conversion factors are per light source.',
+      'stage.start_label':'Start','fert.water_lbl':'Water','fert.amount_lbl':'Amount','fert.dilution_lbl':'Dilution','lux.meter_btn':'Meter',
     }
   };
   const tr = k => (STRINGS[appLang]?.[k]) ?? (STRINGS.ja[k] ?? k);
@@ -2543,7 +2545,7 @@
         <!-- 数値 -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end;">
           <div>
-            <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">Water</div>
+            <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">${tr('fert.water_lbl')}</div>
             <div style="display:flex;align-items:baseline;gap:3px;">
               <input value="${f.waterL || ''}" placeholder="0" type="number" min="0" step="0.5" oninput="updateFertilizer(${currentFertTab},'waterL',this.value)"
                 style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.18);color:var(--accent);font-size:0.95rem;outline:none;text-align:right;padding:3px 0;">
@@ -2551,7 +2553,7 @@
             </div>
           </div>
           <div>
-            <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">Amount</div>
+            <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">${tr('fert.amount_lbl')}</div>
             <div style="display:flex;align-items:baseline;gap:3px;">
               <input value="${f.amountMl || ''}" placeholder="0" type="number" min="0" step="0.5" oninput="updateFertilizer(${currentFertTab},'amountMl',this.value)"
                 style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.18);color:var(--accent);font-size:0.95rem;outline:none;text-align:right;padding:3px 0;">
@@ -2559,7 +2561,7 @@
             </div>
           </div>
           <div>
-            <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">Dilution</div>
+            <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">${tr('fert.dilution_lbl')}</div>
             <div style="display:flex;align-items:baseline;gap:3px;">
               <span style="color:var(--accent);font-size:0.95rem;font-weight:600;">${ratio}</span>
               <span style="font-size:0.63rem;color:var(--text);white-space:nowrap;">ml/L</span>
