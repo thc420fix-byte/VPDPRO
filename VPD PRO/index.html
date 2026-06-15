@@ -788,7 +788,7 @@
       <!-- About -->
       <div style="margin-top:16px;padding:12px 14px;background:var(--surface2);border-radius:12px;text-align:center;">
         <div style="font-size:0.75rem;font-weight:700;color:var(--accent);letter-spacing:0.1em;margin-bottom:4px;">Canopy</div>
-        <div style="font-size:0.62rem;color:var(--muted);line-height:1.6;">Grow Environment Monitor<br>v1.5 · 完全オフライン PWA<br><a href="https://note.com/thefix/m/m87e3c847fbef" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">note で配布中 →</a></div>
+        <div style="font-size:0.62rem;color:var(--muted);line-height:1.6;"><span data-i18n="app.subtitle">Grow Environment Monitor</span><br>v1.5 · 完全オフライン PWA<br><a href="https://note.com/thefix/m/m87e3c847fbef" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">note で配布中 →</a></div>
       </div>
 
       <!-- PIN 3回失敗時の動作 -->
@@ -1021,7 +1021,7 @@
           <span style="font-size:0.7rem;color:rgba(255,255,255,0.42);white-space:nowrap;flex:1;">DLI <span id="dliVal" style="color:var(--accent);font-weight:600;font-size:0.9rem;font-family:'Rajdhani',sans-serif;">—</span> <span style="opacity:0.55;font-size:0.62rem;">mol/m²/d</span><span id="dliTarget" style="opacity:0.55;font-size:0.62rem;"></span></span>
           <span onclick="cyclePhotoperiod()" style="cursor:pointer;font-size:0.65rem;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.08);border-radius:7px;padding:4px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;font-weight:500;"><span id="photoperiodLabel">18</span>h</span>
           <span onclick="openLuxConverter()" style="cursor:pointer;font-size:0.65rem;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.08);border-radius:7px;padding:4px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;font-weight:500;">lux</span>
-          <span onclick="openLightMeter()" style="cursor:pointer;font-size:0.65rem;color:var(--accent);background:rgba(52,199,89,0.14);border-radius:7px;padding:4px 8px;font-weight:600;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;">Meter</span>
+          <span onclick="openLightMeter()" style="cursor:pointer;font-size:0.65rem;color:var(--accent);background:rgba(52,199,89,0.14);border-radius:7px;padding:4px 8px;font-weight:600;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;" data-i18n="lux.meter_btn">Meter</span>
         </div>
         <div style="padding:4px 0 0;">
           <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" style="width:100%;box-sizing:border-box;padding:7px 10px;background:rgba(255,255,255,0.05);border:none;border-radius:8px;color:rgba(255,255,255,0.6);font-size:0.72rem;outline:none;margin-bottom:3px;">
