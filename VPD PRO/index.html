@@ -847,7 +847,7 @@
     <div style="padding:14px 16px max(16px,env(safe-area-inset-bottom));background:rgba(10,20,14,0.97);border-top:1px solid var(--border);flex-shrink:0;">
       <!-- 光源選択 -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <span style="font-size:0.72rem;color:rgba(255,255,255,0.5);white-space:nowrap;flex-shrink:0;">Source</span>
+        <span style="font-size:0.72rem;color:rgba(255,255,255,0.5);white-space:nowrap;flex-shrink:0;" data-i18n="lm.source">Source</span>
         <select id="lmSource" onchange="lmUpdateSource()" style="flex:1;padding:6px 10px;background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.78rem;outline:none;">
           <option value="0.015" selected>LED Full Spectrum</option>
           <option value="0.0122">HPS</option>
@@ -859,12 +859,12 @@
       </div>
       <!-- キャリブレーション -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:0.72rem;color:rgba(255,255,255,0.5);white-space:nowrap;flex-shrink:0;">Calib ×</span>
+        <span style="font-size:0.72rem;color:rgba(255,255,255,0.5);white-space:nowrap;flex-shrink:0;" data-i18n="lm.calib">Calib ×</span>
         <input id="lmCalib" type="range" min="0.2" max="5" step="0.05" value="1" oninput="lmOnCalibChange()" style="flex:1;accent-color:var(--accent);">
         <span id="lmCalibVal" style="font-size:0.78rem;color:var(--accent);font-family:'Rajdhani',sans-serif;min-width:32px;text-align:right;">1.00</span>
-        <button onclick="lmResetCalib()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:rgba(255,255,255,0.5);font-size:0.65rem;padding:3px 7px;cursor:pointer;white-space:nowrap;">Reset</button>
+        <button onclick="lmResetCalib()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:rgba(255,255,255,0.5);font-size:0.65rem;padding:3px 7px;cursor:pointer;white-space:nowrap;" data-i18n="lm.reset">Reset</button>
       </div>
-      <div style="font-size:0.6rem;color:rgba(255,255,255,0.32);text-align:center;margin-bottom:10px;line-height:1.5;">Accuracy depends on your camera. Compare against Photone readings to calibrate the correction factor.</div>
+      <div style="font-size:0.6rem;color:rgba(255,255,255,0.32);text-align:center;margin-bottom:10px;line-height:1.5;" data-i18n="lm.accuracy">Accuracy depends on your camera. Compare against Photone readings to calibrate the correction factor.</div>
       <!-- アクションボタン -->
       <button id="lmApplyBtn" onclick="lmApply()" style="width:100%;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#000;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;" data-i18n="lightmeter.apply">Apply to PPFD</button>
     </div>
@@ -1430,6 +1430,7 @@
       'edit.title':'ログ編集','edit.fertilizers':'🌿 肥料','edit.delete_photo':'🗑 写真を削除','edit.deleted':'🗑 削除済み','edit.note_label':'メモ',
       'lightmeter.close':'✕ 閉じる','lightmeter.subtitle':'カメラでリアルタイム計測','lightmeter.stage_target':'ステージ目標: ',
       'lightmeter.apply':'PPFD に適用','lightmeter.retry':'再試行',
+      'lm.source':'光源','lm.calib':'補正 ×','lm.reset':'リセット','lm.accuracy':'精度はカメラに依存します。Photone と比較して補正係数をキャリブレーションしてください。',
       'stage.set_date':'+ 開始日を設定',
       'stage.clone':'苗期','stage.veg':'成長期','stage.flower':'開花期','stage.dry':'乾燥','stage.harvest':'収穫',
       'yield.label':'🏆 収量','yield.unit':'g（乾燥重量）',
@@ -1510,6 +1511,7 @@
       'edit.title':'EDIT LOG','edit.fertilizers':'🌿 Fertilizers','edit.delete_photo':'🗑 Delete Photo','edit.deleted':'🗑 Deleted','edit.note_label':'Note',
       'lightmeter.close':'✕ Close','lightmeter.subtitle':'Real-time camera light measurement','lightmeter.stage_target':'Stage target: ',
       'lightmeter.apply':'Apply to PPFD','lightmeter.retry':'Retry',
+      'lm.source':'Source','lm.calib':'Calib ×','lm.reset':'Reset','lm.accuracy':'Accuracy depends on your camera. Compare against Photone readings to calibrate the correction factor.',
       'stage.set_date':'+ Set start date',
       'stage.clone':'Clone','stage.veg':'Veg','stage.flower':'Flower','stage.dry':'Dry','stage.harvest':'Harvest',
       'yield.label':'🏆 Yield','yield.unit':'g (dry weight)',
