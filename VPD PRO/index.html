@@ -1798,7 +1798,7 @@
         dotColor = state === 'ok' ? 'var(--ok)' : state === 'warning' ? '#ff9500' : 'var(--danger)';
       }
       const stageLbl = tr('stage.' + t.stage) || t.stage || '';
-      // テント番号だけ抽出 (例 "Tent 3" → "T3", "MyTent" → そのまま短縮)
+      // テント番号だけ抽出 (例 "テント3"→"T3", "Tent 3"→"T3", その他→先頭3文字)
       const nameMatch = t.name.match(/(\d+)$/);
       const shortName = nameMatch ? 'T' + nameMatch[1] : t.name.slice(0, 3);
       btn.innerHTML = `<div class="tent-btn-bar" style="background:${dotColor};"></div>
@@ -1837,7 +1837,7 @@
     if (tents.length >= MAX_TENTS) return;
     const id = Date.now();
     const num = tents.length + 1;
-    const t = defaultTent(id, `Tent ${num}`);
+    const t = defaultTent(id, `テント${num}`);
     await dbPut('tents', t);
     tents.push(t);
     buildTentBar();
@@ -3915,7 +3915,7 @@
           tents.push(t);
         }
         if (tents.length === 0) {
-          const t = defaultTent(Date.now(), 'Tent 1');
+          const t = defaultTent(Date.now(), 'テント1');
           await dbPut('tents', t);
           tents.push(t);
         }
