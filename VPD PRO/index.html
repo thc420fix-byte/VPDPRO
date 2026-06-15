@@ -128,9 +128,8 @@
     }
     .tent-bar::-webkit-scrollbar { display: none; }
     .tent-btn {
-      flex: 1 0 auto;
+      flex: 1;
       min-width: 52px;
-      max-width: 80px;
       padding: 6px 6px 6px 10px;
       background: transparent;
       border: none;
@@ -158,6 +157,7 @@
       transition: opacity 0.18s;
     }
     .tent-btn.solo { max-width: none; }
+    .tent-btn.few  { max-width: none; }
     .tent-btn.active {
       background: rgba(255,255,255,0.10);
       color: rgba(255,255,255,0.92);
@@ -1785,7 +1785,7 @@
     tents.forEach((t, i) => {
       const btn = document.createElement('div');
       const isActive = i === currentTent;
-      btn.className = 'tent-btn' + (isActive ? ' active' : '') + (tents.length === 1 ? ' solo' : '');
+      btn.className = 'tent-btn' + (isActive ? ' active' : '') + (tents.length === 1 ? ' solo' : '') + (tents.length <= 2 ? ' few' : '');
 
       // VPD status dot
       let dotColor = 'rgba(255,255,255,0.15)';
@@ -1799,7 +1799,7 @@
       }
       const stageLbl = tr('stage.' + t.stage) || t.stage || '';
       const nameMatch = t.name.match(/(\d+)$/);
-      const shortName = nameMatch ? 'T' + nameMatch[1] : t.name.slice(0, 3);
+      const shortName = nameMatch ? nameMatch[1] : t.name.slice(0, 3);
       const labelColor = isActive ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.35)';
       const stageColor = isActive ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.22)';
       btn.innerHTML = `<div class="tent-btn-bar" style="background:${dotColor};opacity:${isActive ? '1' : '0.6'};"></div>
