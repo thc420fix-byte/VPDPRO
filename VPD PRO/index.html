@@ -118,31 +118,31 @@
       display: flex;
       margin-bottom: 6px;
       margin-right: 46px;
-      background: var(--surface2);
-      border-radius: 10px;
+      background: rgba(0,0,0,0.30);
+      border-radius: 13px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      padding: 3px;
+      padding: 4px;
       gap: 2px;
     }
     .tent-bar::-webkit-scrollbar { display: none; }
     .tent-btn {
       flex: 1 0 auto;
-      min-width: 48px;
-      max-width: 72px;
-      padding: 5px 4px 5px 8px;
+      min-width: 52px;
+      max-width: 80px;
+      padding: 6px 6px 6px 10px;
       background: transparent;
       border: none;
-      color: var(--text2);
+      color: rgba(255,255,255,0.35);
       font-size: 0.74rem;
       font-weight: 600;
       text-align: left;
       cursor: pointer;
       white-space: nowrap;
       font-family: inherit;
-      border-radius: 7px;
-      transition: background 0.15s, color 0.15s;
+      border-radius: 9px;
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s;
       display: flex;
       align-items: center;
       justify-content: flex-start;
@@ -151,18 +151,18 @@
     }
     .tent-btn-bar {
       position: absolute;
-      left: 0; top: 6px; bottom: 6px;
+      left: 0; top: 7px; bottom: 7px;
       width: 3px;
       border-radius: 2px;
       flex-shrink: 0;
+      transition: opacity 0.18s;
     }
     .tent-btn.solo { max-width: none; }
-    .tent-btn:first-child { border-radius: 8px; }
-    .tent-btn:last-child  { border-radius: 8px; }
     .tent-btn.active {
-      background: var(--surface);
-      color: var(--accent);
+      background: rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.92);
       font-weight: 700;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.35), inset 0 0.5px 0 rgba(255,255,255,0.08);
     }
     /* タブ（hidden — bottom nav に置換） */
     .tabs { display: none; }
@@ -1784,8 +1784,8 @@
     bar.innerHTML = '';
     tents.forEach((t, i) => {
       const btn = document.createElement('div');
-      btn.className = 'tent-btn' + (i === currentTent ? ' active' : '') + (tents.length === 1 ? ' solo' : '');
-      if (i > 0) btn.style.borderLeft = '1px solid var(--border)';
+      const isActive = i === currentTent;
+      btn.className = 'tent-btn' + (isActive ? ' active' : '') + (tents.length === 1 ? ' solo' : '');
 
       // VPD status dot
       let dotColor = 'rgba(255,255,255,0.15)';
@@ -1798,13 +1798,14 @@
         dotColor = state === 'ok' ? 'var(--ok)' : state === 'warning' ? '#ff9500' : 'var(--danger)';
       }
       const stageLbl = tr('stage.' + t.stage) || t.stage || '';
-      // テント番号だけ抽出 (例 "テント3"→"T3", "Tent 3"→"T3", その他→先頭3文字)
       const nameMatch = t.name.match(/(\d+)$/);
       const shortName = nameMatch ? 'T' + nameMatch[1] : t.name.slice(0, 3);
-      btn.innerHTML = `<div class="tent-btn-bar" style="background:${dotColor};"></div>
-      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;pointer-events:none;padding-left:2px;">
-        <span style="font-size:0.78rem;font-weight:700;line-height:1;">${esc(shortName)}</span>
-        <span style="font-size:0.56rem;opacity:0.5;font-weight:500;line-height:1;">${stageLbl}</span>
+      const labelColor = isActive ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.35)';
+      const stageColor = isActive ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.22)';
+      btn.innerHTML = `<div class="tent-btn-bar" style="background:${dotColor};opacity:${isActive ? '1' : '0.6'};"></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;pointer-events:none;padding-left:2px;">
+        <span style="font-size:0.8rem;font-weight:700;line-height:1;color:${labelColor};">${esc(shortName)}</span>
+        <span style="font-size:0.58rem;font-weight:500;line-height:1;color:${stageColor};">${stageLbl}</span>
       </div>`;
 
       // Long-press → menu / tap → select
@@ -1822,7 +1823,7 @@
     if (tents.length < MAX_TENTS) {
       const addBtn = document.createElement('div');
       addBtn.className = 'tent-btn';
-      addBtn.style.cssText = 'flex:0 0 36px;font-size:1rem;color:var(--accent);display:flex;align-items:center;justify-content:center;border-left:1px solid var(--border);padding:7px 4px;';
+      addBtn.style.cssText = 'flex:0 0 32px;font-size:1.1rem;font-weight:300;color:rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;padding:4px;';
       addBtn.textContent = '+';
       addBtn.onclick = addTent;
       bar.appendChild(addBtn);
