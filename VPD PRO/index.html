@@ -1305,7 +1305,7 @@
     <textarea id="renameInput" maxlength="24" rows="2" style="width:100%;font-size:1.1rem;background:transparent;color:var(--accent);border:none;border-bottom:1px solid var(--accent);outline:none;padding:4px 0;box-sizing:border-box;resize:none;font-family:inherit;line-height:1.3;"></textarea>
     <div style="display:flex;gap:8px;margin-top:16px;">
       <button onclick="confirmRename()" style="flex:2;padding:10px;background:var(--accent);color:#000;border:none;border-radius:6px;font-weight:700;font-size:0.9rem;cursor:pointer;">OK</button>
-      <button onclick="closeRenameModal()" style="flex:1;padding:10px;background:transparent;color:var(--text);border:1px solid var(--muted);border-radius:6px;font-size:0.9rem;cursor:pointer;">Cancel</button>
+      <button onclick="closeRenameModal()" style="flex:1;padding:10px;background:transparent;color:var(--text);border:1px solid var(--muted);border-radius:6px;font-size:0.9rem;cursor:pointer;" data-i18n="btn.cancel">Cancel</button>
       <button onclick="deleteTent(_renameTentIndex)" style="flex:1;padding:10px;background:transparent;color:rgba(255,100,100,0.9);border:1px solid rgba(255,100,100,0.6);border-radius:6px;font-size:0.9rem;cursor:pointer;">🗑</button>
     </div>
   </div>
@@ -1318,7 +1318,7 @@
     <input id="renameFertilizerInput" type="text" maxlength="24" style="width:100%;font-size:1.1rem;background:transparent;color:var(--accent);border:none;border-bottom:1px solid var(--accent);outline:none;padding:6px 0 8px 0;box-sizing:border-box;font-family:inherit;">
     <div style="display:flex;gap:8px;margin-top:20px;">
       <button onclick="confirmRenameFertilizer()" style="flex:2;padding:10px;background:var(--accent);color:#000;border:none;border-radius:6px;font-weight:700;font-size:0.9rem;cursor:pointer;">OK</button>
-      <button onclick="closeRenameFertilizerModal()" style="flex:1;padding:10px;background:transparent;color:var(--text);border:1px solid var(--muted);border-radius:6px;font-size:0.9rem;cursor:pointer;">Cancel</button>
+      <button onclick="closeRenameFertilizerModal()" style="flex:1;padding:10px;background:transparent;color:var(--text);border:1px solid var(--muted);border-radius:6px;font-size:0.9rem;cursor:pointer;" data-i18n="btn.cancel">Cancel</button>
       <button onclick="removeFertilizer(_renameFertilizerIndex);closeRenameFertilizerModal();" style="padding:10px 12px;background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:1rem;cursor:pointer;">🗑</button>
     </div>
   </div>
@@ -1331,7 +1331,7 @@
     <div id="editLogBody"></div>
     <div style="display:flex;gap:8px;margin-top:16px;">
       <button onclick="confirmEditLog()" style="flex:2;padding:10px;background:var(--accent);color:#000;border:none;border-radius:6px;font-weight:700;font-size:0.9rem;cursor:pointer;">OK</button>
-      <button onclick="closeEditLogModal()" style="flex:1;padding:10px;background:transparent;color:var(--text);border:1px solid var(--muted);border-radius:6px;font-size:0.9rem;cursor:pointer;">Cancel</button>
+      <button onclick="closeEditLogModal()" style="flex:1;padding:10px;background:transparent;color:var(--text);border:1px solid var(--muted);border-radius:6px;font-size:0.9rem;cursor:pointer;" data-i18n="btn.cancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -1449,7 +1449,7 @@
       'settings.ai_section':'AI (ローカル LLM)','settings.lm_url':'LM Studio URL','settings.test_btn':'テスト','settings.ai_advice':'AI アドバイス',
       'settings.pin_fail_action':'PIN 失敗時の動作','settings.lock_24h':'24時間ロック','settings.wipe_all':'全データを消去',
       'settings.change_pin':'PIN を変更',
-      'ai.advice_btn':'✦ AI アドバイス','ai.review_btn':'✦ AI レビュー','spot.save_btn':'📌 保存','chat.send_btn':'送信',
+      'ai.advice_btn':'✦ AI アドバイス','ai.review_btn':'✦ AI レビュー','spot.save_btn':'📌 保存','chat.send_btn':'送信','btn.cancel':'キャンセル',
       'btn.save':'保存',
       'app.subtitle':'植物環境モニター','lux.description':'Photoneや照度計のlux値を貼るだけで換算。係数は光源別の目安。',
     },
@@ -1528,7 +1528,7 @@
       'settings.ai_section':'AI (Local LLM)','settings.lm_url':'LM Studio URL','settings.test_btn':'Test','settings.ai_advice':'AI Advice',
       'settings.pin_fail_action':'PIN Fail Action','settings.lock_24h':'Lock 24h','settings.wipe_all':'Wipe All Data',
       'settings.change_pin':'Change PIN',
-      'ai.advice_btn':'✦ AI Advice','ai.review_btn':'✦ AI Review','spot.save_btn':'📌 Save','chat.send_btn':'Send',
+      'ai.advice_btn':'✦ AI Advice','ai.review_btn':'✦ AI Review','spot.save_btn':'📌 Save','chat.send_btn':'Send','btn.cancel':'Cancel',
       'btn.save':'Save',
       'app.subtitle':'Grow Environment Monitor','lux.description':'Paste a lux reading from Photone or a light meter. Conversion factors are per light source.',
     }
