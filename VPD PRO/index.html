@@ -1204,7 +1204,7 @@
     </div>
     <!-- AI Feeding Review Panel -->
     <div id="aiFeedingPanel" style="display:none;padding:0 8px 4px;">
-      <button onclick="runAiFeeding()" class="ai-action-btn">✦ AI レビュー</button>
+      <button onclick="runAiFeeding()" class="ai-action-btn" data-i18n="ai.review_btn">✦ AI レビュー</button>
       <div id="aiFeedingResult" class="ai-result-box" style="display:none;"></div>
     </div>
     <!-- Feeding Sweet Spot Bar -->
@@ -1449,7 +1449,7 @@
       'settings.ai_section':'AI (ローカル LLM)','settings.lm_url':'LM Studio URL','settings.test_btn':'テスト','settings.ai_advice':'AI アドバイス',
       'settings.pin_fail_action':'PIN 失敗時の動作','settings.lock_24h':'24時間ロック','settings.wipe_all':'全データを消去',
       'settings.change_pin':'PIN を変更',
-      'ai.advice_btn':'✦ AI アドバイス','spot.save_btn':'📌 保存','chat.send_btn':'送信',
+      'ai.advice_btn':'✦ AI アドバイス','ai.review_btn':'✦ AI レビュー','spot.save_btn':'📌 保存','chat.send_btn':'送信',
       'btn.save':'保存',
       'app.subtitle':'植物環境モニター','lux.description':'Photoneや照度計のlux値を貼るだけで換算。係数は光源別の目安。',
     },
@@ -1528,7 +1528,7 @@
       'settings.ai_section':'AI (Local LLM)','settings.lm_url':'LM Studio URL','settings.test_btn':'Test','settings.ai_advice':'AI Advice',
       'settings.pin_fail_action':'PIN Fail Action','settings.lock_24h':'Lock 24h','settings.wipe_all':'Wipe All Data',
       'settings.change_pin':'Change PIN',
-      'ai.advice_btn':'✦ AI Advice','spot.save_btn':'📌 Save','chat.send_btn':'Send',
+      'ai.advice_btn':'✦ AI Advice','ai.review_btn':'✦ AI Review','spot.save_btn':'📌 Save','chat.send_btn':'Send',
       'btn.save':'Save',
       'app.subtitle':'Grow Environment Monitor','lux.description':'Paste a lux reading from Photone or a light meter. Conversion factors are per light source.',
     }
@@ -5119,6 +5119,7 @@ function classifyVpd(vpd, lo, hi) {
     dbGetAll('logs').then(logs => renderStageTimeline(logs));
     const rl = document.getElementById('reminderLabel');
     if (rl) rl.textContent = tr('reminder.label');
+    updateFeedingHeader();
   }
   function openSettings() {
     document.getElementById('settingsModal').classList.add('open');
