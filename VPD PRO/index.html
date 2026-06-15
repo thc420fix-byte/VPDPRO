@@ -117,6 +117,7 @@
     .tent-bar {
       display: flex;
       margin-bottom: 6px;
+      margin-right: 46px;
       background: var(--surface2);
       border-radius: 10px;
       overflow-x: auto;
@@ -1816,6 +1817,10 @@
       addBtn.onclick = addTent;
       bar.appendChild(addBtn);
     }
+    // ⚙️ボタンと重ならないようにスペーサー
+    const spacer = document.createElement('div');
+    spacer.style.cssText = 'flex-shrink:0;min-width:46px;';
+    bar.appendChild(spacer);
   }
 
   async function addTent() {
