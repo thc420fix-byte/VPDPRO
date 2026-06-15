@@ -4864,7 +4864,7 @@ function classifyVpd(vpd, lo, hi) {
     // First-run hint
     if (!localStorage.getItem('vpdFirstRunSeen')) {
       localStorage.setItem('vpdFirstRunSeen', '1');
-      setTimeout(() => showToast(appLang === 'en' ? '👋 Select stage → enter values → hold Save' : '👋 ステージ選択 → 値を入力 → 長押し Save'), 800);
+      setTimeout(() => showToast(appLang === 'en' ? '👋 Select stage → enter values → hold Save' : '👋 ステージ選択 → 値を入力 → 長押し保存'), 800);
     }
   }
 
