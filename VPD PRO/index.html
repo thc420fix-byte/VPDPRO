@@ -1095,7 +1095,7 @@
     <!-- Header: Feeding Log + Theory / My Spot -->
     <div style="display:flex;align-items:center;margin-bottom:8px;">
       <span style="flex:1;font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;" data-i18n="feed.title">Nutrient Log</span>
-      <div style="flex-shrink:0;display:flex;background:var(--surface2);border-radius:16px;overflow:hidden;">
+      <div style="flex-shrink:0;display:none;">
         <div id="feedModeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')" data-i18n="mode.theory">Theory</div>
         <div id="feedModeMySpot" class="mode-pill" onclick="setSpotMode('myspot')" data-i18n="mode.myspot">My Spot</div>
       </div>
@@ -1194,7 +1194,7 @@
     </div>
     <!-- AI Feeding Review Panel -->
     <div id="aiFeedingPanel" style="display:none;padding:0 8px 4px;">
-      <button onclick="runAiFeeding()" class="ai-action-btn">✦ AI Review</button>
+      <button onclick="runAiFeeding()" class="ai-action-btn">✦ AI レビュー</button>
       <div id="aiFeedingResult" class="ai-result-box" style="display:none;"></div>
     </div>
     <!-- Feeding Sweet Spot Bar -->
