@@ -3283,6 +3283,9 @@
     const cell = (t, i) => `<div style="font-size:0.7rem;color:var(--text);text-align:center;white-space:nowrap;border-left:${i===0?'none':vline};padding:0 2px;min-width:0;">${t}</div>`;
     const fv = (n) => Number.isInteger(n) ? String(n) : n.toFixed(1);
     const tempUnit = useFahrenheit ? '°F' : '°C';
+    // Sync medium button label on language change
+    const _medBtn = document.getElementById('refMediumBtn');
+    if (_medBtn) _medBtn.textContent = refMedium === 'hydro' ? tr('ref.hydro') : tr('ref.soil');
     // Update water temp note to match current unit
     const _wtNote = document.getElementById('waterTempNote');
     if (_wtNote) {
