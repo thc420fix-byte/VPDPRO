@@ -5123,6 +5123,7 @@ function classifyVpd(vpd, lo, hi) {
     renderVpdSparkline();
     dbGetAll('logs').then(logs => renderStageTimeline(logs));
     updateStageSelector(tents[currentTent].stage);
+    _updateDayNightBtn(tents[currentTent].dayNight || 'day');
     const rl = document.getElementById('reminderLabel');
     if (rl) rl.textContent = tr('reminder.label');
     updateFeedingHeader();
