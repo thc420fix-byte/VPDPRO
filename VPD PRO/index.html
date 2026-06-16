@@ -3651,7 +3651,7 @@
                   <div style="font-size:0.6rem;color:var(--accent);font-weight:600;">${esc(stage)}</div>
                   <div style="font-size:0.55rem;color:var(--muted);">${esc(date)}</div>
                 </div>
-                <button onclick="deleteLogEntry(${l.id})" style="background:none;border:none;color:var(--muted);font-size:0.9rem;cursor:pointer;padding:2px 4px;line-height:1;" title="削除">✕</button>
+                <button onclick="deleteLogEntry(${l.id})" style="background:none;border:none;color:var(--muted);font-size:0.9rem;cursor:pointer;padding:2px 4px;line-height:1;" title="${tr('confirm.ok_btn')}">✕</button>
               </div>
             </div>`;
           }).join('')}
