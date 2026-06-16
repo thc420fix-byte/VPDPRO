@@ -3131,7 +3131,7 @@
     } else {
       badge.classList.add('status-ok');
       badge.textContent = tr('vpd.ok');
-      recEl.innerHTML = `<span style="color:var(--ok);font-size:0.72rem;">${stages[t.stage].name}${tr('vpd.rec_ok')}</span>`;
+      recEl.innerHTML = `<span style="color:var(--ok);font-size:0.72rem;">${tr('stage.'+t.stage)||stages[t.stage].name}${tr('vpd.rec_ok')}</span>`;
       if (airEl) airEl.style.color = 'var(--accent)';
     }
 
@@ -3513,7 +3513,7 @@
     const dispTemp = useFahrenheit ? (log.temp * 9/5 + 32).toFixed(1) + '°F' : log.temp + '°C';
     showSavePopup(appLang === 'en' ? 'Feeding Saved ✅' : '給水を記録しました ✅', [
       `📅 ${log.timestamp}`,
-      stages[log.stage] ? `🌱 ${stages[log.stage].name}` : '',
+      stages[log.stage] ? `🌱 ${tr('stage.'+log.stage)||stages[log.stage].name}` : '',
       `🌡 ${tr('stepper.temp')}: ${dispTemp}　💧 ${tr('stepper.humidity')}: ${log.hum}%　VPD: ${log.vpd} kPa`,
       log.ph ? `💧 pH: ${log.ph}` : '',
       log.waterTemp != null ? `🌡 ${tr('stepper.water')}: ${useFahrenheit ? (log.waterTemp * 9/5 + 32).toFixed(1) + '°F' : log.waterTemp + '°C'}` : '',
@@ -3635,7 +3635,7 @@
         <div style="display:flex;flex-direction:column;gap:6px;">
           ${recent.map(l => {
             const date = l.timestamp ? l.timestamp.replace(/\d{4}\//, '').replace(/:\d{2}$/, '') : '—';
-            const stage = stages[l.stage]?.name || l.stage || '—';
+            const stage = (stages[l.stage] ? tr('stage.'+l.stage)||stages[l.stage].name : l.stage) || '—';
             const parts = [];
             if (l.vpd != null) parts.push(`VPD <strong style="color:var(--accent)">${parseFloat(l.vpd).toFixed(2)}</strong>`);
             if (l.ph) parts.push(`pH <strong style="color:var(--text)">${l.ph}</strong>`);
