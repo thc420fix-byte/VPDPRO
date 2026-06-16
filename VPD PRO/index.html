@@ -881,7 +881,7 @@
       <div id="decoyPinDots" style="display:flex;gap:10px;margin:4px 0;"></div>
       <div id="decoyPinError" style="font-size:0.72rem;color:#ff453a;min-height:18px;text-align:center;"></div>
       <div id="decoyPinKeypad" style="display:grid;grid-template-columns:repeat(3,68px);gap:10px;"></div>
-      <div style="margin-top:4px;font-size:0.7rem;color:rgba(255,255,255,0.2);cursor:pointer;padding:6px 16px;" onclick="_hideDecoyPin()">キャンセル</div>
+      <div style="margin-top:4px;font-size:0.7rem;color:rgba(255,255,255,0.2);cursor:pointer;padding:6px 16px;" onclick="_hideDecoyPin()" data-i18n="btn.cancel">キャンセル</div>
     </div>
   </div>
 
@@ -892,12 +892,12 @@
       <div style="font-size:0.65rem;color:var(--text);opacity:0.7;line-height:1.5;margin-bottom:12px;" data-i18n="lux.description">Photoneや照度計のlux値を貼るだけで換算。係数は光源別の目安。</div>
       <input id="luxInput" type="text" inputmode="numeric" placeholder="lux" oninput="convertLux()" style="width:100%;box-sizing:border-box;padding:8px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-size:1.1rem;font-weight:700;text-align:center;outline:none;font-family:'Rajdhani',sans-serif;margin-bottom:8px;">
       <select id="luxSource" onchange="convertLux()" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8rem;outline:none;margin-bottom:10px;">
-        <option value="0.015" selected>LED フルスペクトラム</option>
+        <option value="0.015" selected>LED Full Spectrum</option>
         <option value="0.0122">HPS</option>
         <option value="0.0141">MH</option>
         <option value="0.0154">CMH</option>
-        <option value="0.0135">蛍光灯 / CFL</option>
-        <option value="0.0185">太陽光</option>
+        <option value="0.0135">Fluorescent / CFL</option>
+        <option value="0.0185">Sunlight</option>
       </select>
       <div style="text-align:center;font-size:0.85rem;color:var(--text);margin-bottom:14px;">→ <span id="luxResult" style="color:var(--accent);font-size:1.3rem;font-weight:700;font-family:'Rajdhani',sans-serif;">—</span> µmol/m²/s</div>
       <button style="width:100%;margin-bottom:8px;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.85rem;font-weight:700;cursor:pointer;" onclick="applyLuxResult()" data-i18n="lightmeter.apply">Apply to PPFD</button>
