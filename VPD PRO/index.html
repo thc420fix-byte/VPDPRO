@@ -5129,6 +5129,7 @@ function classifyVpd(vpd, lo, hi) {
     const rl = document.getElementById('reminderLabel');
     if (rl) rl.textContent = tr('reminder.label');
     updateFeedingHeader();
+    renderFertilizerTabs();
   }
   function openSettings() {
     document.getElementById('settingsModal').classList.add('open');
