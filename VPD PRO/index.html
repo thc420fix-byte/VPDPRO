@@ -1953,7 +1953,7 @@
       ph:       document.getElementById('phInput')?.value       ?? '',
       ec:       document.getElementById('ecInput')?.value       ?? '',
       runoffEc: document.getElementById('runoffEcInput')?.value ?? '',
-      waterTemp:document.getElementById('waterTempInput')?.value?? ''
+      waterTemp: (() => { const v = document.getElementById('waterTempInput')?.value?.trim() ?? ''; if (!v) return ''; const n = parseFloat(v); return isNaN(n) ? '' : String(useFahrenheit ? Math.round((n - 32) * 5/9 * 10) / 10 : n); })()
     };
     await dbPut('tents', t);
   }
@@ -1971,10 +1971,12 @@
     _setFeed('phInput',       lf.ph);
     _setFeed('ecInput',       lf.ec);
     _setFeed('runoffEcInput', lf.runoffEc);
-    _setFeed('waterTempInput',lf.waterTemp);
+    const _wtDisplay = lf.waterTemp !== undefined && lf.waterTemp !== '' && lf.waterTemp != null
+      ? String(useFahrenheit ? parseFloat((parseFloat(lf.waterTemp) * 9/5 + 32).toFixed(1)) : lf.waterTemp) : '';
+    _setFeed('waterTempInput', _wtDisplay);
     // modeInputCache もこのテントの値に同期
     modeInputCache[spotMode] = {
-      ph: lf.ph ?? '', ec: lf.ec ?? '', runoffEc: lf.runoffEc ?? '', waterTemp: lf.waterTemp ?? ''
+      ph: lf.ph ?? '', ec: lf.ec ?? '', runoffEc: lf.runoffEc ?? '', waterTemp: _wtDisplay
     };
     document.getElementById('tempVal').value = useFahrenheit ? Math.round(t.temp * 9/5 + 32) : Math.round(t.temp);
     document.getElementById('humVal').value  = Math.round(t.hum);
