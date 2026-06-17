@@ -2,3 +2,6 @@
 .DS_Store
 **/.DS_Store
 *.textClipping
+index_backup.html
+**/index_backup.html
+cors-proxy.py
