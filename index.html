@@ -414,8 +414,7 @@
     .vpd-label {
       font-size: 0.65rem;
       color: rgba(255,255,255,0.45);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      letter-spacing: 0.04em;
       font-weight: 600;
       margin-bottom: 2px;
     }
@@ -1759,7 +1758,7 @@
   function svp(t) { return 0.6108 * Math.exp((17.27 * t) / (t + 237.3)); }
   function calcVPD(t, rh) { return svp(t) * (1 - rh / 100); }
   function calcLeafVPD(t, rh, offset) { return svp(t + offset) - svp(t) * (rh / 100); }
-  function tgtHum(t, vpd) { return Math.round((1 - vpd / svp(t)) * 100); }
+  function tgtHum(t, vpd) { return Math.min(100, Math.max(0, Math.round((1 - vpd / svp(t)) * 100))); }
 
   /* === テント切替 === */
   function showTentMenu(i, anchor) {
@@ -1885,6 +1884,7 @@
     renderFeedRecentLogs();
     renderVpdStats();
     renderVpdSparkline();
+    dbGetAll('logs').then(renderStageTimeline);
     showToast(appLang === 'en' ? '🗑 Tent deleted' : '🗑 テントを削除しました');
   }
 
@@ -1946,6 +1946,7 @@
 
   async function selectTent(i) {
     if (i === currentTent) return;
+    if (fertSaveTimer) { clearTimeout(fertSaveTimer); fertSaveTimer = null; }
     await saveCurrentTentState();
     currentTent = i;
     loadTentToUI(i);
@@ -2563,7 +2564,7 @@
 
     // タブコンテンツ
     const f = list[currentFertTab];
-    const ratio = (f.waterL != null && f.waterL !== '' && f.amountMl != null && f.amountMl !== '') ? (f.amountMl / f.waterL).toFixed(2) : '—';
+    const ratio = (f.waterL != null && f.waterL > 0 && f.amountMl != null && f.amountMl !== '') ? (f.amountMl / f.waterL).toFixed(2) : '—';
     content.style.display = 'block';
     content.innerHTML = `
       <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);border-radius:10px;padding:10px 12px;position:relative;">
@@ -2572,7 +2573,7 @@
           <div>
             <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">${tr('fert.water_lbl')}</div>
             <div style="display:flex;align-items:baseline;gap:3px;">
-              <input value="${f.waterL || ''}" placeholder="0" type="number" min="0" step="0.5" oninput="updateFertilizer(${currentFertTab},'waterL',this.value)"
+              <input value="${f.waterL ?? ''}" placeholder="0" type="number" min="0" step="0.5" oninput="updateFertilizer(${currentFertTab},'waterL',this.value)"
                 style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.18);color:var(--accent);font-size:0.95rem;outline:none;text-align:right;padding:3px 0;">
               <span style="font-size:0.65rem;color:var(--text);white-space:nowrap;">L</span>
             </div>
@@ -2580,7 +2581,7 @@
           <div>
             <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">${tr('fert.amount_lbl')}</div>
             <div style="display:flex;align-items:baseline;gap:3px;">
-              <input value="${f.amountMl || ''}" placeholder="0" type="number" min="0" step="0.5" oninput="updateFertilizer(${currentFertTab},'amountMl',this.value)"
+              <input value="${f.amountMl ?? ''}" placeholder="0" type="number" min="0" step="0.5" oninput="updateFertilizer(${currentFertTab},'amountMl',this.value)"
                 style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.18);color:var(--accent);font-size:0.95rem;outline:none;text-align:right;padding:3px 0;">
               <span style="font-size:0.65rem;color:var(--text);white-space:nowrap;">ml</span>
             </div>
@@ -2630,7 +2631,7 @@
   function updateFertilizer(idx, key, val) {
     const t = tents[currentTent];
     if (!t.fertilizerList || !t.fertilizerList[idx]) return;
-    t.fertilizerList[idx][key] = key === 'name' ? val : parseFloat(val) || '';
+    t.fertilizerList[idx][key] = key === 'name' ? val : (val === '' || val === null ? null : isNaN(parseFloat(val)) ? null : parseFloat(val));
     clearTimeout(fertSaveTimer);
     fertSaveTimer = setTimeout(async () => {
       await dbPut('tents', t);
@@ -3114,8 +3115,8 @@
     const hum  = t.hum;
     const airV = calcVPD(temp, hum);
     const leafV= calcLeafVPD(temp, hum, t.leafOffset);
-    document.getElementById('vpdAir').textContent  = airV.toFixed(2);
-    document.getElementById('vpdLeaf').textContent = leafV.toFixed(2);
+    document.getElementById('vpdAir').textContent  = isNaN(airV)  ? '--' : airV.toFixed(2);
+    document.getElementById('vpdLeaf').textContent = isNaN(leafV) ? '--' : leafV.toFixed(2);
     document.getElementById('leafBlock').style.opacity = t.leaf ? '1' : '0.6';
     const range = t.co2 ? stages[t.stage].co2 : stages[t.stage].vpd;
     const lo = range[0];
@@ -3193,7 +3194,9 @@
     // 推奨湿度
     const targetHumValue = tgtHum(temp, mid);
     const humidityDiff = targetHumValue - hum;
-    const humiditySign = humidityDiff >= 0 ? '+' : '';    document.getElementById('vpdDiff').textContent = `${tr('vpd.diff')} ${diffSign}${diff.toFixed(2)} kPa ${tr('vpd.hum_adj')} ${humiditySign}${Math.round(humidityDiff)}%`;    document.getElementById('targetHum').textContent = targetHumValue;
+    const humiditySign = humidityDiff >= 0 ? '+' : '';
+    document.getElementById('vpdDiff').textContent = `${tr('vpd.diff')} ${diffSign}${diff.toFixed(2)} kPa ${tr('vpd.hum_adj')} ${humiditySign}${Math.round(humidityDiff)}%`;
+    document.getElementById('targetHum').textContent = targetHumValue;
     const ppfd = Number(t.ppfd || 0);
     const effectivePpfd = t.dayNight === 'night' ? 0 : ppfd;
     const ppfdRange = getPpfdRange(t.stage, t.co2);
@@ -3319,7 +3322,7 @@
     html += `<div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr 1.1fr 1.4fr 1.3fr 1fr;padding:4px 0 8px;border-bottom:1px solid rgba(255,255,255,0.2);">
       <span></span>${hdrs.map((t,i) => hdr(t,i)).join('')}
     </div>`;
-    Object.keys(stages).forEach((key, ri) => {
+    Object.keys(stages).filter(k => k !== 'harvest').forEach((key, ri) => {
       const s = stages[key];
       const isDry = key === 'dry';
       const isHarvest = key === 'harvest';
@@ -3468,6 +3471,7 @@
         pendingPhoto = compressed;
       }
     };
+    reader.onerror = () => showToast(appLang === 'en' ? '⚠️ Failed to read photo' : '⚠️ 写真の読み込みに失敗しました');
     reader.readAsDataURL(file);
     e.target.value = '';
   }
@@ -3529,7 +3533,7 @@
     await dbPut('tents', t);
     saveModeInputs(); // modeInputCache を最新値に同期
     const feedNoteEl = document.getElementById('feedingNoteInput');
-    if (feedNoteEl) feedNoteEl.value = '';
+    if (feedNoteEl) { feedNoteEl.value = ''; const fc = document.getElementById('feedingNoteCount'); if (fc) fc.textContent = '100'; }
     clearPhoto();
     buildTentBar();
     renderFeedRecentLogs();
@@ -3720,7 +3724,7 @@
       const remaining = at - Date.now();
       const h = Math.floor(remaining / 3600000);
       const m = Math.floor((remaining % 3600000) / 60000);
-      if (status) status.textContent = `⏰ ${h}h ${m}m ${tr('reminder.countdown')}`;
+      if (status) status.textContent = h > 0 ? `⏰ ${h}h ${m}m ${tr('reminder.countdown')}` : `⏰ ${m}m ${tr('reminder.countdown')}`;
       if (cancelBtn) cancelBtn.style.display = 'block';
       if (calBtn) calBtn.style.display = 'block';
     } else {
@@ -3781,6 +3785,8 @@
     }
     updateReminderUI();
   }
+  // カウントダウン表示を1分ごとに自動更新
+  setInterval(updateReminderUI, 60000);
 
   function adjustRunoffEc(delta) {
     const input = document.getElementById('runoffEcInput');
@@ -3847,10 +3853,13 @@
     const csv = '﻿' + cols.join(',') + '\n' + rows.join('\n'); // BOM付き=Excel日本語対応
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    const _csvUrl = URL.createObjectURL(blob);
+    a.href = _csvUrl;
     a.download = `vpd_logs_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(a.href);
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(_csvUrl), 1000);
     showToast(appLang === 'en' ? `📊 ${logs.length} entries exported to CSV` : `📊 ${logs.length}件をCSV出力`);
   }
 
@@ -3860,6 +3869,7 @@
     renderFeedRecentLogs();
     renderVpdStats();
     renderVpdSparkline();
+    buildTentBar();
     dbGetAll('logs').then(renderStageTimeline);
   }
 
@@ -4344,6 +4354,7 @@ function classifyVpd(vpd, lo, hi) {
       const ic = document.getElementById('sicon-' + key);
       if (el) { el.style.display = ''; if (ic) ic.textContent = '▼'; }
     });
+    buildTentBar();
     window.scrollTo(0, scrollY);
     showToast(appLang === 'en' ? '🗑 Log deleted' : '🗑 ログを削除しました');
   }
@@ -5236,9 +5247,9 @@ function classifyVpd(vpd, lo, hi) {
       : (appLang === 'en' ? 'Decoy screen disabled' : 'デコイ画面をOFFにしました'));
   }
   function loadDrySettings() {
-    stages.dry.temp = JSON.parse(localStorage.getItem('dryTemp') || '[15,16]');
-    stages.dry.hum  = JSON.parse(localStorage.getItem('dryHum')  || '[58,62]');
-    stages.dry.vpd  = JSON.parse(localStorage.getItem('dryVpd')  || '[0.6,0.8]');
+    try { stages.dry.temp = JSON.parse(localStorage.getItem('dryTemp') || '[15,16]'); } catch(_) { stages.dry.temp = [15,16]; }
+    try { stages.dry.hum  = JSON.parse(localStorage.getItem('dryHum')  || '[58,62]'); } catch(_) { stages.dry.hum  = [58,62]; }
+    try { stages.dry.vpd  = JSON.parse(localStorage.getItem('dryVpd')  || '[0.6,0.8]'); } catch(_) { stages.dry.vpd  = [0.6,0.8]; }
   }
   function closeSettings(e) {
     if (e.target === document.getElementById('settingsModal')) {
@@ -5422,12 +5433,14 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
     const modal = document.getElementById('aiChatModal');
     if (!modal) return;
     modal.style.display = 'flex';
-    if (_aiChatHistory.length === 0) {
-      const _sysLang = appLang === 'en' ? 'Always respond in English.' : 'Always respond in Japanese.';
-      const _greeting = appLang === 'en' ? 'Hello! Ask me anything about VPD, nutrients, grow stages, or plant health.' : 'こんにちは！VPD・栄養素・栽培ステージ・植物の健康について何でも聞いてください。';
-      _aiChatHistory.push({ role: 'system', content: `You are a concise cannabis cultivation expert. ${_sysLang} Answer questions about VPD, nutrients, growing stages, and plant health. Keep answers under 150 words.` });
-      appendChatBubble('assistant', _greeting);
-    }
+    // 毎回履歴をリセットして新鮮な会話を開始
+    _aiChatHistory.length = 0;
+    const wrap = document.getElementById('aiChatMessages');
+    if (wrap) wrap.innerHTML = '';
+    const _sysLang = appLang === 'en' ? 'Always respond in English.' : 'Always respond in Japanese.';
+    const _greeting = appLang === 'en' ? 'Hello! Ask me anything about VPD, nutrients, grow stages, or plant health.' : 'こんにちは！VPD・栄養素・栽培ステージ・植物の健康について何でも聞いてください。';
+    _aiChatHistory.push({ role: 'system', content: `You are a concise cannabis cultivation expert. ${_sysLang} Answer questions about VPD, nutrients, growing stages, and plant health. Keep answers under 150 words.` });
+    appendChatBubble('assistant', _greeting);
     setTimeout(() => document.getElementById('aiChatInput').focus(), 100);
   }
 
@@ -5526,7 +5539,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
     tents[currentTent].logs = tents[currentTent].logs || [];
     tents[currentTent].logs.push(log.id);
     await dbPut('logs', log);
-    if (noteEl) noteEl.value = '';
+    if (noteEl) { noteEl.value = ''; const mc = document.getElementById('monitorNoteCount'); if (mc) mc.textContent = '100'; }
     buildTentBar();
     const airVpdNow = log.vpd.toFixed(2);
     renderVpdSparkline();
