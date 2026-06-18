@@ -2378,7 +2378,7 @@
   }
   async function applyLeafOffset(val) {
     const t = tents[currentTent];
-    let v = parseFloat(val);
+    let v = parseFloat(String(val).replace(',', '.'));
     if (isNaN(v)) v = -2.0;
     const c = useFahrenheit ? v * 5/9 : v;
     t.leafOffset = Math.max(-10, Math.min(10, c));
@@ -3683,7 +3683,7 @@
       const tent = tents[currentTent];
       if (!tent) { el.innerHTML = ''; return; }
       const recent = all
-        .filter(l => l.tentId === tent.id && (l.ph || l.ec || l.waterTemp))
+        .filter(l => l.tentId === tent.id && (Number(l.cycle)||1) === (Number(tent.cycle)||1) && (l.ph || l.ec || l.waterTemp))
         .sort((a, b) => (b.ts || 0) - (a.ts || 0))
         .slice(0, 5);
       if (!recent.length) { el.innerHTML = ''; return; }
@@ -4503,9 +4503,10 @@ function classifyVpd(vpd, lo, hi) {
       if (document.getElementById('el_co2val'))  log.co2val  = num('el_co2val')  ?? log.co2val;
       if (log.temp != null && log.hum != null)   log.vpd     = parseFloat(calcVPD(log.temp, log.hum).toFixed(3));
     } else {
-      if (document.getElementById('el_ph'))       log.ph       = vv('el_ph')       || null;
-      if (document.getElementById('el_ec'))       log.ec       = vv('el_ec')       || null;
-      if (document.getElementById('el_runoffEc'))  log.runoffEc  = vv('el_runoffEc')  || null;
+      const _nv = fid => { const s = vv(fid).replace(',','.'); const n = parseFloat(s); return isNaN(n) ? null : n; };
+      if (document.getElementById('el_ph'))       { const v = _nv('el_ph');       log.ph       = (v != null && v >= 3.5 && v <= 9.0) ? v : (log.ph ?? null); }
+      if (document.getElementById('el_ec'))       { const v = _nv('el_ec');       log.ec       = (v != null && v >= 0  && v <= 10)  ? v : (log.ec ?? null); }
+      if (document.getElementById('el_runoffEc'))  { const v = _nv('el_runoffEc'); log.runoffEc  = (v != null && v >= 0  && v <= 10)  ? v : (log.runoffEc ?? null); }
       if (document.getElementById('el_waterTemp')) {
         const rawWt = num('el_waterTemp');
         log.waterTemp = rawWt != null ? (useFahrenheit ? Math.round((rawWt - 32) * 5/9 * 10) / 10 : rawWt) : null;
