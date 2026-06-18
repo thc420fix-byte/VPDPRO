@@ -1300,14 +1300,16 @@
 </div>
 
 <!-- テント名変更モーダル -->
-<div id="renameModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:flex-end;justify-content:center;padding-bottom:18%;">
-  <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:12px;padding:24px;width:80%;max-width:320px;">
-    <div style="font-size:0.9rem;color:var(--text);margin-bottom:24px;" data-i18n="rename.tent">Rename Tent</div>
-    <textarea id="renameInput" maxlength="24" rows="2" style="width:100%;font-size:1.1rem;background:transparent;color:var(--accent);border:none;border-bottom:1px solid var(--accent);outline:none;padding:4px 0;box-sizing:border-box;resize:none;font-family:inherit;line-height:1.3;"></textarea>
-    <div style="display:flex;gap:8px;margin-top:16px;">
-      <button onclick="confirmRename()" style="flex:2;padding:10px;background:var(--accent);color:#000;border:none;border-radius:6px;font-weight:700;font-size:0.9rem;cursor:pointer;">OK</button>
-      <button onclick="closeRenameModal()" style="flex:1;padding:10px;background:transparent;color:var(--text);border:1px solid var(--muted);border-radius:6px;font-size:0.9rem;cursor:pointer;" data-i18n="btn.cancel">Cancel</button>
-      <button onclick="deleteTent(_renameTentIndex)" style="flex:1;padding:10px;background:transparent;color:rgba(255,100,100,0.9);border:1px solid rgba(255,100,100,0.6);border-radius:6px;font-size:0.9rem;cursor:pointer;">🗑</button>
+<div id="renameModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:var(--surface2);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px 24px 20px;width:82%;max-width:300px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+    <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;" data-i18n="rename.tent">Rename Tent</div>
+    <input id="renameInput" type="text" maxlength="24" autocomplete="off" style="display:block;width:100%;font-size:1.3rem;font-weight:700;background:transparent;color:var(--accent);border:none;border-bottom:2px solid var(--accent);outline:none;padding:0 0 8px 0;box-sizing:border-box;font-family:inherit;line-height:1;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;gap:8px;">
+      <button onclick="deleteTent(_renameTentIndex)" style="padding:9px 13px;background:transparent;color:rgba(255,80,80,0.7);border:1px solid rgba(255,80,80,0.25);border-radius:8px;font-size:0.85rem;cursor:pointer;line-height:1;">🗑</button>
+      <div style="display:flex;gap:8px;flex:1;justify-content:flex-end;">
+        <button onclick="closeRenameModal()" style="padding:9px 16px;background:transparent;color:var(--text2);border:1px solid rgba(255,255,255,0.12);border-radius:8px;font-size:0.85rem;cursor:pointer;" data-i18n="btn.cancel">Cancel</button>
+        <button onclick="confirmRename()" style="padding:9px 20px;background:var(--accent);color:#000;border:none;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;">OK</button>
+      </div>
     </div>
   </div>
 </div>
