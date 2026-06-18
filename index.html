@@ -1366,8 +1366,8 @@
     const d = show ? 'flex' : 'none';
     const ir = document.getElementById('inputEcRow');
     const rr = document.getElementById('runoffEcRow');
-    if (ir) ir.style.display = d;
-    if (rr) rr.style.display = d;
+    if (ir) { ir.style.display = d; if (!show) { const inp = ir.querySelector('input'); if (inp) inp.value = ''; } }
+    if (rr) { rr.style.display = d; if (!show) { const inp = rr.querySelector('input'); if (inp) inp.value = ''; } }
     const sw = document.getElementById('ecToggleSwitch');
     const th = document.getElementById('ecToggleThumb');
     if (sw) sw.style.background = show ? 'var(--accent)' : 'rgba(255,255,255,0.12)';
@@ -3506,17 +3506,21 @@
     const runoffEl = document.getElementById('runoffEcInput');
     [phEl, ecEl, runoffEl].forEach(el => el && (el.style.borderBottomColor = ''));
     let valid = true;
+    const _normNum = s => s.replace(',', '.');
     if (phEl?.value) {
-      const v = parseFloat(phEl.value);
+      const v = parseFloat(_normNum(phEl.value));
       if (isNaN(v) || v < 3.5 || v > 9.0) { phEl.style.borderBottomColor = 'var(--danger)'; valid = false; }
+      else phEl.value = String(v);
     }
     if (ecEl?.value) {
-      const v = parseFloat(ecEl.value);
+      const v = parseFloat(_normNum(ecEl.value));
       if (isNaN(v) || v < 0 || v > 10) { ecEl.style.borderBottomColor = 'var(--danger)'; valid = false; }
+      else ecEl.value = String(v);
     }
     if (runoffEl?.value) {
-      const v = parseFloat(runoffEl.value);
+      const v = parseFloat(_normNum(runoffEl.value));
       if (isNaN(v) || v < 0 || v > 10) { runoffEl.style.borderBottomColor = 'var(--danger)'; valid = false; }
+      else runoffEl.value = String(v);
     }
     if (!valid) { showToast(tr('toast.input_error')); return; }
 
