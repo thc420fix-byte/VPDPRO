@@ -1906,7 +1906,7 @@
     const modal = document.getElementById('renameFertilizerModal');
     const input = document.getElementById('renameFertilizerInput');
     const t = tents[currentTent];
-    input.value = (t.fertilizerList[i].name || `NUTRIENT${i + 1}`);
+    input.value = (t.fertilizerList[i].name || (appLang === 'en' ? `NUTRIENT${i + 1}` : `栄養素${i + 1}`));
     modal.style.display = 'flex';
     setTimeout(() => input.focus(), 50);
   }
@@ -2538,7 +2538,9 @@
     }
     if (currentFertTab >= list.length) currentFertTab = list.length - 1;
     bar.innerHTML = list.map((f, i) => {
-      const label = f.name || `NUTRIENT${i + 1}`;
+      const _rawName = f.name || '';
+      const _isDefaultEn = /^NUTRIENT\d+$/.test(_rawName);
+      const label = _rawName && !_isDefaultEn ? _rawName : (appLang === 'en' ? `NUTRIENT${i + 1}` : `栄養素${i + 1}`);
       const active = i === currentFertTab;
       return `<div class="toggle-btn fert-tab-btn${active ? ' active-day' : ''}" data-index="${i}" onclick="(function(){var now=Date.now();if(_fertLastTap[${i}]&&now-_fertLastTap[${i}]<350){_fertLastTap[${i}]=0;selectFertilizerTabAndEdit(${i});}else{_fertLastTap[${i}]=now;selectFertTab(${i});}})()" style="white-space:nowrap;outline:none;">${label}</div>`;
     }).join('');
@@ -2593,7 +2595,7 @@
     const t = tents[currentTent];
     if (!t.fertilizerList) t.fertilizerList = [];
     const nextNum = t.fertilizerList.length + 1;
-    t.fertilizerList.push({ name: `NUTRIENT${nextNum}`, waterL: '', amountMl: '' });
+    t.fertilizerList.push({ name: appLang === 'en' ? `NUTRIENT${nextNum}` : `栄養素${nextNum}`, waterL: '', amountMl: '' });
     currentFertTab = t.fertilizerList.length - 1;
     await dbPut('tents', t);
     renderFertilizerTabs();
