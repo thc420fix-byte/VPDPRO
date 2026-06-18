@@ -1882,10 +1882,21 @@
     if (!(await customConfirm(tr('confirm.delete_tent').replace('${name}', tents[i].name)))) return;
     const tentId = tents[i].id;
     const allLogs = await dbGetAll('logs');
+    let _failed = 0;
     for (const l of allLogs) {
-      if (l.tentId === tentId) await dbDelete('logs', l.id);
+      if (l.tentId === tentId) {
+        try { await dbDelete('logs', l.id); } catch (e) { _failed++; }
+      }
     }
-    await dbDelete('tents', tentId);
+    try {
+      await dbDelete('tents', tentId);
+    } catch (e) {
+      showToast(appLang === 'en' ? '⚠️ Failed to delete tent' : '⚠️ テント削除に失敗しました');
+      return;
+    }
+    if (_failed > 0) {
+      showToast(appLang === 'en' ? `⚠️ ${_failed} log(s) could not be deleted` : `⚠️ ${_failed}件のログを削除できませんでした`);
+    }
     tents.splice(i, 1);
     if (currentTent > i) currentTent--;
     if (currentTent >= tents.length) currentTent = Math.max(0, tents.length - 1);
@@ -4798,7 +4809,7 @@ function classifyVpd(vpd, lo, hi) {
         // PIN から復号鍵を導出（メモリ上のみ）
         _cryptoKey = await _deriveKey(buf);
         // レガシー（旧Base64 PIN・未暗号化データ）からの自動移行
-        if (!localStorage.getItem(_PIN_KEY).startsWith('v2:')) await _pinStore(buf);
+        if (!(localStorage.getItem(_PIN_KEY) || '').startsWith('v2:')) await _pinStore(buf);
         if (localStorage.getItem('vpdEncMigrated') !== 'true') {
           await _encryptExistingData();
           localStorage.setItem('vpdEncMigrated', 'true');
@@ -4863,6 +4874,7 @@ function classifyVpd(vpd, lo, hi) {
         await _rekeyExistingData(buf);   // 新PINの鍵で全データを再暗号化
         _hidePinOverlay();
         showToast(appLang === 'en' ? '🔒 PIN updated' : '🔒 PIN変更完了');
+        _updatePinSettingsUI();
       } else {
         document.getElementById('pinMessage').textContent = appLang === 'en' ? 'Mismatch — try again' : 'PINが一致しません';
         _pinShake();
