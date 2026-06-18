@@ -1803,13 +1803,15 @@
 
       // VPD status dot
       let dotColor = 'rgba(255,255,255,0.15)';
-      if (t.stage && stages[t.stage]) {
+      if (t.stage && stages[t.stage] && t.temp != null && t.hum != null) {
         const airV  = calcVPD(t.temp, t.hum);
-        const leafV = calcLeafVPD(t.temp, t.hum, t.leafOffset || -2);
-        const range = t.co2 ? stages[t.stage].co2 : stages[t.stage].vpd;
-        const check = t.leaf ? leafV : airV;
-        const state = classifyVpd(check, range[0], range[1]);
-        dotColor = state === 'ok' ? 'var(--ok)' : state === 'warning' ? '#ff9500' : 'var(--danger)';
+        const leafV = calcLeafVPD(t.temp, t.hum, t.leafOffset ?? -2);
+        if (!isNaN(airV) && !isNaN(leafV)) {
+          const range = t.co2 ? stages[t.stage].co2 : stages[t.stage].vpd;
+          const check = t.leaf ? leafV : airV;
+          const state = classifyVpd(check, range[0], range[1]);
+          dotColor = state === 'ok' ? 'var(--ok)' : state === 'warning' ? '#ff9500' : 'var(--danger)';
+        }
       }
       const stageLbl = tr('stage.' + t.stage) || t.stage || '';
       const nameMatch = t.name.match(/(\d+)$/);
@@ -3409,12 +3411,17 @@
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
-        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height, 1);
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * ratio);
-        canvas.height = Math.round(img.height * ratio);
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        try {
+          if (!img.width || !img.height) { resolve(dataUrl); return; }
+          const ratio = Math.min(maxWidth / img.width, maxWidth / img.height, 1);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * ratio);
+          canvas.height = Math.round(img.height * ratio);
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { resolve(dataUrl); return; }
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } catch(_) { resolve(dataUrl); }
       };
       img.onerror = () => resolve(dataUrl);
       img.src = dataUrl;
@@ -4199,7 +4206,7 @@ function classifyVpd(vpd, lo, hi) {
       totalEl.textContent = '';
     }
     const allStageLogs = (_logs || (await dbGetAll('logs')))
-      .filter(l => l.tentId === t.id && (l.cycle || 1) === (t.cycle || 1) && (l.type === 'monitor' || l.fertilizers || l.photo))
+      .filter(l => l.tentId === t.id && (Number(l.cycle) || 1) === (Number(t.cycle) || 1) && (l.type === 'monitor' || l.fertilizers || l.photo))
       .sort((a, b) => a.ts - b.ts);
     const logsByStage = {};
     allStageLogs.forEach(l => {
@@ -5467,6 +5474,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
     const text = input.value.trim();
     if (!text) return;
     input.value = '';
+    input.disabled = true;
     appendChatBubble('user', text);
     _aiChatHistory.push({ role: 'user', content: text });
     const typing = appendChatBubble('assistant', '…');
@@ -5475,7 +5483,15 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
       _aiChatHistory.push({ role: 'assistant', content: reply });
       if (typing) typing.textContent = reply;
     } catch(e) {
-      if (typing) typing.textContent = appLang === 'en' ? '⚠ Cannot connect to LM Studio. Check URL in Settings.' : '⚠ LM Studio に接続できません。設定でURLを確認してください。';
+      if (typing) {
+        typing.textContent = appLang === 'en' ? '⚠ Cannot connect to LM Studio. Check URL in Settings.' : '⚠ LM Studio に接続できません。設定でURLを確認してください。';
+        // タップで消せるようにする
+        typing.style.cursor = 'pointer';
+        typing.onclick = () => typing.remove();
+      }
+    } finally {
+      input.disabled = false;
+      input.focus();
     }
   }
 
