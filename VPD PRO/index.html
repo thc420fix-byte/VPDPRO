@@ -222,11 +222,11 @@
       box-shadow: 0 2px 16px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.04) inset;
     }
     .card-title {
-      font-size: 0.65rem;
-      color: rgba(255,255,255,0.38);
-      font-weight: 600;
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.42);
+      font-weight: 700;
       margin-bottom: 10px;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
     }
     /* ステージボタン */
@@ -412,12 +412,12 @@
       text-align: center;
     }
     .vpd-label {
-      font-size: 0.62rem;
-      color: rgba(255,255,255,0.38);
-      letter-spacing: 0.03em;
-      text-transform: none;
-      font-weight: 500;
-      margin-bottom: 1px;
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 2px;
     }
     .vpd-num {
       font-family: 'Rajdhani', -apple-system, sans-serif;
@@ -921,12 +921,12 @@
         <div class="vpd-block">
           <div class="vpd-label" data-i18n="vpd.air_label">Air VPD</div>
           <div class="vpd-num" id="vpdAir">—</div>
-          <div style="font-size:0.7rem;color:var(--muted);">kPa</div>
+          <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);letter-spacing:0.05em;font-weight:500;">kPa</div>
         </div>
         <div class="vpd-block" id="leafBlock">
           <div class="vpd-label" data-i18n="vpd.leaf_label">Leaf VPD</div>
           <div class="vpd-num" id="vpdLeaf" style="color:var(--leaf)">—</div>
-          <div style="font-size:0.7rem;color:var(--muted);">kPa</div>
+          <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);letter-spacing:0.05em;font-weight:500;">kPa</div>
         </div>
       </div>
       <div class="vpd-zonebar-wrap">
@@ -1107,7 +1107,7 @@
   <div class="card">
     <!-- Header: Feeding Log + Theory / My Spot -->
     <div style="display:flex;align-items:center;margin-bottom:8px;">
-      <span style="flex:1;font-size:0.65rem;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;" data-i18n="feed.title">Nutrient Log</span>
+      <span style="flex:1;" class="card-title" data-i18n="feed.title">Nutrient Log</span>
       <div style="flex-shrink:0;display:none;">
         <div id="feedModeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')" data-i18n="mode.theory">Theory</div>
         <div id="feedModeMySpot" class="mode-pill" onclick="setSpotMode('myspot')" data-i18n="mode.myspot">My Spot</div>
@@ -1196,18 +1196,18 @@
       <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;" data-i18n="feed.press_hold">press &amp; hold</div>
     </div>
     <!-- Water Reminder -->
-    <div style="padding:4px 8px 0;border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;">
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span id="reminderLabel" style="font-size:0.65rem;color:var(--text2);flex-shrink:0;letter-spacing:0.04em;" data-i18n="reminder.label">💧 次の給水リマインダー</span>
-        <div id="reminderBtnGroup" style="display:flex;gap:4px;flex:1;justify-content:flex-end;">
-          <button onclick="setWaterReminder(24)" style="font-size:0.6rem;padding:3px 7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text2);cursor:pointer;">24h</button>
-          <button onclick="setWaterReminder(48)" style="font-size:0.6rem;padding:3px 7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text2);cursor:pointer;">48h</button>
-          <button onclick="setWaterReminder(72)" style="font-size:0.6rem;padding:3px 7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text2);cursor:pointer;">72h</button>
+    <div style="padding:8px 8px 4px;border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+        <span id="reminderLabel" style="font-size:0.63rem;color:var(--text2);flex-shrink:0;letter-spacing:0.03em;" data-i18n="reminder.label">💧 次の給水リマインダー</span>
+        <div id="reminderBtnGroup" style="display:flex;gap:5px;flex-shrink:0;">
+          <button onclick="setWaterReminder(24)" style="font-size:0.62rem;padding:4px 9px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:7px;color:var(--text2);cursor:pointer;font-weight:500;">24h</button>
+          <button onclick="setWaterReminder(48)" style="font-size:0.62rem;padding:4px 9px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:7px;color:var(--text2);cursor:pointer;font-weight:500;">48h</button>
+          <button onclick="setWaterReminder(72)" style="font-size:0.62rem;padding:4px 9px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:7px;color:var(--text2);cursor:pointer;font-weight:500;">72h</button>
+          <button id="reminderCalBtn" onclick="addToCalendar()" style="display:none;font-size:0.62rem;padding:4px 8px;background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.35);border-radius:7px;color:var(--accent);cursor:pointer;">📅</button>
+          <button id="reminderCancelBtn" onclick="cancelWaterReminder()" style="display:none;font-size:0.62rem;padding:4px 8px;background:transparent;border:1px solid rgba(255,80,80,0.4);border-radius:7px;color:rgba(255,100,100,0.8);cursor:pointer;">✕</button>
         </div>
-        <button id="reminderCalBtn" onclick="addToCalendar()" style="display:none;font-size:0.6rem;padding:3px 7px;background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.4);border-radius:6px;color:var(--accent);cursor:pointer;">📅</button>
-        <button id="reminderCancelBtn" onclick="cancelWaterReminder()" style="display:none;font-size:0.6rem;padding:3px 7px;background:transparent;border:1px solid rgba(255,100,100,0.5);border-radius:6px;color:rgba(255,100,100,0.8);cursor:pointer;">✕</button>
       </div>
-      <div id="reminderStatus" style="font-size:0.6rem;color:var(--accent);margin-top:3px;min-height:14px;"></div>
+      <div id="reminderStatus" style="font-size:0.62rem;color:var(--accent);margin-top:5px;min-height:16px;"></div>
     </div>
     <!-- AI Feeding Review Panel -->
     <div id="aiFeedingPanel" style="display:none;padding:0 8px 4px;">
@@ -1252,11 +1252,11 @@
   <!-- How to use hint -->
   <div class="card" style="opacity:0.72;" id="howToUseCard">
     <div class="card-title" style="margin-bottom:8px;" data-i18n="howto.title">HOW TO USE</div>
-    <div style="display:flex;flex-direction:column;gap:7px;font-size:0.74rem;color:var(--text2);line-height:1.5;">
-      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">①</span><span data-i18n="howto.1">環境タブで Temp / Humidity / PPFD を入力し Save → 各ステージに記録が積まれます</span></div>
-      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">②</span><span data-i18n="howto.2">ステージ行をタップ → 保存済みの記録一覧と写真が展開されます</span></div>
-      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">③</span><span data-i18n="howto.3">📷 でカメラ撮影、🖼 でライブラリから画像を追加できます</span></div>
-      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.9rem;">④</span><span data-i18n="howto.4">✦ AIチャットでVPD・栄養・栽培管理について質問できます</span></div>
+    <div style="display:flex;flex-direction:column;gap:11px;font-size:0.74rem;color:var(--text2);line-height:1.6;">
+      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.85rem;flex-shrink:0;margin-top:1px;">①</span><span data-i18n="howto.1">環境タブで Temp / Humidity / PPFD を入力し Save → 各ステージに記録が積まれます</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.85rem;flex-shrink:0;margin-top:1px;">②</span><span data-i18n="howto.2">ステージ行をタップ → 保存済みの記録一覧と写真が展開されます</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.85rem;flex-shrink:0;margin-top:1px;">③</span><span data-i18n="howto.3">📷 でカメラ撮影、🖼 でライブラリから画像を追加できます</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;"><span style="color:var(--accent);font-size:0.85rem;flex-shrink:0;margin-top:1px;">④</span><span data-i18n="howto.4">✦ AIチャットでVPD・栄養・栽培管理について質問できます</span></div>
     </div>
   </div>
 
@@ -1815,7 +1815,7 @@
       const stageLbl = tr('stage.' + t.stage) || t.stage || '';
       const nameMatch = t.name.match(/(\d+)$/);
       const shortName = nameMatch ? nameMatch[1] : t.name.slice(0, 3);
-      const labelColor = isActive ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.35)';
+      const labelColor = isActive ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.52)';
       const stageColor = isActive ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.22)';
       btn.innerHTML = `<div class="tent-btn-bar" style="background:${dotColor};opacity:${isActive ? '1' : '0.6'};"></div>
       <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;pointer-events:none;padding-left:2px;">
@@ -2558,7 +2558,7 @@
       const _isDefaultEn = /^NUTRIENT\d+$/.test(_rawName);
       const label = _rawName && !_isDefaultEn ? _rawName : (appLang === 'en' ? `NUTRIENT${i + 1}` : `栄養素${i + 1}`);
       const active = i === currentFertTab;
-      return `<div class="toggle-btn fert-tab-btn${active ? ' active-day' : ''}" data-index="${i}" onclick="(function(){var now=Date.now();if(_fertLastTap[${i}]&&now-_fertLastTap[${i}]<350){_fertLastTap[${i}]=0;selectFertilizerTabAndEdit(${i});}else{_fertLastTap[${i}]=now;selectFertTab(${i});}})()" style="white-space:nowrap;outline:none;">${label}</div>`;
+      return `<div class="toggle-btn fert-tab-btn${active ? ' active-day' : ''}" data-index="${i}" onclick="(function(){var now=Date.now();if(_fertLastTap[${i}]&&now-_fertLastTap[${i}]<350){_fertLastTap[${i}]=0;selectFertilizerTabAndEdit(${i});}else{_fertLastTap[${i}]=now;selectFertTab(${i});}})()" style="white-space:nowrap;outline:none;flex:0 1 auto;min-width:64px;max-width:120px;">${label}</div>`;
     }).join('');
 
     // タブコンテンツ
@@ -3315,8 +3315,8 @@
         : tr('ref.water_temp');
     }
     const hdrs = [tempUnit,'%RH','kPa',refCo2?'µmol*':'µmol',tr('feed.input_ec'),tr('feed.runoff_ec'),'pH'];
-    let html = `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div style="min-width:430px;">`;
-    html += `<div style="display:grid;grid-template-columns:56px 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;padding:4px 0 8px;border-bottom:1px solid rgba(255,255,255,0.2);">
+    let html = `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div style="min-width:510px;">`;
+    html += `<div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr 1.1fr 1.4fr 1.3fr 1fr;padding:4px 0 8px;border-bottom:1px solid rgba(255,255,255,0.2);">
       <span></span>${hdrs.map((t,i) => hdr(t,i)).join('')}
     </div>`;
     Object.keys(stages).forEach((key, ri) => {
@@ -3334,7 +3334,7 @@
         (isDry || isHarvest) ? '—' : `${s.ecRunoff[0].toFixed(1)}–${s.ecRunoff[1].toFixed(1)}`,
         phData[refMedium][key] ?? '—',
       ];
-      html += `<div style="display:grid;grid-template-columns:clamp(44px,14.5vw,56px) 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);${zebra}">
+      html += `<div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr 1.1fr 1.4fr 1.3fr 1fr;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);${zebra}">
         <div style="display:flex;align-items:center;gap:3px;">
           <div style="width:3px;height:18px;background:${s.color};border-radius:2px;flex-shrink:0;"></div>
           <span style="font-size:0.65rem;font-weight:700;color:${s.color};">${tr('stage.'+key)||s.name}</span>
