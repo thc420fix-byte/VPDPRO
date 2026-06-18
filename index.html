@@ -2258,6 +2258,10 @@
   })();
 
   async function applyStageStartDate(val) {
+    if (val) {
+      const d = new Date(val); const today = new Date(); today.setHours(23,59,59,999);
+      if (isNaN(d.getTime()) || d > today) { showToast(appLang === 'en' ? '⚠️ Date cannot be in the future' : '⚠️ 未来の日付は設定できません'); return; }
+    }
     const t = tents[currentTent];
     if (!t.stageDates) t.stageDates = {};
     t.stageDates[t.stage] = val || null;
@@ -2643,9 +2647,12 @@
     if (!t.fertilizerList || !t.fertilizerList[idx]) return;
     t.fertilizerList[idx][key] = key === 'name' ? val : (val === '' || val === null ? null : isNaN(parseFloat(val)) ? null : parseFloat(val));
     clearTimeout(fertSaveTimer);
+    const _savedTentIdx = currentTent;
     fertSaveTimer = setTimeout(async () => {
-      await dbPut('tents', t);
-      renderFertilizerTabs();
+      if (tents[currentTent] === t && currentTent === _savedTentIdx) {
+        await dbPut('tents', t);
+        renderFertilizerTabs();
+      }
     }, 600);
   }
 
@@ -3512,8 +3519,9 @@
     }
     if (!valid) { showToast(tr('toast.input_error')); return; }
 
-    const t = tents[currentTent];
-    const id = Date.now() + '-' + tents[currentTent].id;
+    const _saveIdx = currentTent;
+    const t = tents[_saveIdx];
+    const id = Date.now() + '-' + t.id;
     const log = {
       id,
       tentId: tents[currentTent].id,
@@ -3545,7 +3553,7 @@
       runoffEc: log.runoffEc || '', waterTemp: log.waterTemp || ''
     };
     await dbPut('logs', log);
-    await dbPut('tents', t);
+    if (currentTent === _saveIdx) await dbPut('tents', t);
     saveModeInputs(); // modeInputCache を最新値に同期
     const feedNoteEl = document.getElementById('feedingNoteInput');
     if (feedNoteEl) { feedNoteEl.value = ''; const fc = document.getElementById('feedingNoteCount'); if (fc) fc.textContent = '100'; }
@@ -3716,6 +3724,7 @@
 
   let _reminderTimeout = null;
   function setWaterReminder(hours) {
+    if (!hours || isNaN(hours) || hours <= 0) { showToast(appLang === 'en' ? '⚠️ Invalid time' : '⚠️ 時間を正しく入力してください'); return; }
     cancelWaterReminder();
     const fireAt = Date.now() + hours * 3600 * 1000;
     localStorage.setItem('waterReminderAt', String(fireAt));
