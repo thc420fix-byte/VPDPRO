@@ -3589,7 +3589,9 @@
   function renderVpdSparkline() {
     const svg = document.getElementById('vpdSparkline');
     if (!svg) return;
+    const _sparkIdx = currentTent;
     dbGetAll('logs').then(all => {
+      if (_sparkIdx !== currentTent) return;
       const tent = tents[currentTent];
       const rows = all.filter(r => r.tentId === tent.id && r.vpd != null)
                       .sort((a,b) => (a.ts||0)-(b.ts||0)).slice(-10);
@@ -3626,7 +3628,9 @@
     const cntEl = document.getElementById('statLogCount');
     const trendEl = document.getElementById('statTrend');
     if (!avgEl) return;
+    const _statsIdx = currentTent;
     dbGetAll('logs').then(all => {
+      if (_statsIdx !== currentTent) return;
       const tent = tents[currentTent];
       if (!tent) { avgEl.textContent = '—'; okEl.textContent = '—'; cntEl.textContent = '0'; trendEl.textContent = ''; return; }
       const rows = all.filter(r => r.tentId === tent.id && r.vpd != null).sort((a,b) => b.ts - a.ts).slice(0, 50);
@@ -3685,7 +3689,9 @@
   function renderFeedRecentLogs() {
     const el = document.getElementById('feedRecentLogs');
     if (!el) return;
+    const _feedIdx = currentTent;
     dbGetAll('logs').then(all => {
+      if (_feedIdx !== currentTent) return;
       const tent = tents[currentTent];
       if (!tent) { el.innerHTML = ''; return; }
       const recent = all
@@ -3956,6 +3962,7 @@
   }
   function adjustEc(delta) {
     const input = document.getElementById('ecInput');
+    if (!input) return;
     let val = parseFloat(input.value || input.placeholder || '0');
     if (isNaN(val)) val = 0;
     val = Math.max(0, Math.round((val + delta) * 10) / 10);
@@ -3963,6 +3970,7 @@
   }
   function adjustWaterTemp(delta) {
     const input = document.getElementById('waterTempInput');
+    if (!input) return;
     const defaultVal = useFahrenheit ? 68 : 20;
     let val = parseFloat(input.value || String(defaultVal));
     if (isNaN(val)) val = defaultVal;
