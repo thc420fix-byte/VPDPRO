@@ -1695,10 +1695,11 @@
     });
   }
   function dbDelete(store, key) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const tx = db.transaction(store, 'readwrite');
       tx.objectStore(store).delete(key);
       tx.oncomplete = resolve;
+      tx.onerror = tx.onabort = () => reject(tx.error);
     });
   }
   /* 既存の平文レコードを現在の鍵で暗号化（PIN設定時・レガシー解除時） */
@@ -1957,6 +1958,9 @@
   async function selectTent(i) {
     if (i === currentTent) return;
     if (fertSaveTimer) { clearTimeout(fertSaveTimer); fertSaveTimer = null; await dbPut('tents', tents[currentTent]); }
+    // メモ欄をクリア（他テントのメモが残らないように）
+    const _fn = document.getElementById('feedingNoteInput'); if (_fn) { _fn.value = ''; const _fc = document.getElementById('feedingNoteCount'); if (_fc) _fc.textContent = '100'; }
+    const _mn = document.getElementById('monitorNoteInput'); if (_mn) { _mn.value = ''; const _mc = document.getElementById('monitorNoteCount'); if (_mc) _mc.textContent = '100'; }
     await saveCurrentTentState();
     currentTent = i;
     loadTentToUI(i);
@@ -4732,7 +4736,7 @@ function classifyVpd(vpd, lo, hi) {
 
   function pinPress(digit) {
     if (_pinBuf.length >= _PIN_LEN) return;
-    _pinBuf += digit;
+    _pinBuf = (_pinBuf + digit).slice(0, _PIN_LEN);
     _updatePinDots();
     // 9桁に達したら自動送信
     if (_pinBuf.length === _PIN_LEN) setTimeout(_pinSubmit, 120);
