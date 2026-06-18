@@ -1884,7 +1884,8 @@
     }
     await dbDelete('tents', tentId);
     tents.splice(i, 1);
-    if (currentTent >= tents.length) currentTent = tents.length - 1;
+    if (currentTent > i) currentTent--;
+    if (currentTent >= tents.length) currentTent = Math.max(0, tents.length - 1);
     closeRenameModal();
     buildTentBar();
     loadTentToUI(currentTent);
@@ -4571,7 +4572,7 @@ function classifyVpd(vpd, lo, hi) {
     const dbKey = /^\d+$/.test(id) ? Number(id) : id;
     await dbDelete('logs', dbKey);
     const t = tents[currentTent];
-    t.logs = (t.logs || []).filter(lid => lid !== id);
+    t.logs = (t.logs || []).filter(lid => String(lid) !== String(dbKey));
     await dbPut('tents', t);
     const allLogs = await dbGetAll('logs');
     renderStageTimeline(allLogs);
