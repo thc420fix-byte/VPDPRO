@@ -3457,7 +3457,9 @@
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
-        canvas.getContext('2d').drawImage(img, 0, 0);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(dataUrl); return; }
+        ctx.drawImage(img, 0, 0);
         resolve(canvas.toDataURL('image/jpeg', 0.9));
       };
       img.onerror = () => resolve(dataUrl);
@@ -4095,6 +4097,7 @@
     for (const l of allLogs) await dbDelete('logs', l.id);
     // 全テントを削除してデフォルト3テントに戻す
     for (const t of tents) await dbDelete('tents', t.id);
+    localStorage.clear();
     tents = [];
     for (let i = 0; i < 3; i++) {
       const t = defaultTent(Date.now() + i, `${i + 1}`);
