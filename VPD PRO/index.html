@@ -2903,7 +2903,7 @@
       const fertParts = spot.fertilizers.map(f => {
         const name = esc(f.name || 'Fert');
         const ratio = (f.waterL && f.amountMl) ? (f.amountMl / f.waterL).toFixed(2) : null;
-        const detail = [f.waterL ? `${f.waterL}L` : null, f.amountMl ? `${f.amountMl}ml` : null, ratio ? `${ratio}ml/L` : null].filter(Boolean).join('/');
+        const detail = [f.waterL ? `${esc(String(f.waterL))}L` : null, f.amountMl ? `${esc(String(f.amountMl))}ml` : null, ratio ? `${ratio}ml/L` : null].filter(Boolean).join('/');
         return detail ? `${name}: ${detail}` : name;
       });
       html += `<br><span style="font-size:0.62rem;opacity:0.85;">🌿 ${fertParts.join(' / ')}</span>`;
@@ -4081,6 +4081,12 @@
           const t = data.tents[i];
           if (!STAGE_ORDER.includes(t.stage)) t.stage = 'veg';
           if (t.fertilizerList) t.fertilizerList = _sanitizeFerts(t.fertilizerList);
+          if (t.stageSpots && typeof t.stageSpots === 'object') {
+            Object.keys(t.stageSpots).forEach(k => {
+              const sp = t.stageSpots[k];
+              if (sp && sp.fertilizers) sp.fertilizers = _sanitizeFerts(sp.fertilizers);
+            });
+          }
           await dbPut('tents', t);
           tents.push(t);
         }
