@@ -1977,7 +1977,7 @@
       ph:       document.getElementById('phInput')?.value       ?? '',
       ec:       document.getElementById('ecInput')?.value       ?? '',
       runoffEc: document.getElementById('runoffEcInput')?.value ?? '',
-      waterTemp: (() => { const v = document.getElementById('waterTempInput')?.value?.trim() ?? ''; if (!v) return ''; const n = parseFloat(v); return isNaN(n) ? '' : String(useFahrenheit ? Math.round((n - 32) * 5/9 * 10) / 10 : n); })()
+      waterTemp: (() => { const v = document.getElementById('waterTempInput')?.value?.trim() ?? ''; if (!v) return ''; const n = parseFloat(v); if (isNaN(n)) return ''; const c = useFahrenheit ? (n - 32) * 5/9 : n; const clamped = Math.max(0, Math.min(50, Math.round(c * 10) / 10)); return String(clamped); })()
     };
     await dbPut('tents', t);
   }
@@ -3604,6 +3604,7 @@
     if (!avgEl) return;
     dbGetAll('logs').then(all => {
       const tent = tents[currentTent];
+      if (!tent) { avgEl.textContent = '—'; okEl.textContent = '—'; cntEl.textContent = '0'; trendEl.textContent = ''; return; }
       const rows = all.filter(r => r.tentId === tent.id && r.vpd != null).sort((a,b) => b.ts - a.ts).slice(0, 50);
       if (!rows.length) { avgEl.textContent = '—'; okEl.textContent = '—'; cntEl.textContent = '0'; trendEl.textContent = ''; return; }
       const avg = rows.reduce((s,r) => s + r.vpd, 0) / rows.length;
