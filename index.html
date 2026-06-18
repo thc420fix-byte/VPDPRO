@@ -1872,6 +1872,8 @@
     await dbPut('tents', t);
     tents.push(t);
     buildTentBar();
+    const _tb = document.getElementById('tentBar');
+    if (_tb) setTimeout(() => { const _last = _tb.querySelector('.tent-btn:last-of-type'); if (_last) _last.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' }); }, 50);
     await selectTent(tents.length - 1);
   }
 
@@ -3093,7 +3095,8 @@
   function lmUpdateSource() { /* 次フレームで自動反映 */ }
 
   function lmOnCalibChange() {
-    _lmCalib = parseFloat(document.getElementById('lmCalib').value);
+    const raw = parseFloat(document.getElementById('lmCalib').value);
+    _lmCalib = isNaN(raw) ? 1 : raw;
     document.getElementById('lmCalibVal').textContent = _lmCalib.toFixed(2);
     localStorage.setItem('lmCalib', _lmCalib);
   }
@@ -3818,7 +3821,7 @@
   function _resumeReminder() {
     const at = parseInt(localStorage.getItem('waterReminderAt') || '0');
     if (at && at > Date.now()) {
-      const delay = at - Date.now();
+      const delay = Math.max(0, at - Date.now());
       _reminderTimeout = setTimeout(() => {
         showToast(tr('toast.reminder'));
         localStorage.removeItem('waterReminderAt');
@@ -4035,6 +4038,11 @@
         }
       }
       if (data.tents && data.logs) {
+        // インポート前に全データ検証（クリア前にパース済みかを確認）
+        if (!Array.isArray(data.tents) || !Array.isArray(data.logs)) {
+          showToast(appLang === 'en' ? '⚠️ Invalid backup format' : '⚠️ バックアップ形式が不正です');
+          e.target.value = ''; return;
+        }
         // Clear existing tents and logs
         const existingTents = await dbGetAll('tents');
         for (const t of existingTents) await dbDelete('tents', t.id);
@@ -4089,7 +4097,8 @@
   }
 
   function closeOverlay() {
-    document.getElementById('photoOverlay').style.display = 'none';
+    const ov = document.getElementById('photoOverlay');
+    if (ov) ov.style.display = 'none';
   }
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
