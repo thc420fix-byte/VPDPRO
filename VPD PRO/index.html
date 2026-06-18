@@ -2561,7 +2561,7 @@
       const _isDefaultEn = /^NUTRIENT\d+$/.test(_rawName);
       const label = _rawName && !_isDefaultEn ? _rawName : (appLang === 'en' ? `NUTRIENT${i + 1}` : `栄養素${i + 1}`);
       const active = i === currentFertTab;
-      return `<div class="toggle-btn fert-tab-btn${active ? ' active-day' : ''}" data-index="${i}" onclick="(function(){var now=Date.now();if(_fertLastTap[${i}]&&now-_fertLastTap[${i}]<350){_fertLastTap[${i}]=0;selectFertilizerTabAndEdit(${i});}else{_fertLastTap[${i}]=now;selectFertTab(${i});}})()" style="white-space:nowrap;outline:none;flex:0 1 auto;min-width:64px;max-width:120px;">${label}</div>`;
+      return `<div class="toggle-btn fert-tab-btn${active ? ' active-day' : ''}" data-index="${i}" onclick="(function(){var now=Date.now();if(_fertLastTap[${i}]&&now-_fertLastTap[${i}]<350){_fertLastTap[${i}]=0;selectFertilizerTabAndEdit(${i});}else{_fertLastTap[${i}]=now;selectFertTab(${i});}})()" style="white-space:nowrap;outline:none;flex:0 1 auto;min-width:64px;max-width:120px;">${esc(label)}</div>`;
     }).join('');
 
     // タブコンテンツ
@@ -4000,7 +4000,7 @@
         }
         // Import tents
         tents = [];
-        for (let i = 0; i < data.tents.length; i++) {
+        for (let i = 0; i < Math.min(data.tents.length, MAX_TENTS); i++) {
           const t = data.tents[i];
           await dbPut('tents', t);
           tents.push(t);
@@ -4672,6 +4672,9 @@ function classifyVpd(vpd, lo, hi) {
     };
     render();
     setInterval(render, 60000);
+    // ロック解除時刻に正確にリロード
+    const exactDelay = _pinLockRemain();
+    if (exactDelay > 0) setTimeout(() => location.reload(), exactDelay);
   }
 
   // 入力済みの桁数ぶんドットを描画（可変長対応：旧4桁PINも新9桁PINも自然に表示）
