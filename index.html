@@ -1815,16 +1815,22 @@
         <span style="font-size:0.58rem;font-weight:500;line-height:1;color:${stageColor};">${stageLbl}</span>
       </div>`;
 
-      // Long-press → menu / tap → select
-      let _pt = null; let _lp = false;
+      // Double-tap → rename / long-press → menu / single tap → select
+      let _pt = null; let _lp = false; let _lastTap = 0;
       const startP = () => { _lp = false; _pt = setTimeout(() => { _lp = true; showTentMenu(i, btn); }, 520); };
       const cancelP = () => { if (_pt) { clearTimeout(_pt); _pt = null; } };
       btn.addEventListener('mousedown',  startP);
       btn.addEventListener('touchstart', startP, { passive: true });
       btn.addEventListener('mouseleave', cancelP);
       btn.addEventListener('mouseup',    cancelP);
-      btn.addEventListener('touchend',   () => { cancelP(); if (!_lp && i !== currentTent) selectTent(i); });
-      btn.addEventListener('click',      () => { if (!_lp && i !== currentTent) selectTent(i); });
+      btn.addEventListener('touchend', () => {
+        cancelP();
+        if (_lp) return;
+        const now = Date.now();
+        if (now - _lastTap < 350) { _lastTap = 0; renameTent(i); }
+        else { _lastTap = now; if (i !== currentTent) selectTent(i); }
+      });
+      btn.addEventListener('click', () => { if (!_lp && i !== currentTent) selectTent(i); });
       bar.appendChild(btn);
     });
     if (tents.length < MAX_TENTS) {
