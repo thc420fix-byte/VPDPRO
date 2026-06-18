@@ -3478,27 +3478,32 @@
       const compressed = await compressPhoto(ev.target.result);
       if (_photoSource === 'gallery') {
         // GROW GALLERY: 写真のみのログを直接保存
-        const t = tents[currentTent];
-        const now = new Date();
-        const ts = now.toLocaleString('ja-JP');
-        const log = {
-          id: Date.now() + '-photo-' + t.id,
-          tentId: t.id, timestamp: ts, ts: Date.now(),
-          temp: t.temp, hum: t.hum, stage: t.stage,
-          dayNight: t.dayNight, leaf: t.leaf, co2: t.co2,
-          leafOffset: t.leafOffset,
-          ph: null, ec: null, runoffEc: null,
-          ppfd: String(t.ppfd), note: '',
-          vpd: parseFloat(calcVPD(t.temp, t.hum).toFixed(3)),
-          leafVpd: parseFloat(calcLeafVPD(t.temp, t.hum, t.leafOffset || 0).toFixed(3)),
-          photo: compressed, fertilizers: []
-        };
-        await dbPut('logs', log);
-        t.logs.push(log.id);
-        await dbPut('tents', t);
-        const allLogs = await dbGetAll('logs');
-        renderStageTimeline(allLogs);
-        _photoSource = 'log';
+        try {
+          const t = tents[currentTent];
+          const now = new Date();
+          const ts = now.toLocaleString('ja-JP');
+          const log = {
+            id: Date.now() + '-photo-' + t.id,
+            tentId: t.id, timestamp: ts, ts: Date.now(),
+            temp: t.temp, hum: t.hum, stage: t.stage,
+            dayNight: t.dayNight, leaf: t.leaf, co2: t.co2,
+            leafOffset: t.leafOffset,
+            ph: null, ec: null, runoffEc: null,
+            ppfd: String(t.ppfd), note: '',
+            vpd: parseFloat(calcVPD(t.temp, t.hum).toFixed(3)),
+            leafVpd: parseFloat(calcLeafVPD(t.temp, t.hum, t.leafOffset || 0).toFixed(3)),
+            photo: compressed, fertilizers: []
+          };
+          await dbPut('logs', log);
+          t.logs.push(log.id);
+          await dbPut('tents', t);
+          const allLogs = await dbGetAll('logs');
+          renderStageTimeline(allLogs);
+          _photoSource = 'log';
+        } catch(err) {
+          showToast(appLang === 'en' ? '⚠️ Failed to save photo' : '⚠️ 写真の保存に失敗しました');
+          _photoSource = 'log';
+        }
       } else {
         pendingPhoto = compressed;
       }
@@ -5387,6 +5392,7 @@ function classifyVpd(vpd, lo, hi) {
   // ===== AI / Local LLM =====
   let _aiEnabled = localStorage.getItem('aiEnabled') === 'true';
   const _aiChatHistory = [];
+  let _aiChatInFlight = false;
 
   function applyAiToggle() {
     const sw = document.getElementById('aiToggleSwitch');
@@ -5539,12 +5545,14 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
   }
 
   async function sendAiChat() {
+    if (_aiChatInFlight) return;
     const input = document.getElementById('aiChatInput');
     if (!input) return;
     const text = input.value.trim();
     if (!text) return;
     input.value = '';
     input.disabled = true;
+    _aiChatInFlight = true;
     appendChatBubble('user', text);
     _aiChatHistory.push({ role: 'user', content: text });
     const typing = appendChatBubble('assistant', '…');
@@ -5560,6 +5568,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
         typing.onclick = () => typing.remove();
       }
     } finally {
+      _aiChatInFlight = false;
       input.disabled = false;
       input.focus();
     }
