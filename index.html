@@ -3139,7 +3139,7 @@
     const temp = t.temp;
     const hum  = t.hum;
     const airV = calcVPD(temp, hum);
-    const leafV= calcLeafVPD(temp, hum, t.leafOffset);
+    const leafV= Math.max(0, calcLeafVPD(temp, hum, t.leafOffset));
     document.getElementById('vpdAir').textContent  = isNaN(airV)  ? '--' : airV.toFixed(2);
     document.getElementById('vpdLeaf').textContent = isNaN(leafV) ? '--' : leafV.toFixed(2);
     document.getElementById('leafBlock').style.opacity = t.leaf ? '1' : '0.6';
@@ -3491,7 +3491,7 @@
             ph: null, ec: null, runoffEc: null,
             ppfd: String(t.ppfd), note: '',
             vpd: parseFloat(calcVPD(t.temp, t.hum).toFixed(3)),
-            leafVpd: parseFloat(calcLeafVPD(t.temp, t.hum, t.leafOffset || 0).toFixed(3)),
+            leafVpd: parseFloat(Math.max(0, calcLeafVPD(t.temp, t.hum, t.leafOffset || 0)).toFixed(3)),
             photo: compressed, fertilizers: []
           };
           await dbPut('logs', log);
@@ -3560,7 +3560,7 @@
       waterTemp: (() => { const el = document.getElementById('waterTempInput'); const v = (el?.value || '').trim(); if (!v) return null; const n = parseFloat(v); return isNaN(n) ? null : (useFahrenheit ? Math.round((n - 32) * 5/9 * 10) / 10 : n); })(),
       ppfd: String(t.ppfd || ''),
       vpd: parseFloat(calcVPD(t.temp, t.hum).toFixed(3)),
-      leafVpd: parseFloat(calcLeafVPD(t.temp, t.hum, t.leafOffset || 0).toFixed(3)),
+      leafVpd: parseFloat(Math.max(0, calcLeafVPD(t.temp, t.hum, t.leafOffset || 0)).toFixed(3)),
       note: (document.getElementById('feedingNoteInput')?.value || '').trim(),
       photo: pendingPhoto,
       fertilizers: (t.fertilizerList || []).filter(f => f.name || f.amountMl)
@@ -3826,7 +3826,7 @@
   function _resumeReminder() {
     const at = parseInt(localStorage.getItem('waterReminderAt') || '0');
     if (at && at > Date.now()) {
-      const delay = Math.max(0, at - Date.now());
+      const delay = Math.max(0, Math.min(at - Date.now(), 2147483647));
       _reminderTimeout = setTimeout(() => {
         showToast(tr('toast.reminder'));
         localStorage.removeItem('waterReminderAt');
@@ -3897,7 +3897,8 @@
       .sort((a, b) => (a.ts || 0) - (b.ts || 0))
       .map(l => {
         const vpd = l.vpd ?? (l.temp != null && l.hum != null ? parseFloat(calcVPD(l.temp, l.hum).toFixed(3)) : '');
-        const leafVpd = l.leafVpd ?? (l.temp != null && l.hum != null ? parseFloat(calcLeafVPD(l.temp, l.hum, l.leafOffset || 0).toFixed(3)) : '');
+        const _lv = l.leafVpd ?? (l.temp != null && l.hum != null ? calcLeafVPD(l.temp, l.hum, l.leafOffset || 0) : null);
+        const leafVpd = (_lv != null && !isNaN(_lv)) ? parseFloat(Math.max(0, _lv).toFixed(3)) : '';
         return [
           l.timestamp, tentName(l.tentId), l.cycle || 1, l.type || 'feeding', l.stage || '',
           l.temp ?? '', l.hum ?? '', vpd, leafVpd, l.ppfd ?? '',
