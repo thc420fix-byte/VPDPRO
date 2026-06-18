@@ -3143,7 +3143,8 @@
     document.getElementById('vpdAir').textContent  = isNaN(airV)  ? '--' : airV.toFixed(2);
     document.getElementById('vpdLeaf').textContent = isNaN(leafV) ? '--' : leafV.toFixed(2);
     document.getElementById('leafBlock').style.opacity = t.leaf ? '1' : '0.6';
-    const range = t.co2 ? stages[t.stage].co2 : stages[t.stage].vpd;
+    const _st = stages[t.stage] || stages.veg || {};
+    const range = (t.co2 ? _st.co2 : _st.vpd) || [0.8, 1.1];
     const lo = range[0];
     const hi = range[1];
     const check = t.leaf ? leafV : airV;
@@ -3603,7 +3604,7 @@
       const tent = tents[currentTent];
       const rows = all.filter(r => r.tentId === tent.id && r.vpd != null)
                       .sort((a,b) => (a.ts||0)-(b.ts||0)).slice(-10);
-      if (rows.length < 2) { svg.style.display = 'none'; return; }
+      if (rows.length < 2) { svg.innerHTML = ''; svg.style.display = 'none'; return; }
       svg.style.display = '';
       const vals = rows.map(r => r.vpd);
       const min = Math.max(0, Math.min(...vals) - 0.1);
@@ -3657,7 +3658,7 @@
       const statSvg = document.getElementById('vpdStatsSparkline');
       if (statSvg && rows.length >= 2) {
         const pts = rows.slice().reverse().slice(-20);
-        if (pts.length < 2) { statSvg.style.display = 'none'; }
+        if (pts.length < 2) { statSvg.innerHTML = ''; statSvg.style.display = 'none'; }
         else {
         const vals = pts.map(r => r.vpd);
         const minV = Math.min(...vals, range.min * 0.8);
@@ -3974,7 +3975,7 @@
     if (!input) return;
     let val = parseFloat(input.value || input.placeholder || '0');
     if (isNaN(val)) val = 0;
-    val = Math.max(0, Math.round((val + delta) * 10) / 10);
+    val = Math.max(0, Math.min(10, Math.round((val + delta) * 10) / 10));
     input.value = val.toFixed(1);
   }
   function adjustWaterTemp(delta) {
