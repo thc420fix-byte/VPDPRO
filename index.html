@@ -1024,7 +1024,10 @@
           <span onclick="openLightMeter()" style="cursor:pointer;font-size:0.65rem;color:var(--accent);background:rgba(52,199,89,0.14);border-radius:7px;padding:4px 8px;font-weight:600;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;" data-i18n="lux.meter_btn">Meter</span>
         </div>
         <div style="padding:4px 0 0;">
-          <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" style="width:100%;box-sizing:border-box;padding:7px 10px;background:rgba(255,255,255,0.05);border:none;border-radius:8px;color:rgba(255,255,255,0.6);font-size:0.72rem;outline:none;margin-bottom:3px;">
+          <div style="position:relative;">
+            <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('monitorNoteCount').textContent=100-this.value.length" style="width:100%;box-sizing:border-box;padding:7px 36px 7px 10px;background:rgba(255,255,255,0.05);border:none;border-radius:8px;color:rgba(255,255,255,0.6);font-size:0.72rem;outline:none;margin-bottom:3px;">
+            <span id="monitorNoteCount" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:0.6rem;color:rgba(255,255,255,0.2);pointer-events:none;">100</span>
+          </div>
         </div>
         <!-- CO2 Level (shown when CO2 is ON) -->
         <div id="co2LevelCard" style="display:none; border-top:1px solid rgba(255,255,255,0.06);">
@@ -1180,7 +1183,10 @@
     <!-- EC Theory reference (Theory mode only) -->
     <div id="feedingRef" style="font-size:0.68rem;color:var(--text);text-align:center;opacity:0.8;border-top:1px solid rgba(255,255,255,0.06);padding:5px 0;line-height:1.7;"></div>
     <div style="padding:4px 8px 0;">
-      <input id="feedingNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" style="width:100%;box-sizing:border-box;padding:5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
+      <div style="position:relative;">
+        <input id="feedingNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('feedingNoteCount').textContent=100-this.value.length" style="width:100%;box-sizing:border-box;padding:5px 32px 5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
+        <span id="feedingNoteCount" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:0.6rem;color:rgba(255,255,255,0.2);pointer-events:none;">100</span>
+      </div>
     </div>
     <div style="padding:4px 8px 2px;">
       <button id="feedingSaveBtn" class="save-btn"
@@ -1895,6 +1901,8 @@
     const input = document.getElementById('renameInput');
     const newName = input.value.trim().slice(0, 24);
     if (newName) {
+      const dup = tents.some((t, i) => i !== _renameTentIndex && t.name === newName);
+      if (dup) { showToast(appLang === 'en' ? 'Name already in use' : 'その名前はすでに使われています'); return; }
       tents[_renameTentIndex].name = newName;
       await dbPut('tents', tents[_renameTentIndex]);
       buildTentBar();
@@ -2142,7 +2150,7 @@
     const t = tents[currentTent];
     if (!t.stageDates) t.stageDates = {};
     if (!t.stageEndDates) t.stageEndDates = {};
-    t.stageDates[t.stage] = null;
+    delete t.stageDates[t.stage];
     delete t.stageEndDates[t.stage];
     recalculateStageEndDates(t);
     const el = document.getElementById('stageStartDate');
@@ -2555,7 +2563,7 @@
 
     // タブコンテンツ
     const f = list[currentFertTab];
-    const ratio = (f.waterL && f.amountMl) ? (f.amountMl / f.waterL).toFixed(2) : '—';
+    const ratio = (f.waterL != null && f.waterL !== '' && f.amountMl != null && f.amountMl !== '') ? (f.amountMl / f.waterL).toFixed(2) : '—';
     content.style.display = 'block';
     content.innerHTML = `
       <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);border-radius:10px;padding:10px 12px;position:relative;">
@@ -3125,7 +3133,7 @@
       zoneTarget.style.left = pct(lo) + '%';
       zoneTarget.style.width = Math.max(0, pct(hi) - pct(lo)) + '%';
       zoneMarker.style.left = pct(check) + '%';
-      zoneMarker.style.background = state === 'danger' ? 'var(--danger)' : state === 'warning' ? '#ff9500' : '#fff';
+      zoneMarker.style.background = state === 'danger' ? 'var(--danger)' : state === 'warning' ? 'var(--warning,#ff9500)' : 'var(--accent)';
     }
     updateDli();
     const airEl = document.getElementById('vpdAir');
@@ -3500,10 +3508,10 @@
       leaf: t.leaf,
       co2: t.co2,
       leafOffset: t.leafOffset,
-      ph:        (el => { const v = (el?.value.trim() || el?.placeholder || '').trim(); return v || null; })(document.getElementById('phInput')),
-      ec:        _showEcRows ? (el => { const v = (el?.value.trim() || el?.placeholder || '').trim(); return v || null; })(document.getElementById('ecInput')) : null,
-      runoffEc:  _showEcRows ? (el => { const v = (el?.value.trim() || el?.placeholder || '').trim(); return v || null; })(document.getElementById('runoffEcInput')) : null,
-      waterTemp: (() => { const el = document.getElementById('waterTempInput'); const v = (el?.value.trim() || el?.placeholder || '').trim(); if (!v) return null; const n = parseFloat(v); return isNaN(n) ? null : (useFahrenheit ? Math.round((n - 32) * 5/9 * 10) / 10 : n); })(),
+      ph:        (el => { const v = (el?.value || '').trim(); return v || null; })(document.getElementById('phInput')),
+      ec:        _showEcRows ? (el => { const v = (el?.value || '').trim(); return v || null; })(document.getElementById('ecInput')) : null,
+      runoffEc:  _showEcRows ? (el => { const v = (el?.value || '').trim(); return v || null; })(document.getElementById('runoffEcInput')) : null,
+      waterTemp: (() => { const el = document.getElementById('waterTempInput'); const v = (el?.value || '').trim(); if (!v) return null; const n = parseFloat(v); return isNaN(n) ? null : (useFahrenheit ? Math.round((n - 32) * 5/9 * 10) / 10 : n); })(),
       ppfd: String(t.ppfd || ''),
       vpd: parseFloat(calcVPD(t.temp, t.hum).toFixed(3)),
       leafVpd: parseFloat(calcLeafVPD(t.temp, t.hum, t.leafOffset || 0).toFixed(3)),
@@ -3554,7 +3562,8 @@
       const max = Math.min(3, Math.max(...vals) + 0.1);
       const range = max - min || 1;
       const W = 200, H = 24, pad = 4;
-      const px = (i) => pad + (i / (vals.length - 1)) * (W - pad*2);
+      const _pxDenom = vals.length > 1 ? vals.length - 1 : 1;
+      const px = (i) => pad + (i / _pxDenom) * (W - pad*2);
       const py = (v) => H - pad - ((v - min) / range) * (H - pad*2);
       // range bands
       const stage = tent.stage || 'veg';
@@ -3597,6 +3606,8 @@
       const statSvg = document.getElementById('vpdStatsSparkline');
       if (statSvg && rows.length >= 2) {
         const pts = rows.slice().reverse().slice(-20);
+        if (pts.length < 2) { statSvg.style.display = 'none'; }
+        else {
         const vals = pts.map(r => r.vpd);
         const minV = Math.min(...vals, range.min * 0.8);
         const maxV = Math.max(...vals, range.max * 1.2);
@@ -3611,6 +3622,7 @@
           <polyline points="${polyline}" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2"/>
           ${pts.map((r,i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(r.vpd).toFixed(1)}" r="2" fill="${dotColor(r)}"/>`).join('')}`;
         statSvg.style.display = 'block';
+        } // end pts.length >= 2
       } else if (statSvg) { statSvg.style.display = 'none'; }
       // trend: compare latest 10 vs previous 10
       if (rows.length >= 20) {
@@ -3684,7 +3696,7 @@
     const fireAt = Date.now() + hours * 3600 * 1000;
     localStorage.setItem('waterReminderAt', String(fireAt));
     localStorage.setItem('waterReminderH', String(hours));
-    const delay = fireAt - Date.now();
+    const delay = Math.min(fireAt - Date.now(), 2147483647);
     _reminderTimeout = setTimeout(() => {
       showToast(tr('toast.reminder'));
       localStorage.removeItem('waterReminderAt');
@@ -5534,7 +5546,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
 
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW registration failed:', err));
+      navigator.serviceWorker.register('./sw.js').catch(err => { console.warn('SW registration failed:', err); setTimeout(() => { if (typeof showToast === 'function') showToast('⚠️ オフラインモード無効'); }, 2000); });
     }
   </script>
 
