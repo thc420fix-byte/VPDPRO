@@ -2615,6 +2615,7 @@
   async function addFertilizer() {
     const t = tents[currentTent];
     if (!t.fertilizerList) t.fertilizerList = [];
+    if (t.fertilizerList.length >= 10) { showToast(appLang === 'en' ? 'Max 10 nutrients per tent' : '栄養素は最大10個まで'); return; }
     const nextNum = t.fertilizerList.length + 1;
     t.fertilizerList.push({ name: appLang === 'en' ? `NUTRIENT${nextNum}` : `栄養素${nextNum}`, waterL: '', amountMl: '' });
     currentFertTab = t.fertilizerList.length - 1;
@@ -4050,6 +4051,12 @@
   function closeOverlay() {
     document.getElementById('photoOverlay').style.display = 'none';
   }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      const ov = document.getElementById('photoOverlay');
+      if (ov && ov.style.display !== 'none') closeOverlay();
+    }
+  });
 
   async function eraseAllData() {
     if (!(await customConfirm(tr('confirm.erase_all')))) return;
@@ -5374,7 +5381,9 @@ function classifyVpd(vpd, lo, hi) {
       throw e;
     }
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const d = await res.json();
+    let d;
+    try { d = await res.json(); } catch(_) { throw new Error('Invalid JSON response from LM Studio'); }
+    if (!d.choices?.[0]?.message?.content) throw new Error('Unexpected response format from LM Studio');
     return d.choices[0].message.content.trim();
   }
 
