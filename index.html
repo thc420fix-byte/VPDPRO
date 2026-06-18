@@ -1729,7 +1729,9 @@
     const el = document.getElementById('toast');
     el.textContent = msg;
     el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 2000);
+    const ms = Math.min(4000, Math.max(2000, msg.length * 60));
+    clearTimeout(el._toastTimer);
+    el._toastTimer = setTimeout(() => el.classList.remove('show'), ms);
   }
 
   function defaultTent(id, name) {
@@ -3878,6 +3880,7 @@
     renderVpdSparkline();
     buildTentBar();
     dbGetAll('logs').then(renderStageTimeline);
+    showToast(appLang === 'en' ? '🗑 Log deleted' : '🗑 ログを削除しました');
   }
 
   async function clearLogs(skipConfirm = false) {
@@ -5172,9 +5175,12 @@ function classifyVpd(vpd, lo, hi) {
       m.style.display = 'flex';
       const ok = m.querySelector('#ccOk');
       const cancel = m.querySelector('#ccCancel');
-      const cleanup = (val) => { m.style.display = 'none'; ok.onclick = null; cancel.onclick = null; resolve(val); };
+      const cleanup = (val) => { m.style.display = 'none'; ok.onclick = null; cancel.onclick = null; document.removeEventListener('keydown', onKey); resolve(val); };
+      const onKey = (e) => { if (e.key === 'Escape') cleanup(false); };
       ok.onclick = () => cleanup(true);
       cancel.onclick = () => cleanup(false);
+      document.addEventListener('keydown', onKey);
+      setTimeout(() => cancel.focus(), 50);
     });
   }
   function _applyUnitUI() {
