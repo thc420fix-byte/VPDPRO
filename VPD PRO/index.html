@@ -2890,7 +2890,7 @@
     let html = `📌 ${parts.join(' / ')}`;
     if (spot.fertilizers && spot.fertilizers.length) {
       const fertParts = spot.fertilizers.map(f => {
-        const name = f.name || 'Fert';
+        const name = esc(f.name || 'Fert');
         const ratio = (f.waterL && f.amountMl) ? (f.amountMl / f.waterL).toFixed(2) : null;
         const detail = [f.waterL ? `${f.waterL}L` : null, f.amountMl ? `${f.amountMl}ml` : null, ratio ? `${ratio}ml/L` : null].filter(Boolean).join('/');
         return detail ? `${name}: ${detail}` : name;
@@ -3180,7 +3180,7 @@
     } else {
       badge.classList.add('status-ok');
       badge.textContent = tr('vpd.ok');
-      recEl.innerHTML = `<span style="color:var(--ok);font-size:0.72rem;">${tr('stage.'+t.stage)||stages[t.stage].name}${tr('vpd.rec_ok')}</span>`;
+      recEl.innerHTML = `<span style="color:var(--ok);font-size:0.72rem;">${tr('stage.'+t.stage)||(stages[t.stage]||{}).name||t.stage}${tr('vpd.rec_ok')}</span>`;
       if (airEl) airEl.style.color = 'var(--accent)';
     }
 
@@ -4054,6 +4054,7 @@
         tents = [];
         for (let i = 0; i < Math.min(data.tents.length, MAX_TENTS); i++) {
           const t = data.tents[i];
+          if (!STAGE_ORDER.includes(t.stage)) t.stage = 'veg';
           await dbPut('tents', t);
           tents.push(t);
         }
