@@ -1955,7 +1955,7 @@
 
   async function selectTent(i) {
     if (i === currentTent) return;
-    if (fertSaveTimer) { clearTimeout(fertSaveTimer); fertSaveTimer = null; }
+    if (fertSaveTimer) { clearTimeout(fertSaveTimer); fertSaveTimer = null; await dbPut('tents', tents[currentTent]); }
     await saveCurrentTentState();
     currentTent = i;
     loadTentToUI(i);
@@ -3691,9 +3691,13 @@
             if (l.ph) parts.push(`pH <strong style="color:var(--text)">${l.ph}</strong>`);
             if (l.waterTemp != null) { const _wt = useFahrenheit ? (l.waterTemp * 9/5 + 32).toFixed(1) : l.waterTemp; parts.push(`${tr('recent.water_temp')} <strong style="color:var(--text)">${_wt}${useFahrenheit ? '°F' : '°C'}</strong>`); }
             if (l.ec) parts.push(`EC <strong style="color:var(--text)">${l.ec}</strong>${l.runoffEc ? `→${l.runoffEc}` : ''}`);
+            const fertLine = (l.fertilizers && l.fertilizers.length)
+              ? l.fertilizers.filter(f => f.name || f.amountMl).map(f => esc(f.name || '?') + (f.amountMl != null ? ` ${f.amountMl}ml` : '')).join('　')
+              : '';
             return `<div style="display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px solid rgba(255,255,255,0.05);">
               <div style="flex:1;min-width:0;">
                 <div style="font-size:0.68rem;color:var(--text2);line-height:1.4;">${parts.join('　')}</div>
+                ${fertLine ? `<div style="font-size:0.6rem;color:rgba(0,255,136,0.7);margin-top:1px;">🌿 ${fertLine}</div>` : ''}
                 ${l.note ? `<div style="font-size:0.6rem;color:var(--muted);margin-top:1px;">📝 ${esc(l.note)}</div>` : ''}
               </div>
               <div style="text-align:right;flex-shrink:0;display:flex;align-items:center;gap:6px;">
@@ -3882,6 +3886,8 @@
   async function deleteLogEntry(id) {
     if (!(await customConfirm(tr('confirm.delete_log')))) return;
     await dbDelete('logs', id);
+    const t = tents[currentTent];
+    if (t) { t.logs = (t.logs || []).filter(lid => String(lid) !== String(id)); await dbPut('tents', t); }
     renderFeedRecentLogs();
     renderVpdStats();
     renderVpdSparkline();
