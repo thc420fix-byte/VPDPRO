@@ -1198,6 +1198,7 @@
           <button onclick="setWaterReminder(48)" style="font-size:0.6rem;padding:3px 7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text2);cursor:pointer;">48h</button>
           <button onclick="setWaterReminder(72)" style="font-size:0.6rem;padding:3px 7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text2);cursor:pointer;">72h</button>
         </div>
+        <button id="reminderCalBtn" onclick="addToCalendar()" style="display:none;font-size:0.6rem;padding:3px 7px;background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.4);border-radius:6px;color:var(--accent);cursor:pointer;">📅</button>
         <button id="reminderCancelBtn" onclick="cancelWaterReminder()" style="display:none;font-size:0.6rem;padding:3px 7px;background:transparent;border:1px solid rgba(255,100,100,0.5);border-radius:6px;color:rgba(255,100,100,0.8);cursor:pointer;">✕</button>
       </div>
       <div id="reminderStatus" style="font-size:0.6rem;color:var(--accent);margin-top:3px;min-height:14px;"></div>
@@ -3692,16 +3693,55 @@
     const at = parseInt(localStorage.getItem('waterReminderAt') || '0');
     const status = document.getElementById('reminderStatus');
     const cancelBtn = document.getElementById('reminderCancelBtn');
+    const calBtn = document.getElementById('reminderCalBtn');
     if (at && at > Date.now()) {
       const remaining = at - Date.now();
       const h = Math.floor(remaining / 3600000);
       const m = Math.floor((remaining % 3600000) / 60000);
       if (status) status.textContent = `⏰ ${h}h ${m}m ${tr('reminder.countdown')}`;
       if (cancelBtn) cancelBtn.style.display = 'block';
+      if (calBtn) calBtn.style.display = 'block';
     } else {
       if (status) status.textContent = '';
       if (cancelBtn) cancelBtn.style.display = 'none';
+      if (calBtn) calBtn.style.display = 'none';
     }
+  }
+  function addToCalendar() {
+    const at = parseInt(localStorage.getItem('waterReminderAt') || '0');
+    const hours = parseInt(localStorage.getItem('waterReminderH') || '24');
+    if (!at || at <= Date.now()) return;
+    const fireAt = new Date(at);
+    const endAt = new Date(at + 10 * 60000);
+    const pad = n => String(n).padStart(2, '0');
+    const fmt = d => `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+    const summary = appLang === 'en' ? `💧 Water Time (Canopy ${hours}h)` : `💧 給水の時間 (Canopy ${hours}h)`;
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Canopy//VPD PRO//EN',
+      'BEGIN:VEVENT',
+      `DTSTART:${fmt(fireAt)}`,
+      `DTEND:${fmt(endAt)}`,
+      `SUMMARY:${summary}`,
+      'BEGIN:VALARM',
+      'TRIGGER:PT0M',
+      'ACTION:DISPLAY',
+      `DESCRIPTION:${summary}`,
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'water-reminder.ics';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast(appLang === 'en' ? 'Added to Calendar' : 'カレンダーに追加しました');
   }
   function _resumeReminder() {
     const at = parseInt(localStorage.getItem('waterReminderAt') || '0');
