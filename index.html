@@ -4070,9 +4070,17 @@
         }
         // Import tents
         tents = [];
+        // 肥料の数値フィールドを number|null に正規化（不正なバックアップ経由の属性ブレイクアウトXSSを防止）
+        const _numOrNull = v => { if (v === '' || v == null) return null; const n = parseFloat(v); return isNaN(n) ? null : n; };
+        const _sanitizeFerts = list => Array.isArray(list) ? list.map(f => ({
+          name: typeof f.name === 'string' ? f.name : '',
+          waterL: _numOrNull(f.waterL),
+          amountMl: _numOrNull(f.amountMl)
+        })) : [];
         for (let i = 0; i < Math.min(data.tents.length, MAX_TENTS); i++) {
           const t = data.tents[i];
           if (!STAGE_ORDER.includes(t.stage)) t.stage = 'veg';
+          if (t.fertilizerList) t.fertilizerList = _sanitizeFerts(t.fertilizerList);
           await dbPut('tents', t);
           tents.push(t);
         }
@@ -4083,6 +4091,7 @@
         }
         // Import logs
         for (const log of data.logs) {
+          if (log && log.fertilizers) log.fertilizers = _sanitizeFerts(log.fertilizers);
           await dbPut('logs', log);
         }
         // Restore settings from backup
@@ -4379,7 +4388,7 @@ function classifyVpd(vpd, lo, hi) {
               : [l.ph ? `pH ${l.ph}` : '', l.waterTemp != null ? `💧${useFahrenheit ? (l.waterTemp * 9/5 + 32).toFixed(1) : l.waterTemp}${useFahrenheit ? '°F' : '°C'}` : '', l.ec ? `EC ${l.ec}` : '', l.runoffEc ? `→${l.runoffEc}` : ''].filter(Boolean).join('　');
             const label = isMonitor ? '📊' : '💧';
             const fertTags = !isMonitor && l.fertilizers && l.fertilizers.length
-              ? `<div style="display:flex;justify-content:flex-end;opacity:1;font-size:0.72rem;color:var(--text);margin-top:0;padding-right:0;width:100%;box-sizing:border-box;">${(l.fertilizers).map(f => `${esc(f.name) || '?'}${f.amountMl ? ' ' + f.amountMl + 'ml' : ''}`).join('　')}</div>`
+              ? `<div style="display:flex;justify-content:flex-end;opacity:1;font-size:0.72rem;color:var(--text);margin-top:0;padding-right:0;width:100%;box-sizing:border-box;">${(l.fertilizers).map(f => `${esc(f.name) || '?'}${f.amountMl ? ' ' + esc(String(f.amountMl)) + 'ml' : ''}`).join('　')}</div>`
               : '';
             const photoThumb = l.photo ? `<div style="margin-top:3px;"><img src="${l.photo}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;cursor:pointer;" onclick="(()=>{document.getElementById('overlayImg').src=this.src;document.getElementById('photoOverlay').style.display='flex';})()"></div>` : '';
             const noteHtml = l.note ? `<div style="font-size:0.68rem;color:rgba(255,255,255,0.6);margin-top:2px;padding-left:2px;">📝 ${esc(l.note)}</div>` : '';
