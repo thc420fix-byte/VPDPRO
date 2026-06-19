@@ -4144,6 +4144,9 @@
   function closeOverlay() {
     const ov = document.getElementById('photoOverlay');
     if (ov) ov.style.display = 'none';
+    // 大きな base64 画像をメモリから解放（再表示時は必ず src を先に設定するため副作用なし）
+    const oi = document.getElementById('overlayImg');
+    if (oi) oi.src = '';
   }
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
