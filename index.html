@@ -3476,13 +3476,16 @@
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) { resolve(dataUrl); return; }
-        ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL('image/jpeg', 0.9));
+        try {
+          if (!img.width || !img.height) { resolve(dataUrl); return; }
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { resolve(dataUrl); return; }
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/jpeg', 0.9));
+        } catch(_) { resolve(dataUrl); }
       };
       img.onerror = () => resolve(dataUrl);
       img.src = dataUrl;
@@ -3503,7 +3506,7 @@
           const ts = now.toLocaleString('ja-JP');
           const log = {
             id: Date.now() + '-photo-' + t.id,
-            tentId: t.id, timestamp: ts, ts: Date.now(),
+            tentId: t.id, cycle: t.cycle || 1, timestamp: ts, ts: Date.now(),
             temp: t.temp, hum: t.hum, stage: t.stage,
             dayNight: t.dayNight, leaf: t.leaf, co2: t.co2,
             leafOffset: t.leafOffset,
