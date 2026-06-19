@@ -4899,13 +4899,13 @@ function classifyVpd(vpd, lo, hi) {
               ? `<div style="display:flex;justify-content:flex-end;opacity:1;font-size:0.72rem;color:var(--text);margin-top:0;padding-right:0;width:100%;box-sizing:border-box;">${(l.fertilizers).map(f => `${esc(f.name || '?')}${f.amountMl ? ' ' + esc(String(f.amountMl)) + 'ml' : ''}`).join('　')}</div>`
               : '';
             const photoThumb = l.photo ? `<div style="margin-top:3px;"><img src="${esc(l.photo)}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;cursor:pointer;" onclick="(()=>{document.getElementById('overlayImg').src=this.src;document.getElementById('photoOverlay').style.display='flex';})()"></div>` : '';
-            const noteHtml = l.note ? `<div style="font-size:0.68rem;color:rgba(255,255,255,0.6);margin-top:2px;padding-left:2px;">📝 ${esc(l.note)}</div>` : '';
+            const noteHtml = l.note ? `<div style="font-size:0.68rem;color:var(--text2);margin-top:2px;padding-left:2px;">📝 ${esc(l.note)}</div>` : '';
             const logId = String(l.id).replace(/'/g, "\\'");
             return `<div class="slog-item"
                 ondblclick="(async()=>{if(this._nt){clearTimeout(this._nt);this._nt=null;}if(await customConfirm(tr('confirm.delete_log')))deleteStageLog('${logId}','${key}')})()"
                 ontouchend="(function(el){var now=Date.now();if(el._dt&&now-el._dt<400){el._dt=null;if(el._nt){clearTimeout(el._nt);el._nt=null;}(async()=>{if(await customConfirm(tr('confirm.delete_log')))deleteStageLog('${logId}','${key}')})()}else{el._dt=now;el._nt=setTimeout(function(){el._nt=null;editLog('${logId}')},450)}})(this)"
                 onclick="event.stopPropagation();(function(el){if(el._nt)return;el._nt=setTimeout(function(){el._nt=null;editLog('${logId}')},300)})(this)"
-                style="${hidden ? 'display:none;' : ''}padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.15);font-size:0.72rem;color:var(--text);cursor:pointer;">
+                style="${hidden ? 'display:none;' : ''}padding:4px 0;border-bottom:1px solid rgba(127,127,127,0.2);font-size:0.72rem;color:var(--text);cursor:pointer;">
               <div style="display:flex;justify-content:space-between;align-items:center;">
                 <span style="opacity:0.85;white-space:nowrap;margin-right:6px;">${fmtTsParts(l.timestamp).date} ${label} ${fmtTsParts(l.timestamp).time}</span>
                 <span style="text-align:right;opacity:1;flex:1;">${details}</span>
@@ -4920,17 +4920,17 @@ function classifyVpd(vpd, lo, hi) {
       html += `<div style="opacity:${opacity};">
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;${glow}"></div>
-          <div style="flex:1;background:${isCurrent ? color + '33' : 'rgba(255,255,255,0.07)'};border-radius:6px;padding:6px 10px;${border}${glow}">
+          <div style="flex:1;background:${isCurrent ? color + '33' : 'rgba(127,127,127,0.1)'};border-radius:6px;padding:6px 10px;${border}${glow}">
             <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleStageLog('slog-${key}','sicon-${key}')" >
               <span style="font-size:0.8rem;font-weight:${isCurrent ? '700' : '600'};color:${isCurrent ? color : 'var(--text)'};">${tr('stage.'+key)||s.name}${isCurrent ? ' ◀' : ''}</span>
               <span style="display:flex;align-items:center;gap:6px;">
                 <span style="font-size:0.72rem;color:var(--text);opacity:0.9;white-space:nowrap;">
-                  <span style="color:#fff;opacity:${isCurrent ? '0.9' : '0.4'};">${dateStr ? dateStr.replace(/-/g, '/') : (key === 'harvest' ? '' : '—')}</span>${daysText ? `　<span style="color:var(--accent);font-weight:700;opacity:${isCurrent ? '1' : '0.4'};">${daysText}</span>` : ''}${key === 'harvest' && _cycleYield != null ? `　<span style="color:var(--accent);font-weight:700;">🏆 ${esc(String(_cycleYield))}g</span>` : ''}
+                  <span style="opacity:${isCurrent ? '0.9' : '0.4'};">${dateStr ? dateStr.replace(/-/g, '/') : (key === 'harvest' ? '' : '—')}</span>${daysText ? `　<span style="color:var(--accent);font-weight:700;opacity:${isCurrent ? '1' : '0.4'};">${daysText}</span>` : ''}${key === 'harvest' && _cycleYield != null ? `　<span style="color:var(--accent);font-weight:700;">🏆 ${esc(String(_cycleYield))}g</span>` : ''}
                 </span>
                 ${dateStr ? `<span id="sicon-${key}" style="font-size:0.75rem;color:var(--accent);opacity:0.7;cursor:pointer;background:rgba(52,199,89,0.1);border-radius:4px;padding:1px 5px;font-weight:700;">▶</span>` : ''}
               </span>
             </div>
-            <div id="slog-${key}" style="display:none;margin-top:4px;border-top:1px solid rgba(255,255,255,0.08);padding-top:4px;">${logsHtml}</div>
+            <div id="slog-${key}" style="display:none;margin-top:4px;border-top:1px solid rgba(127,127,127,0.18);padding-top:4px;">${logsHtml}</div>
           </div>
         </div>
       </div>`;
