@@ -3620,7 +3620,7 @@
     dbGetAll('logs').then(all => {
       if (_sparkIdx !== currentTent) return;
       const tent = tents[currentTent];
-      const rows = all.filter(r => r.tentId === tent.id && r.vpd != null)
+      const rows = all.filter(r => r.tentId === tent.id && (Number(r.cycle)||1) === (Number(tent.cycle)||1) && r.vpd != null)
                       .sort((a,b) => (a.ts||0)-(b.ts||0)).slice(-10);
       if (rows.length < 2) { svg.innerHTML = ''; svg.style.display = 'none'; return; }
       svg.style.display = '';
@@ -3660,7 +3660,7 @@
       if (_statsIdx !== currentTent) return;
       const tent = tents[currentTent];
       if (!tent) { avgEl.textContent = '—'; okEl.textContent = '—'; cntEl.textContent = '0'; trendEl.textContent = ''; return; }
-      const rows = all.filter(r => r.tentId === tent.id && r.vpd != null).sort((a,b) => b.ts - a.ts).slice(0, 50);
+      const rows = all.filter(r => r.tentId === tent.id && (Number(r.cycle)||1) === (Number(tent.cycle)||1) && r.vpd != null).sort((a,b) => b.ts - a.ts).slice(0, 50);
       if (!rows.length) { avgEl.textContent = '—'; okEl.textContent = '—'; cntEl.textContent = '0'; trendEl.textContent = ''; return; }
       const avg = rows.reduce((s,r) => s + r.vpd, 0) / rows.length;
       const stage = tent.stage || 'veg';
