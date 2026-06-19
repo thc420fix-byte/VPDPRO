@@ -423,7 +423,21 @@
       font-size: 3.4rem;
       font-weight: 700;
       line-height: 1;
+      transition: opacity 0.25s ease;
     }
+    /* 評価対象でない方の VPD は控えめに（主役を明確化） */
+    .vpd-block.secondary { opacity: 0.5; }
+    .vpd-block.secondary .vpd-num { font-size: 2.1rem; color: var(--text2) !important; }
+    .vpd-block.secondary .vpd-label { opacity: 0.8; }
+    /* 目標ゾーンの数値ラベル */
+    .vpd-target-label {
+      text-align: center;
+      font-size: 0.66rem;
+      color: var(--text2);
+      letter-spacing: 0.03em;
+      margin-top: 5px;
+    }
+    .vpd-target-label b { color: var(--accent); font-weight: 700; }
     .status-badge {
       display: inline-block;
       padding: 4px 14px;
@@ -952,7 +966,7 @@
     <div class="card">
       <div id="vpdCardBody">
       <div class="vpd-row">
-        <div class="vpd-block">
+        <div class="vpd-block" id="airBlock">
           <div class="vpd-label" data-i18n="vpd.air_label">Air VPD</div>
           <div class="vpd-num" id="vpdAir">—</div>
           <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);letter-spacing:0.05em;font-weight:500;">kPa</div>
@@ -969,6 +983,7 @@
           <div id="vpdZoneMarker" class="vpd-zone-marker"></div>
         </div>
         <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
+        <div id="vpdTargetLabel" class="vpd-target-label"></div>
       </div>
       <div id="statusBadge" class="status-badge status-ok">—</div>
       <svg id="vpdSparkline" viewBox="0 0 200 28" preserveAspectRatio="none" style="width:100%;height:28px;margin:4px 0 0;display:none;overflow:visible;"></svg>
@@ -1439,7 +1454,7 @@
       'vpd.air_label':'Air VPD','vpd.leaf_label':'Leaf VPD',
       'monitor.stats_title':'VPD 統計','ref.vpd_chart':'VPD 参考チャート',
       'monitor.target_hum':'目標湿度:','monitor.ppfd_now':'現在PPFD:','monitor.ppfd_target':'/ 目標:',
-      'vpd.too_low':'⚠ 低すぎ','vpd.too_high':'⚠ 高すぎ','vpd.warning':'注意','vpd.ok':'適正',
+      'vpd.too_low':'⚠ 低すぎ','vpd.too_high':'⚠ 高すぎ','vpd.warning':'注意','vpd.ok':'適正','vpd.target':'目標',
       'vpd.rec_warning':'境界付近です。急変に注意して微調整してください',
       'vpd.rec_ok':' は適正範囲内です','vpd.diff':'差:','vpd.hum_adj':'/ 湿度調整:',
       'spot.in':'スポット内 ✓','spot.out':'スポット外','spot.in_range':'マイスポットの範囲内です',
@@ -1521,7 +1536,7 @@
       'vpd.air_label':'Air VPD','vpd.leaf_label':'Leaf VPD',
       'monitor.stats_title':'VPD STATS','ref.vpd_chart':'VPD REFERENCE CHART',
       'monitor.target_hum':'Target RH:','monitor.ppfd_now':'PPFD:','monitor.ppfd_target':'/ Target:',
-      'vpd.too_low':'⚠ Too Low','vpd.too_high':'⚠ Too High','vpd.warning':'Caution','vpd.ok':'Optimal',
+      'vpd.too_low':'⚠ Too Low','vpd.too_high':'⚠ Too High','vpd.warning':'Caution','vpd.ok':'Optimal','vpd.target':'Target',
       'vpd.rec_warning':'Near boundary. Watch for sudden changes and fine-tune.',
       'vpd.rec_ok':' is within target range','vpd.diff':'Diff:','vpd.hum_adj':'/ RH adj:',
       'spot.in':'In Spot ✓','spot.out':'Off Spot','spot.in_range':'Within your My Spot range',
@@ -3258,6 +3273,9 @@
     }
     updateDli();
     const airEl = document.getElementById('vpdAir');
+    const leafEl = document.getElementById('vpdLeaf');
+    const airBlock = document.getElementById('airBlock');
+    const leafBlock = document.getElementById('leafBlock');
     badge.className = 'status-badge';
     if (state === 'danger') {
       badge.classList.add('status-danger','pulse');
@@ -3266,18 +3284,29 @@
       const ecIn = parseFloat(document.getElementById('ecInput')?.value) || null;
       const ecRun = parseFloat(document.getElementById('runoffEcInput')?.value) || null;
       renderActionButtons(generateAction(check, lo, hi, temp, hum, Number(t.ppfd || 0), t.dayNight === 'night' ? null : ppfdRange, ecIn, ecRun), recEl);
-      if (airEl) airEl.style.color = 'var(--danger)';
     } else if (state === 'warning') {
       badge.classList.add('status-warning');
       badge.textContent = tr('vpd.warning');
       recEl.innerHTML = `<span style="color:var(--warning);font-size:0.72rem;">${tr('vpd.rec_warning')}</span>`;
-      if (airEl) airEl.style.color = 'var(--warning)';
     } else {
       badge.classList.add('status-ok');
       badge.textContent = tr('vpd.ok');
       recEl.innerHTML = `<span style="color:var(--ok);font-size:0.72rem;">${tr('stage.'+t.stage)||(stages[t.stage]||{}).name||t.stage}${tr('vpd.rec_ok')}</span>`;
-      if (airEl) airEl.style.color = 'var(--accent)';
     }
+
+    // 評価中の値（Air or Leaf）を主役にし、状態色を適用。もう一方は控えめに。
+    const stateColor = state === 'danger' ? 'var(--danger)' : state === 'warning' ? 'var(--warning,#ff9500)' : 'var(--accent)';
+    const leafActive = !!t.leaf;
+    if (airBlock && leafBlock && airEl && leafEl) {
+      airBlock.classList.toggle('secondary', leafActive);
+      leafBlock.classList.toggle('secondary', !leafActive);
+      // 主役の数字に状態色、脇役は secondary クラス側の muted 色に任せる（インライン色をクリア）
+      airEl.style.color = leafActive ? '' : stateColor;
+      leafEl.style.color = leafActive ? stateColor : '';
+    }
+    // 目標ゾーンの数値ラベル（例: 目標 0.80–1.10 kPa）
+    const tgtLabel = document.getElementById('vpdTargetLabel');
+    if (tgtLabel) tgtLabel.innerHTML = `${tr('vpd.target')} <b>${lo.toFixed(2)}–${hi.toFixed(2)}</b> kPa`;
 
     // My Spot mode override
     if (spotMode === 'myspot') {
