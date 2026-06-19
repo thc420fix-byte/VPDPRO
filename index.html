@@ -1057,7 +1057,7 @@
       <div id="startDateRow" style="display:none;align-items:center;gap:6px;justify-content:center;margin-bottom:4px;">
         <label style="font-size:0.68rem;color:var(--text2);font-weight:600;flex-shrink:0;letter-spacing:0.06em;text-transform:uppercase;" data-i18n="stage.start_label">Start</label>
         <input id="stageStartDate" type="date" style="width:110px;flex-shrink:0;font-size:0.78rem;height:24px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(52,199,89,0.3);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
-        <button id="clearDateBtn" oncontextmenu="return false;" style="background:transparent;border:none;color:rgba(255,120,120,0.6);font-size:0.85rem;width:32px;height:32px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;display:none;">✕</button>
+        <button id="clearDateBtn" oncontextmenu="return false;" data-i18n-aria="aria.clear_date" aria-label="開始日をクリア" style="background:transparent;border:none;color:rgba(255,120,120,0.6);font-size:0.85rem;width:32px;height:32px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;display:none;">✕</button>
       </div>
       <div id="addDateRow" onclick="openStartDatePicker()" style="text-align:center;margin-bottom:4px;cursor:pointer;font-size:0.68rem;color:var(--muted);letter-spacing:0.04em;padding:8px 0;" data-i18n="stage.set_date">+ Set start date</div>
       <!-- 収量記録 (Harvestステージのみ) -->
@@ -1074,33 +1074,33 @@
       <div class="stepper-rows">
         <!-- Temp -->
         <div class="stepper-row">
-          <button class="stepper-btn" onclick="adjustTemp(-1)">−</button>
+          <button class="stepper-btn" onclick="adjustTemp(-1)" data-i18n-aria="aria.temp_down" aria-label="温度を下げる">−</button>
           <div class="stepper-center">
             <span class="stepper-label" data-i18n="stepper.temp">Temp</span>
             <input id="tempVal" class="stepper-val" type="text" inputmode="decimal" value="24" onfocus="this.select()" onchange="applyInlineVal('temp', this.value)">
             <span id="tempUnitLabel" class="stepper-unit" onclick="toggleTempUnit()" style="cursor:pointer;user-select:none;">℃</span>
           </div>
-          <button class="stepper-btn" onclick="adjustTemp(1)">+</button>
+          <button class="stepper-btn" onclick="adjustTemp(1)" data-i18n-aria="aria.temp_up" aria-label="温度を上げる">+</button>
         </div>
         <!-- Humidity -->
         <div class="stepper-row">
-          <button class="stepper-btn" onclick="adjustHum(-1)">−</button>
+          <button class="stepper-btn" onclick="adjustHum(-1)" data-i18n-aria="aria.hum_down" aria-label="湿度を下げる">−</button>
           <div class="stepper-center">
             <span class="stepper-label" data-i18n="stepper.humidity">Humidity</span>
             <input id="humVal" class="stepper-val" type="text" inputmode="decimal" value="60" onfocus="this.select()" onchange="applyInlineVal('hum', this.value)">
             <span class="stepper-unit">%RH</span>
           </div>
-          <button class="stepper-btn" onclick="adjustHum(1)">+</button>
+          <button class="stepper-btn" onclick="adjustHum(1)" data-i18n-aria="aria.hum_up" aria-label="湿度を上げる">+</button>
         </div>
         <!-- PPFD -->
         <div class="stepper-row">
-          <button class="stepper-btn" onclick="adjustCurrentPpfd(-10)">−</button>
+          <button class="stepper-btn" onclick="adjustCurrentPpfd(-10)" data-i18n-aria="aria.ppfd_down" aria-label="PPFDを下げる">−</button>
           <div class="stepper-center">
             <span class="stepper-label">PPFD</span>
             <input id="ppfdVal" class="stepper-val" type="text" inputmode="decimal" value="300" onfocus="this.select()" onchange="applyInlineVal('ppfd', this.value)">
             <span class="stepper-unit">µmol</span>
           </div>
-          <button class="stepper-btn" onclick="adjustCurrentPpfd(10)">+</button>
+          <button class="stepper-btn" onclick="adjustCurrentPpfd(10)" data-i18n-aria="aria.ppfd_up" aria-label="PPFDを上げる">+</button>
         </div>
         <!-- DLI + Light tools -->
         <div class="stepper-row" id="dliRow" style="gap:6px;flex-wrap:nowrap;justify-content:flex-start;padding:6px 2px;">
@@ -1159,7 +1159,7 @@
           <div id="spotInfo" style="font-size:0.63rem;color:var(--text);flex:1;line-height:1.4;text-align:center;"></div>
           <div style="display:flex;gap:4px;flex-shrink:0;">
             <button onclick="saveStageSpot()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);border-radius:6px;color:var(--accent);font-size:0.63rem;padding:3px 8px;cursor:pointer;white-space:nowrap;" data-i18n="spot.save_btn">📌 Save</button>
-            <button id="deleteSpotBtn" style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.95rem;width:36px;height:36px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 0.1s;">🗑</button>
+            <button id="deleteSpotBtn" data-i18n-aria="aria.delete_spot" aria-label="スポットを削除" style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.95rem;width:36px;height:36px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 0.1s;">🗑</button>
           </div>
         </div>
       </div>
@@ -1210,7 +1210,7 @@
     <div style="border-top:1px solid rgba(0,255,136,0.12);padding-top:8px;margin:6px 0 4px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
         <span style="font-size:0.65rem;color:var(--text2);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;" data-i18n="feed.nutrient_label">Nutrient</span>
-        <button onclick="addFertilizer()" style="width:32px;height:32px;border-radius:50%;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);color:var(--accent);font-size:1.15rem;line-height:1;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
+        <button onclick="addFertilizer()" data-i18n-aria="aria.add_nutrient" aria-label="肥料を追加" style="width:32px;height:32px;border-radius:50%;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);color:var(--accent);font-size:1.15rem;line-height:1;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
       </div>
       <!-- タブバー -->
       <div id="fertTabBar" class="toggle-row" style="margin-bottom:6px;"></div>
@@ -1311,7 +1311,7 @@
         <div id="feedingSpotInfo" style="font-size:0.68rem;color:var(--text);flex:1;line-height:1.3;text-align:center;overflow:hidden;"></div>
         <div style="display:flex;gap:4px;flex-shrink:0;">
           <button onclick="saveFeedingSpot()" style="background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);border-radius:6px;color:var(--accent);font-size:0.63rem;padding:3px 8px;cursor:pointer;white-space:nowrap;">📌 Save</button>
-          <button id="deleteFeedingSpotBtn" style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.95rem;width:36px;height:36px;cursor:pointer;flex-shrink:0;display:none;align-items:center;justify-content:center;">🗑</button>
+          <button id="deleteFeedingSpotBtn" data-i18n-aria="aria.delete_spot" aria-label="スポットを削除" style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.95rem;width:36px;height:36px;cursor:pointer;flex-shrink:0;display:none;align-items:center;justify-content:center;">🗑</button>
         </div>
       </div>
     </div>
@@ -1328,8 +1328,8 @@
       <span data-i18n="analysis.stage_progress">STAGE PROGRESS</span>
       <span style="display:flex;align-items:center;gap:8px;">
         <span id="galleryAddBtns" style="display:flex;gap:6px;">
-          <button onclick="triggerPhoto('camera','gallery')" style="background:var(--surface2);border:none;border-radius:8px;color:var(--text2);font-size:0.78rem;padding:4px 10px;cursor:pointer;">📷</button>
-          <button onclick="triggerPhoto('library','gallery')" style="background:var(--surface2);border:none;border-radius:8px;color:var(--text2);font-size:0.78rem;padding:4px 10px;cursor:pointer;">🖼</button>
+          <button onclick="triggerPhoto('camera','gallery')" data-i18n-aria="aria.photo_camera" aria-label="カメラで撮影" style="background:var(--surface2);border:none;border-radius:8px;color:var(--text2);font-size:0.78rem;padding:4px 10px;cursor:pointer;">📷</button>
+          <button onclick="triggerPhoto('library','gallery')" data-i18n-aria="aria.photo_library" aria-label="ライブラリから追加" style="background:var(--surface2);border:none;border-radius:8px;color:var(--text2);font-size:0.78rem;padding:4px 10px;cursor:pointer;">🖼</button>
         </span>
         <span id="cycleSelectorWrap"></span>
         <span id="stageTotalDays" style="font-size:0.8rem;color:var(--accent);font-weight:700;"></span>
@@ -1523,6 +1523,7 @@
       'confirm.delete_log':'このログを削除しますか？',
       'confirm.ok_btn':'削除','confirm.cancel_btn':'キャンセル','confirm.start_btn':'開始','confirm.enable_btn':'有効化',
       'pwa.update_avail':'🌿 新バージョンが利用可能です','pwa.update_now':'今すぐ更新','pwa.update_aria':'アップデート','pwa.close_aria':'閉じる',
+      'aria.temp_down':'温度を下げる','aria.temp_up':'温度を上げる','aria.hum_down':'湿度を下げる','aria.hum_up':'湿度を上げる','aria.ppfd_down':'PPFDを下げる','aria.ppfd_up':'PPFDを上げる','aria.add_nutrient':'肥料を追加','aria.clear_date':'開始日をクリア','aria.delete_spot':'スポットを削除','aria.photo_camera':'カメラで撮影','aria.photo_library':'ライブラリから追加',
       'action.hum_up':'湿度 +','action.hum_down':'湿度 -',
       'action.temp_down':'温度 -1.0℃','action.temp_up':'温度 +1.0℃',
       'action.flush':'フラッシュを推奨','action.ec_up':'ECを少し上げる','action.no_change':'変更不要',
@@ -1606,6 +1607,7 @@
       'confirm.delete_log':'Delete this log entry?',
       'confirm.ok_btn':'Delete','confirm.cancel_btn':'Cancel','confirm.start_btn':'Start','confirm.enable_btn':'Enable',
       'pwa.update_avail':'🌿 New version available','pwa.update_now':'Update now','pwa.update_aria':'Update','pwa.close_aria':'Close',
+      'aria.temp_down':'Decrease temperature','aria.temp_up':'Increase temperature','aria.hum_down':'Decrease humidity','aria.hum_up':'Increase humidity','aria.ppfd_down':'Decrease PPFD','aria.ppfd_up':'Increase PPFD','aria.add_nutrient':'Add nutrient','aria.clear_date':'Clear start date','aria.delete_spot':'Delete spot','aria.photo_camera':'Take photo','aria.photo_library':'Add from library',
       'action.hum_up':'RH +','action.hum_down':'RH -',
       'action.temp_down':'Temp -1.0°C','action.temp_up':'Temp +1.0°C',
       'action.flush':'Flush recommended','action.ec_up':'Raise EC slightly','action.no_change':'No changes needed',
@@ -1707,6 +1709,25 @@
     const s = stages[stageKey] || stages.veg;
     const v = (s && s.vpd) ? s.vpd : stages.veg.vpd;
     return { min: v[0], max: v[1] };
+  }
+
+  // "YYYY-MM-DD" 文字列をローカル深夜の Date として解釈する。
+  // new Date("2026-06-20") は仕様上 UTC 深夜になり、UTC- のタイムゾーン
+  // （米国など）では前日にずれて日数カウントが全て +1 になるため必須。
+  function parseLocalDate(s) {
+    if (s instanceof Date) return new Date(s.getTime());
+    if (typeof s === 'number') return new Date(s);
+    if (typeof s === 'string') {
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+    }
+    return new Date(s);
+  }
+  // 開始日=1日目の包括的経過日数。end 省略時は今日まで。
+  function inclusiveDayCount(startStr, endStr) {
+    const start = parseLocalDate(startStr); start.setHours(0, 0, 0, 0);
+    const end = endStr ? parseLocalDate(endStr) : new Date(); end.setHours(0, 0, 0, 0);
+    return Math.floor((end - start) / 86400000) + 1;
   }
 
   /* === Crypto (AES-256-GCM, PIN-derived key) ===
@@ -2430,7 +2451,7 @@
 
   async function applyStageStartDate(val) {
     if (val) {
-      const d = new Date(val); const today = new Date(); today.setHours(23,59,59,999);
+      const d = parseLocalDate(val); const today = new Date(); today.setHours(23,59,59,999);
       if (isNaN(d.getTime()) || d > today) { showToast(appLang === 'en' ? '⚠️ Date cannot be in the future' : '⚠️ 未来の日付は設定できません'); return; }
     }
     const t = tents[currentTent];
@@ -2453,11 +2474,7 @@
       el.style.display = '';
       return;
     }
-    const start = new Date(dateStr);
-    const end = endDateStr ? new Date(endDateStr) : new Date();
-    start.setHours(0, 0, 0, 0);
-    end.setHours(0, 0, 0, 0);
-    const days = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    const days = inclusiveDayCount(dateStr, endDateStr);
     const week = Math.ceil(days / 7);
     if (days >= 1) {
       el.textContent = endDateStr ? `${tr('analysis.week')}${week} ${tr('analysis.day_abbr')}${days}✓` : `${tr('analysis.week')}${week} ${tr('analysis.day_abbr')}${days}`;
@@ -2693,10 +2710,7 @@
           feedDC.textContent = linked.base.replace(/-/g, '/');
           feedDC.style.display = '';
         } else {
-        const start = new Date(linked.base);
-        const end = linked.end ? new Date(linked.end) : new Date();
-        start.setHours(0,0,0,0); end.setHours(0,0,0,0);
-        const days = Math.floor((end - start) / (1000*60*60*24)) + 1;
+        const days = inclusiveDayCount(linked.base, linked.end);
         const week = Math.ceil(days / 7);
         if (days >= 1) {
           feedDC.textContent = linked.end ? `${tr('analysis.week')}${week} ${tr('analysis.day_abbr')}${days}✓` : `${tr('analysis.week')}${week} ${tr('analysis.day_abbr')}${days}`;
@@ -3000,7 +3014,8 @@
   async function saveFeedingSpot() {
     const t = tents[currentTent];
     if (!t.stageSpots) t.stageSpots = {};
-    const _fv = id => { const el = document.getElementById(id); return el ? (el.value.trim() || el.placeholder || '') : ''; };
+    // placeholder は「例示値」なので保存対象にしない（空欄はそのまま未設定に）
+    const _fv = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
     const ph = parseFloat(_fv('phInput'));
     const ec = parseFloat(_fv('ecInput'));
     const runoffEc = parseFloat(_fv('runoffEcInput'));
@@ -4484,8 +4499,16 @@
    * 温度・湿度・ステージから簡単なスケジュールを提示する
    */
 
+  // ja-JP "YYYY/M/D H:mm:ss" を手動解釈（Safari の Date.parse は非ISO文字列で NaN を返しうる）。
+  function _parseJaTimestamp(s) {
+    if (typeof s !== 'string') return NaN;
+    const m = s.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})(?:\D+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+    if (m) return new Date(+m[1], +m[2]-1, +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0)).getTime();
+    const p = Date.parse(s);
+    return Number.isFinite(p) ? p : NaN;
+  }
   function getLogDate(log) {
-    const t = log.ts || Date.parse(log.timestamp);
+    const t = Number.isFinite(log.ts) ? log.ts : _parseJaTimestamp(log.timestamp);
     return Number.isFinite(t) ? new Date(t) : new Date();
   }
   
@@ -4635,10 +4658,9 @@ function classifyVpd(vpd, lo, hi) {
     if (!sd) return null;
     const dates = STAGE_ORDER.map(k => sd[k]).filter(Boolean);
     if (!dates.length) return null;
-    const start = new Date(dates[0]);
-    const end = sd['harvest'] ? new Date(sd['harvest']) : (isCurrent ? new Date() : new Date(dates[dates.length - 1]));
-    const d = Math.round((end - start) / (1000 * 60 * 60 * 24));
-    return d >= 0 ? d : null;
+    const endStr = sd['harvest'] ? sd['harvest'] : (isCurrent ? null : dates[dates.length - 1]);
+    const d = inclusiveDayCount(dates[0], endStr);
+    return d >= 1 ? d : null;
   }
   function renderCycleHistory() {
     const card = document.getElementById('cycleHistoryCard');
@@ -4721,8 +4743,8 @@ function classifyVpd(vpd, lo, hi) {
     if (totalEl && allDates.length > 0) {
       const harvestDate = _sd['harvest'];
       // 過去サイクルは harvest 日が無ければ最終既知日まで、現サイクルは現在まで
-      const endDate = harvestDate ? new Date(harvestDate) : (_viewingPast ? new Date(allDates[allDates.length - 1]) : new Date());
-      const totalDays = Math.round((endDate - new Date(allDates[0])) / (1000 * 60 * 60 * 24));
+      const endStr = harvestDate ? harvestDate : (_viewingPast ? allDates[allDates.length - 1] : null);
+      const totalDays = inclusiveDayCount(allDates[0], endStr);
       totalEl.textContent = `${tr('analysis.total_days')}${totalDays}${tr('analysis.days')}`;
     } else if (totalEl) {
       totalEl.textContent = '';
@@ -4746,7 +4768,6 @@ function classifyVpd(vpd, lo, hi) {
       let daysText = '';
       if (dateStr && key !== 'harvest') {
         // BUG-2 fix: Dry の起算点は自身の開始日（dateStr）に統一。Flush 込みにしない。
-        const start = new Date(dateStr);
         // Dry の終了は harvest 日を優先。それ以外は「次に存在するステージ開始日」→「現在」へフォールバック。
         const dryEnd = key === 'dry' && _sd['harvest'] ? _sd['harvest'] : null;
         // BUG-3 fix: スキップで nextDateStr が無い場合、STAGE_ORDER を先送りして次に stageDates がある key を探す。
@@ -4756,9 +4777,19 @@ function classifyVpd(vpd, lo, hi) {
             if (_sd[order[j]]) { fallbackNext = _sd[order[j]]; break; }
           }
         }
-        const end = dryEnd ? new Date(dryEnd) : (fallbackNext ? new Date(fallbackNext) : (isCurrent ? new Date() : null));
-        if (end) {
-          const days = Math.round((end - start) / (1000 * 60 * 60 * 24));
+        // 日数は parseLocalDate でローカル基準に統一（UTC ずれ回避）。
+        // 次ステージ開始日は排他境界（差分=包括日数）／harvest日・現在は包括（+1）でヘッダと一致。
+        let days = null;
+        if (dryEnd) {
+          days = inclusiveDayCount(dateStr, dryEnd);
+        } else if (fallbackNext) {
+          const a = parseLocalDate(dateStr); a.setHours(0,0,0,0);
+          const b = parseLocalDate(fallbackNext); b.setHours(0,0,0,0);
+          days = Math.round((b - a) / 86400000);
+        } else if (isCurrent) {
+          days = inclusiveDayCount(dateStr, null);
+        }
+        if (days != null) {
           daysText = days > 0 ? `${days}${tr('analysis.days')}` : `0${tr('analysis.days')}`;
         }
       }
@@ -4914,7 +4945,7 @@ function classifyVpd(vpd, lo, hi) {
 
     let rows = '';
     // 日時編集
-    const _d = new Date(log.ts || Date.parse(log.timestamp) || Date.now());
+    const _d = getLogDate(log);
     const _pad = n => String(n).padStart(2,'0');
     const _dateStr = `${_d.getFullYear()}-${_pad(_d.getMonth()+1)}-${_pad(_d.getDate())}`;
     const _timeStr = `${_pad(_d.getHours())}:${_pad(_d.getMinutes())}`;
