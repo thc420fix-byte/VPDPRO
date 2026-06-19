@@ -5941,19 +5941,12 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
       window.location.reload();
     }
 
-    /* Standalone detection (works for both Android & iOS) */
-    const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
-      || ('standalone' in navigator && !!navigator.standalone);
-
-    /* iOS detection: UA check + fallback via navigator.standalone existence */
-    const _isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
-      || ('standalone' in navigator && !/android/i.test(navigator.userAgent));
-
-    /* beforeinstallprompt — Chrome/Android/Edge */
+    /* beforeinstallprompt — Chrome/Android/Edge のみ発火 (iOS は発火しない) */
     window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault();
       _pwaPrompt = e;
-      if (!_isStandalone) _showInstallBanner();
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      if (!isStandalone) _showInstallBanner();
     });
 
     /* appinstalled confirmation */
@@ -5963,13 +5956,6 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
         if (typeof showToast === 'function') showToast('✅ ホーム画面に追加しました');
       }, 600);
     });
-
-    /* iOS Safari fallback — no beforeinstallprompt */
-    if (_isIos && !_isStandalone) {
-      document.getElementById('pwaInstallSubtext').textContent = '追加方法: Safari で 共有ボタン → ホーム画面に追加';
-      document.getElementById('pwaInstallBtn').style.display = 'none';
-      _showInstallBanner();
-    }
 
     /* Service Worker registration + update detection */
     if ('serviceWorker' in navigator) {
