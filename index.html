@@ -5905,10 +5905,11 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
     /* ── PWA install & update logic ── */
     let _pwaPrompt = null;
     let _swWaiting = null;
-    const _BANNER_DISMISSED_KEY = 'pwa_banner_dismissed';
+    const _BANNER_DISMISSED_KEY = 'pwa_banner_dismissed_v2';
 
+    /* Use localStorage so dismissal survives across sessions */
     function _showInstallBanner() {
-      if (sessionStorage.getItem(_BANNER_DISMISSED_KEY)) return;
+      if (localStorage.getItem(_BANNER_DISMISSED_KEY)) return;
       setTimeout(() => {
         document.getElementById('pwaInstallBanner').classList.add('show');
       }, 3500);
@@ -5916,7 +5917,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
 
     function dismissPwaBanner() {
       document.getElementById('pwaInstallBanner').classList.remove('show');
-      sessionStorage.setItem(_BANNER_DISMISSED_KEY, '1');
+      localStorage.setItem(_BANNER_DISMISSED_KEY, '1');
     }
 
     function triggerPwaInstall() {
@@ -5924,7 +5925,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
         _pwaPrompt.prompt();
         _pwaPrompt.userChoice.then(r => {
           if (r.outcome === 'accepted') {
-            document.getElementById('pwaInstallBanner').classList.remove('show');
+            dismissPwaBanner();
           }
           _pwaPrompt = null;
         });
@@ -5940,30 +5941,32 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
       window.location.reload();
     }
 
-    /* beforeinstallprompt — Chrome/Android */
+    /* Standalone detection (works for both Android & iOS) */
+    const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || ('standalone' in navigator && !!navigator.standalone);
+
+    /* iOS detection: UA check + fallback via navigator.standalone existence */
+    const _isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
+      || ('standalone' in navigator && !/android/i.test(navigator.userAgent));
+
+    /* beforeinstallprompt — Chrome/Android/Edge */
     window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault();
       _pwaPrompt = e;
-      /* Only show if not already installed */
-      if (!window.matchMedia('(display-mode: standalone)').matches) {
-        _showInstallBanner();
-      }
+      if (!_isStandalone) _showInstallBanner();
     });
 
     /* appinstalled confirmation */
     window.addEventListener('appinstalled', () => {
-      document.getElementById('pwaInstallBanner').classList.remove('show');
+      dismissPwaBanner();
       setTimeout(() => {
         if (typeof showToast === 'function') showToast('✅ ホーム画面に追加しました');
       }, 600);
     });
 
-    /* iOS Safari fallback — no beforeinstallprompt, check standalone */
-    const _isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
-      || ('standalone' in navigator && navigator.standalone);
+    /* iOS Safari fallback — no beforeinstallprompt */
     if (_isIos && !_isStandalone) {
-      document.getElementById('pwaInstallSubtext').textContent = 'Safari で「共有」→「ホーム画面に追加」';
+      document.getElementById('pwaInstallSubtext').textContent = '追加方法: Safari で 共有ボタン → ホーム画面に追加';
       document.getElementById('pwaInstallBtn').style.display = 'none';
       _showInstallBanner();
     }
