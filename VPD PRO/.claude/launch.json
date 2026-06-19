@@ -4,8 +4,8 @@
     {
       "name": "VPD PRO",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["/tmp/vpd_pro_server.py"],
-      "autoPort": true
+      "runtimeArgs": ["-m", "http.server", "8765"],
+      "port": 8765
     }
   ]
 }
