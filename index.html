@@ -2021,10 +2021,11 @@
     const _wtDisplay = lf.waterTemp !== undefined && lf.waterTemp !== '' && lf.waterTemp != null
       ? String(useFahrenheit ? parseFloat((parseFloat(lf.waterTemp) * 9/5 + 32).toFixed(1)) : lf.waterTemp) : '';
     _setFeed('waterTempInput', _wtDisplay);
-    // modeInputCache もこのテントの値に同期
+    // modeInputCache もこのテントの値に同期。もう一方のモードは前テストの値が残らないよう破棄（ステージ既定値へフォールバック）
     modeInputCache[spotMode] = {
       ph: lf.ph ?? '', ec: lf.ec ?? '', runoffEc: lf.runoffEc ?? '', waterTemp: _wtDisplay
     };
+    modeInputCache[spotMode === 'theory' ? 'myspot' : 'theory'] = null;
     document.getElementById('tempVal').value = useFahrenheit ? Math.round(t.temp * 9/5 + 32) : Math.round(t.temp);
     document.getElementById('humVal').value  = Math.round(t.hum);
     const leafOff = (t.leafOffset !== undefined && t.leafOffset !== null) ? t.leafOffset : -2.0;
