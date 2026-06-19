@@ -4421,6 +4421,7 @@ function classifyVpd(vpd, lo, hi) {
     // 閲覧サイクルの日付ソース：現サイクルは t.stageDates、過去サイクルは cycleHistory のスナップショット
     const _hist = _viewingPast ? (Array.isArray(t.cycleHistory) ? t.cycleHistory.find(h => h && h.cycle === _ac) : null) : null;
     const _sd  = _viewingPast ? (_hist?.stageDates || {})    : (t.stageDates || {});
+    const _cycleYield = _viewingPast ? (_hist?.yield ?? null) : (t.yield ?? null);  // 収穫ステージに表示する確定収量
     const allDates = order.map(k => _sd[k]).filter(Boolean);
     const totalEl = document.getElementById('stageTotalDays');
     if (totalEl && allDates.length > 0) {
@@ -4556,7 +4557,7 @@ function classifyVpd(vpd, lo, hi) {
               <span style="font-size:0.8rem;font-weight:${isCurrent ? '700' : '600'};color:${isCurrent ? color : 'var(--text)'};">${tr('stage.'+key)||s.name}${isCurrent ? ' ◀' : ''}</span>
               <span style="display:flex;align-items:center;gap:6px;">
                 <span style="font-size:0.72rem;color:var(--text);opacity:0.9;white-space:nowrap;">
-                  <span style="color:#fff;opacity:${isCurrent ? '0.9' : '0.4'};">${dateStr ? dateStr.replace(/-/g, '/') : (key === 'harvest' ? '' : '—')}</span>${daysText ? `　<span style="color:var(--accent);font-weight:700;opacity:${isCurrent ? '1' : '0.4'};">${daysText}</span>` : ''}
+                  <span style="color:#fff;opacity:${isCurrent ? '0.9' : '0.4'};">${dateStr ? dateStr.replace(/-/g, '/') : (key === 'harvest' ? '' : '—')}</span>${daysText ? `　<span style="color:var(--accent);font-weight:700;opacity:${isCurrent ? '1' : '0.4'};">${daysText}</span>` : ''}${key === 'harvest' && _cycleYield != null ? `　<span style="color:var(--accent);font-weight:700;">🏆 ${esc(String(_cycleYield))}g</span>` : ''}
                 </span>
                 ${dateStr ? `<span id="sicon-${key}" style="font-size:0.75rem;color:var(--accent);opacity:0.7;cursor:pointer;background:rgba(52,199,89,0.1);border-radius:4px;padding:1px 5px;font-weight:700;">▶</span>` : ''}
               </span>
