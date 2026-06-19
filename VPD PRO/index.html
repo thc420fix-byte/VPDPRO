@@ -1235,13 +1235,15 @@
     <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
       <span data-i18n="analysis.stage_progress">STAGE PROGRESS</span>
       <span style="display:flex;align-items:center;gap:8px;">
-        <span style="display:flex;gap:6px;">
+        <span id="galleryAddBtns" style="display:flex;gap:6px;">
           <button onclick="triggerPhoto('camera','gallery')" style="background:var(--surface2);border:none;border-radius:8px;color:var(--text2);font-size:0.78rem;padding:4px 10px;cursor:pointer;">📷</button>
           <button onclick="triggerPhoto('library','gallery')" style="background:var(--surface2);border:none;border-radius:8px;color:var(--text2);font-size:0.78rem;padding:4px 10px;cursor:pointer;">🖼</button>
         </span>
+        <span id="cycleSelectorWrap"></span>
         <span id="stageTotalDays" style="font-size:0.8rem;color:var(--accent);font-weight:700;"></span>
       </span>
     </div>
+    <div id="cycleViewBanner" style="display:none;font-size:0.7rem;color:var(--warning);background:rgba(255,159,10,0.1);border:1px solid rgba(255,159,10,0.3);border-radius:8px;padding:5px 10px;margin-bottom:8px;text-align:center;"></div>
     <div id="stageTimeline"></div>
     <div id="analysisEmptyState" style="display:none;text-align:center;padding:24px 16px;">
       <div style="font-size:2rem;margin-bottom:8px;">📊</div>
@@ -1976,6 +1978,7 @@
     const _mn = document.getElementById('monitorNoteInput'); if (_mn) { _mn.value = ''; const _mc = document.getElementById('monitorNoteCount'); if (_mc) _mc.textContent = '100'; }
     await saveCurrentTentState();
     currentTent = i;
+    _viewCycle = null;   // テント切替で閲覧サイクルを現在へ戻す
     loadTentToUI(i);
     buildTentBar();
     update();
@@ -3669,7 +3672,7 @@
       if (_statsIdx !== currentTent) return;
       const tent = tents[currentTent];
       if (!tent) { avgEl.textContent = '—'; okEl.textContent = '—'; cntEl.textContent = '0'; trendEl.textContent = ''; return; }
-      const rows = all.filter(r => r.tentId === tent.id && (Number(r.cycle)||1) === (Number(tent.cycle)||1) && r.vpd != null).sort((a,b) => b.ts - a.ts).slice(0, 50);
+      const rows = all.filter(r => r.tentId === tent.id && (Number(r.cycle)||1) === analysisCycle() && r.vpd != null).sort((a,b) => b.ts - a.ts).slice(0, 50);
       if (!rows.length) { avgEl.textContent = '—'; okEl.textContent = '—'; cntEl.textContent = '0'; trendEl.textContent = ''; return; }
       const avg = rows.reduce((s,r) => s + r.vpd, 0) / rows.length;
       const stage = tent.stage || 'veg';
@@ -3891,6 +3894,7 @@
       : `サイクル ${cur} を終了して、新しいサイクル ${cur + 1} を開始しますか？\n過去のログは保存されたまま残ります。${yieldNote}`;
     if (!(await customConfirm(cycleMsg))) return;
     t.cycle = cur + 1;
+    _viewCycle = null;   // 新サイクル開始時は現在サイクルを表示
     t.stage = 'clone';
     t.stageDates = {};
     t.stageEndDates = {};
@@ -4303,12 +4307,58 @@ function classifyVpd(vpd, lo, hi) {
     const nav = container.querySelector('.slog-nav');
     if (nav) nav.querySelector('.slog-page').textContent = `${page + 1}/${total}`;
   }
+  // 分析タブで閲覧中のサイクル。null = 現在のサイクル（tent.cycle に追従）。過去サイクルを選ぶと読み取り専用で閲覧。
+  let _viewCycle = null;
+  function analysisCycle() {
+    const t = tents[currentTent];
+    const cur = Number(t?.cycle) || 1;
+    if (_viewCycle == null || _viewCycle > cur || _viewCycle < 1) return cur;
+    return _viewCycle;
+  }
+  function isViewingPastCycle() {
+    const t = tents[currentTent];
+    return analysisCycle() !== (Number(t?.cycle) || 1);
+  }
+  function setViewCycle(c) {
+    const t = tents[currentTent];
+    const cur = Number(t?.cycle) || 1;
+    const n = Number(c) || cur;
+    _viewCycle = (n >= cur) ? null : Math.max(1, n);
+    dbGetAll('logs').then(logs => { renderStageTimeline(logs); renderVpdStats(); });
+  }
+  function renderCycleSelector() {
+    const wrap = document.getElementById('cycleSelectorWrap');
+    if (!wrap) return;
+    const t = tents[currentTent];
+    const cur = Number(t?.cycle) || 1;
+    if (cur <= 1) { wrap.innerHTML = ''; return; }   // サイクルが1つだけなら選択不要
+    const sel = analysisCycle();
+    const opts = [];
+    for (let c = cur; c >= 1; c--) {
+      const label = c === cur ? (appLang === 'en' ? `Cycle ${c} (now)` : `サイクル ${c}（現在）`) : (appLang === 'en' ? `Cycle ${c}` : `サイクル ${c}`);
+      opts.push(`<option value="${c}" ${c === sel ? 'selected' : ''}>${label}</option>`);
+    }
+    wrap.innerHTML = `<select onchange="setViewCycle(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.72rem;padding:3px 6px;cursor:pointer;font-family:inherit;">🔄 ${opts.join('')}</select>`;
+  }
+
   async function renderStageTimeline(_logs) {
     const el = document.getElementById('stageTimeline');
     if (!el) return;
     const t = tents[currentTent];
     const order = STAGE_ORDER;
-    const allDates = order.map(k => t.stageDates && t.stageDates[k]).filter(Boolean);
+    renderCycleSelector();
+    const _viewingPast = isViewingPastCycle();
+    const _ac = analysisCycle();
+    // 過去サイクル閲覧時の読み取り専用バナー & 新規写真追加ボタンの抑制（新規ログは常に現サイクルに付くため）
+    const _banner = document.getElementById('cycleViewBanner');
+    if (_banner) {
+      if (_viewingPast) { _banner.style.display = 'block'; _banner.textContent = appLang === 'en' ? `📖 Viewing Cycle ${_ac} (read-only). Switch to the current cycle to add or edit.` : `📖 サイクル ${_ac} を閲覧中（読み取り専用）。追加・編集は現在のサイクルに切り替えてください。`; }
+      else { _banner.style.display = 'none'; }
+    }
+    const _addBtns = document.getElementById('galleryAddBtns');
+    if (_addBtns) _addBtns.style.display = _viewingPast ? 'none' : 'flex';
+    // stageDates はテント単位（現サイクルのみ）。過去サイクル閲覧時は日数オーバーレイを出さない。
+    const allDates = _viewingPast ? [] : order.map(k => t.stageDates && t.stageDates[k]).filter(Boolean);
     const totalEl = document.getElementById('stageTotalDays');
     if (totalEl && allDates.length > 0) {
       const harvestDate = t.stageDates && t.stageDates['harvest'];
@@ -4319,7 +4369,7 @@ function classifyVpd(vpd, lo, hi) {
       totalEl.textContent = '';
     }
     const allStageLogs = (_logs || (await dbGetAll('logs')))
-      .filter(l => l.tentId === t.id && (Number(l.cycle) || 1) === (Number(t.cycle) || 1) && (l.type === 'monitor' || l.fertilizers || l.photo))
+      .filter(l => l.tentId === t.id && (Number(l.cycle) || 1) === _ac && (l.type === 'monitor' || l.fertilizers || l.photo))
       .sort((a, b) => a.ts - b.ts);
     const logsByStage = {};
     allStageLogs.forEach(l => {
@@ -4329,10 +4379,11 @@ function classifyVpd(vpd, lo, hi) {
     let html = '<div style="display:flex;flex-direction:column;gap:6px;">';
     order.forEach((key, idx) => {
       const s = stages[key];
-      const isCurrent = t.stage === key;
-      const dateStr = t.stageDates && t.stageDates[key];
+      // 過去サイクル閲覧時は現サイクルの開始日/現在ステージを当て込まない
+      const isCurrent = !_viewingPast && t.stage === key;
+      const dateStr = _viewingPast ? null : (t.stageDates && t.stageDates[key]);
       const nextKey = order[idx + 1];
-      const nextDateStr = nextKey && t.stageDates && t.stageDates[nextKey];
+      const nextDateStr = !_viewingPast && nextKey && t.stageDates && t.stageDates[nextKey];
       let daysText = '';
       if (dateStr && key !== 'harvest') {
         // BUG-2 fix: Dry の起算点は自身の開始日（dateStr）に統一。Flush 込みにしない。
@@ -4455,7 +4506,7 @@ function classifyVpd(vpd, lo, hi) {
     html += '</div>';
     el.innerHTML = html;
     const emptyEl = document.getElementById('analysisEmptyState');
-    if (emptyEl) { const _ct = tents[currentTent]; emptyEl.style.display = (_logs || []).filter(l => l.tentId === _ct?.id && (Number(l.cycle)||1) === (Number(_ct?.cycle)||1)).length === 0 ? '' : 'none'; }
+    if (emptyEl) { const _ct = tents[currentTent]; emptyEl.style.display = (_logs || []).filter(l => l.tentId === _ct?.id && (Number(l.cycle)||1) === analysisCycle()).length === 0 ? '' : 'none'; }
   }
   async function deleteStageLog(id, stageKey) {
 
