@@ -3267,7 +3267,7 @@
   /* === ステージ表 === */
   
   function getPpfdRange(stageKey, co2Enabled) {
-    const s = stages[stageKey];
+    const s = stages[stageKey] || stages.veg;
     if (!co2Enabled) return s.ppfd;
     const level = (tents[currentTent] || {}).co2Level || 1000;
     if (level <= 400) return s.ppfd;
