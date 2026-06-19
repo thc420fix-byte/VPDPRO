@@ -1459,7 +1459,7 @@
       'confirm.clear_logs':'「${name}」の全記録を削除しますか？',
       'confirm.erase_all':'全テントのデータを初期状態に戻しますか？',
       'confirm.delete_log':'このログを削除しますか？',
-      'confirm.ok_btn':'削除','confirm.cancel_btn':'キャンセル',
+      'confirm.ok_btn':'削除','confirm.cancel_btn':'キャンセル','confirm.start_btn':'開始','confirm.enable_btn':'有効化',
       'action.hum_up':'湿度 +','action.hum_down':'湿度 -',
       'action.temp_down':'温度 -1.0℃','action.temp_up':'温度 +1.0℃',
       'action.flush':'フラッシュを推奨','action.ec_up':'ECを少し上げる','action.no_change':'変更不要',
@@ -1541,7 +1541,7 @@
       'confirm.clear_logs':'Delete all records for "${name}"?',
       'confirm.erase_all':'Reset all tent data to defaults?',
       'confirm.delete_log':'Delete this log entry?',
-      'confirm.ok_btn':'Delete','confirm.cancel_btn':'Cancel',
+      'confirm.ok_btn':'Delete','confirm.cancel_btn':'Cancel','confirm.start_btn':'Start','confirm.enable_btn':'Enable',
       'action.hum_up':'RH +','action.hum_down':'RH -',
       'action.temp_down':'Temp -1.0°C','action.temp_up':'Temp +1.0°C',
       'action.flush':'Flush recommended','action.ec_up':'Raise EC slightly','action.no_change':'No changes needed',
@@ -3959,7 +3959,7 @@
     const cycleMsg = appLang === 'en'
       ? `End Cycle ${cur} and start Cycle ${cur + 1}?\nAll past logs are preserved.${yieldNote}`
       : `サイクル ${cur} を終了して、新しいサイクル ${cur + 1} を開始しますか？\n過去のログは保存されたまま残ります。${yieldNote}`;
-    if (!(await customConfirm(cycleMsg))) return;
+    if (!(await customConfirm(cycleMsg, { okLabel: tr('confirm.start_btn'), danger: false }))) return;
     // 終了するサイクルの日付・収量をスナップショットして保存（過去サイクル閲覧・収量履歴用）
     t.cycleHistory = Array.isArray(t.cycleHistory) ? t.cycleHistory : [];
     t.cycleHistory = t.cycleHistory.filter(h => h && h.cycle !== cur); // 二重記録防止
@@ -5185,7 +5185,7 @@ function classifyVpd(vpd, lo, hi) {
 
   async function setPinFailMode(mode) {
     if (mode === 'wipe' && _pinFailMode() !== 'wipe') {
-      if (!(await customConfirm(appLang === 'en' ? 'Switch to wipe-all mode on 3 PIN failures?\nData cannot be recovered.' : 'PIN 3回失敗で全データを消去するモードに切り替えますか？\n誤入力でもデータは戻りません。'))) return;
+      if (!(await customConfirm(appLang === 'en' ? 'Switch to wipe-all mode on 3 PIN failures?\nData cannot be recovered.' : 'PIN 3回失敗で全データを消去するモードに切り替えますか？\n誤入力でもデータは戻りません。', { okLabel: tr('confirm.enable_btn'), danger: true }))) return;
     }
     localStorage.setItem('vpdPinFailMode', mode);
     _updateFailModeUI();
@@ -5441,7 +5441,13 @@ function classifyVpd(vpd, lo, hi) {
     updateThemeToggleUI(isLight);
     localStorage.setItem('vpdTheme', isLight ? 'light' : 'dark');
   }
-  function customConfirm(message) {
+  // opts: { okLabel?: string, danger?: boolean }
+  // danger=true（既定）は破壊的操作向けの赤ボタン（削除など）。
+  // danger=false は前向きな操作向けのアクセントカラー（サイクル開始など）。
+  function customConfirm(message, opts) {
+    opts = opts || {};
+    const danger = opts.danger !== false; // 既定は破壊的（削除系の従来挙動を維持）
+    const okLabel = opts.okLabel || tr('confirm.ok_btn');
     return new Promise(resolve => {
       let m = document.getElementById('customConfirmModal');
       if (!m) {
@@ -5452,14 +5458,25 @@ function classifyVpd(vpd, lo, hi) {
           <div id="ccMsg" style="font-size:0.9rem;color:var(--text,#fff);margin-bottom:18px;line-height:1.5;text-align:center;white-space:pre-line;"></div>
           <div style="display:flex;gap:10px;">
             <button id="ccCancel" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border,#444);background:transparent;color:var(--text,#fff);font-size:0.85rem;cursor:pointer;">キャンセル</button>
-            <button id="ccOk" style="flex:1;padding:10px;border-radius:8px;border:1px solid #ef4444;background:rgba(239,68,68,0.15);color:#ef4444;font-size:0.85rem;font-weight:700;cursor:pointer;">削除</button>
+            <button id="ccOk" style="flex:1;padding:10px;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">削除</button>
           </div>
         </div>`;
         document.body.appendChild(m);
       }
       m.querySelector('#ccMsg').textContent = message;
       m.querySelector('#ccCancel').textContent = tr('confirm.cancel_btn');
-      m.querySelector('#ccOk').textContent = tr('confirm.ok_btn');
+      const okBtn = m.querySelector('#ccOk');
+      okBtn.textContent = okLabel;
+      // ボタンの配色を用途に応じて切り替える（モーダルは使い回しのため毎回設定）。
+      if (danger) {
+        okBtn.style.border = '1px solid #ef4444';
+        okBtn.style.background = 'rgba(239,68,68,0.15)';
+        okBtn.style.color = '#ef4444';
+      } else {
+        okBtn.style.border = '1px solid var(--accent, #34c759)';
+        okBtn.style.background = 'rgba(52,199,89,0.15)';
+        okBtn.style.color = 'var(--accent, #34c759)';
+      }
       m.style.display = 'flex';
       const ok = m.querySelector('#ccOk');
       const cancel = m.querySelector('#ccCancel');
