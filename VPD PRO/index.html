@@ -186,6 +186,13 @@
       border-top: 1px solid rgba(0,0,0,0.10);
     }
     body.light-mode .bnav-item { color: rgba(0,0,0,0.32); }
+    /* ライトモード：白ハードコードのラベル・ボタンが白背景に埋もれるのを修正 */
+    body.light-mode .stepper-btn { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.6); }
+    body.light-mode .stepper-btn:active { background: rgba(0,0,0,0.12); }
+    body.light-mode .stepper-label { color: rgba(0,0,0,0.5); }
+    body.light-mode .stepper-unit { color: rgba(0,0,0,0.42); }
+    body.light-mode .vpd-label { color: rgba(0,0,0,0.5); }
+    body.light-mode .toggle-btn { color: rgba(0,0,0,0.45); }
     .bnav-item {
       position: relative;
       display: flex; flex-direction: column; align-items: center; gap: 2px;
@@ -1002,12 +1009,12 @@
         <div class="vpd-block" id="airBlock">
           <div class="vpd-label" data-i18n="vpd.air_label">Air VPD</div>
           <div class="vpd-num" id="vpdAir">—</div>
-          <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);letter-spacing:0.05em;font-weight:500;">kPa</div>
+          <div style="font-size:0.65rem;color:var(--muted);letter-spacing:0.05em;font-weight:500;">kPa</div>
         </div>
         <div class="vpd-block" id="leafBlock">
           <div class="vpd-label" data-i18n="vpd.leaf_label">Leaf VPD</div>
           <div class="vpd-num" id="vpdLeaf" style="color:var(--leaf)">—</div>
-          <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);letter-spacing:0.05em;font-weight:500;">kPa</div>
+          <div style="font-size:0.65rem;color:var(--muted);letter-spacing:0.05em;font-weight:500;">kPa</div>
         </div>
       </div>
       <div class="vpd-zonebar-wrap">
@@ -1104,14 +1111,14 @@
         </div>
         <!-- DLI + Light tools -->
         <div class="stepper-row" id="dliRow" style="gap:6px;flex-wrap:nowrap;justify-content:flex-start;padding:6px 2px;">
-          <span style="font-size:0.7rem;color:rgba(255,255,255,0.42);white-space:nowrap;flex:1;">DLI <span id="dliVal" style="color:var(--accent);font-weight:600;font-size:0.9rem;font-family:'Rajdhani',sans-serif;">—</span> <span style="opacity:0.55;font-size:0.62rem;">mol/m²/d</span><span id="dliTarget" style="opacity:0.55;font-size:0.62rem;"></span></span>
-          <span onclick="cyclePhotoperiod()" style="cursor:pointer;font-size:0.65rem;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.08);border-radius:7px;padding:4px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;font-weight:500;"><span id="photoperiodLabel">18</span>h</span>
-          <span onclick="openLuxConverter()" style="cursor:pointer;font-size:0.65rem;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.08);border-radius:7px;padding:4px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;font-weight:500;">lux</span>
+          <span style="font-size:0.7rem;color:var(--text2);white-space:nowrap;flex:1;">DLI <span id="dliVal" style="color:var(--accent);font-weight:600;font-size:0.9rem;font-family:'Rajdhani',sans-serif;">—</span> <span style="opacity:0.55;font-size:0.62rem;">mol/m²/d</span><span id="dliTarget" style="opacity:0.55;font-size:0.62rem;"></span></span>
+          <span onclick="cyclePhotoperiod()" class="dli-chip" style="cursor:pointer;font-size:0.65rem;color:var(--text2);background:rgba(127,127,127,0.14);border-radius:7px;padding:4px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;font-weight:500;"><span id="photoperiodLabel">18</span>h</span>
+          <span onclick="openLuxConverter()" class="dli-chip" style="cursor:pointer;font-size:0.65rem;color:var(--text2);background:rgba(127,127,127,0.14);border-radius:7px;padding:4px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;font-weight:500;">lux</span>
           <span onclick="openLightMeter()" style="cursor:pointer;font-size:0.65rem;color:var(--accent);background:rgba(52,199,89,0.14);border-radius:7px;padding:4px 8px;font-weight:600;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;" data-i18n="lux.meter_btn">Meter</span>
         </div>
         <div style="padding:4px 0 0;">
           <div style="position:relative;">
-            <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('monitorNoteCount').textContent=100-this.value.length" style="width:100%;box-sizing:border-box;padding:7px 36px 7px 10px;background:rgba(255,255,255,0.05);border:none;border-radius:8px;color:rgba(255,255,255,0.6);font-size:0.72rem;outline:none;margin-bottom:3px;">
+            <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('monitorNoteCount').textContent=100-this.value.length" style="width:100%;box-sizing:border-box;padding:7px 36px 7px 10px;background:rgba(127,127,127,0.1);border:none;border-radius:8px;color:var(--text);font-size:0.72rem;outline:none;margin-bottom:3px;">
             <span id="monitorNoteCount" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:0.6rem;color:rgba(255,255,255,0.2);pointer-events:none;">100</span>
           </div>
         </div>
