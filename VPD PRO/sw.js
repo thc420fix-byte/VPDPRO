@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'canopy-v136';
+const CACHE_VERSION = 'canopy-v137';
 const ASSETS = [
   './',
   './index.html',
@@ -52,6 +52,10 @@ self.addEventListener('notificationclick', e => {
       return clients.openWindow('./');
     })
   );
+});
+
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', e => {

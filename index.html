@@ -535,6 +535,65 @@
       white-space: nowrap;
     }
     .toast.show { opacity: 1; }
+    /* PWA install banner */
+    #pwaInstallBanner {
+      position: fixed;
+      bottom: calc(72px + env(safe-area-inset-bottom));
+      left: 12px; right: 12px;
+      background: var(--surface);
+      border: 1.5px solid var(--accent);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 5500;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+      transform: translateY(120%);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    #pwaInstallBanner.show { transform: translateY(0); }
+    #pwaInstallBanner .pwa-icon {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+    }
+    #pwaInstallBanner .pwa-text { flex: 1; min-width: 0; }
+    #pwaInstallBanner .pwa-text strong { display: block; font-size: 0.88rem; color: var(--text); }
+    #pwaInstallBanner .pwa-text span { font-size: 0.76rem; color: var(--text2); }
+    #pwaInstallBanner .pwa-btn {
+      padding: 8px 14px; background: var(--accent); border: none;
+      border-radius: 10px; color: #000; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
+    #pwaInstallBanner .pwa-close {
+      background: transparent; border: none; color: var(--text2);
+      font-size: 1.1rem; cursor: pointer; padding: 4px; flex-shrink: 0; line-height: 1;
+    }
+    /* SW update banner */
+    #pwaUpdateBanner {
+      position: fixed;
+      top: max(14px, env(safe-area-inset-top));
+      left: 12px; right: 12px;
+      background: #1a2e1a;
+      border: 1.5px solid var(--accent);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 5500;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+      transform: translateY(calc(-100% - 30px));
+      transition: transform 0.3s ease;
+    }
+    #pwaUpdateBanner.show { transform: translateY(0); }
+    #pwaUpdateBanner .upd-text { flex: 1; font-size: 0.82rem; color: var(--text); }
+    #pwaUpdateBanner .upd-btn {
+      padding: 7px 13px; background: var(--accent); border: none;
+      border-radius: 9px; color: #000; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+    }
+    #pwaUpdateBanner .upd-close {
+      background: transparent; border: none; color: var(--text2); font-size: 1rem; cursor: pointer;
+    }
     .save-btn {
       position:relative; overflow:hidden;
       background: linear-gradient(135deg, #34c759 0%, #28a745 100%) !important;
@@ -1280,6 +1339,24 @@
 </div>
 
 <div id="toast" class="toast"></div>
+
+  <!-- PWA install banner -->
+  <div id="pwaInstallBanner" role="dialog" aria-label="アプリをインストール">
+    <img src="./icon-192.png" class="pwa-icon" alt="Canopy">
+    <div class="pwa-text">
+      <strong>Canopy をホーム画面に追加</strong>
+      <span id="pwaInstallSubtext">オフラインでも使えます</span>
+    </div>
+    <button class="pwa-btn" id="pwaInstallBtn" onclick="triggerPwaInstall()">追加</button>
+    <button class="pwa-close" onclick="dismissPwaBanner()" aria-label="閉じる">✕</button>
+  </div>
+
+  <!-- SW update banner -->
+  <div id="pwaUpdateBanner" role="dialog" aria-label="アップデート">
+    <div class="upd-text">🌿 新バージョンが利用可能です</div>
+    <button class="upd-btn" onclick="applySwUpdate()">今すぐ更新</button>
+    <button class="upd-close" onclick="document.getElementById('pwaUpdateBanner').classList.remove('show')" aria-label="閉じる">✕</button>
+  </div>
 
 <!-- Bottom Navigation -->
 <nav class="bottom-nav" id="bottomNav">
@@ -5825,8 +5902,99 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
   </script>
 
   <script>
+    /* ── PWA install & update logic ── */
+    let _pwaPrompt = null;
+    let _swWaiting = null;
+    const _BANNER_DISMISSED_KEY = 'pwa_banner_dismissed';
+
+    function _showInstallBanner() {
+      if (sessionStorage.getItem(_BANNER_DISMISSED_KEY)) return;
+      setTimeout(() => {
+        document.getElementById('pwaInstallBanner').classList.add('show');
+      }, 3500);
+    }
+
+    function dismissPwaBanner() {
+      document.getElementById('pwaInstallBanner').classList.remove('show');
+      sessionStorage.setItem(_BANNER_DISMISSED_KEY, '1');
+    }
+
+    function triggerPwaInstall() {
+      if (_pwaPrompt) {
+        _pwaPrompt.prompt();
+        _pwaPrompt.userChoice.then(r => {
+          if (r.outcome === 'accepted') {
+            document.getElementById('pwaInstallBanner').classList.remove('show');
+          }
+          _pwaPrompt = null;
+        });
+      }
+    }
+
+    function applySwUpdate() {
+      document.getElementById('pwaUpdateBanner').classList.remove('show');
+      if (_swWaiting) {
+        _swWaiting.postMessage({ type: 'SKIP_WAITING' });
+        _swWaiting = null;
+      }
+      window.location.reload();
+    }
+
+    /* beforeinstallprompt — Chrome/Android */
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      _pwaPrompt = e;
+      /* Only show if not already installed */
+      if (!window.matchMedia('(display-mode: standalone)').matches) {
+        _showInstallBanner();
+      }
+    });
+
+    /* appinstalled confirmation */
+    window.addEventListener('appinstalled', () => {
+      document.getElementById('pwaInstallBanner').classList.remove('show');
+      setTimeout(() => {
+        if (typeof showToast === 'function') showToast('✅ ホーム画面に追加しました');
+      }, 600);
+    });
+
+    /* iOS Safari fallback — no beforeinstallprompt, check standalone */
+    const _isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || ('standalone' in navigator && navigator.standalone);
+    if (_isIos && !_isStandalone) {
+      document.getElementById('pwaInstallSubtext').textContent = 'Safari で「共有」→「ホーム画面に追加」';
+      document.getElementById('pwaInstallBtn').style.display = 'none';
+      _showInstallBanner();
+    }
+
+    /* Service Worker registration + update detection */
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(err => { console.warn('SW registration failed:', err); setTimeout(() => { if (typeof showToast === 'function') showToast('⚠️ オフラインモード無効'); }, 2000); });
+      navigator.serviceWorker.register('./sw.js').then(reg => {
+        /* Detect SW waiting (update already downloaded) */
+        if (reg.waiting) {
+          _swWaiting = reg.waiting;
+          document.getElementById('pwaUpdateBanner').classList.add('show');
+        }
+        reg.addEventListener('updatefound', () => {
+          const sw = reg.installing;
+          if (!sw) return;
+          sw.addEventListener('statechange', () => {
+            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+              _swWaiting = sw;
+              document.getElementById('pwaUpdateBanner').classList.add('show');
+            }
+          });
+        });
+        /* Reload when SW takes over after SKIP_WAITING */
+        let _refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!_refreshing) { _refreshing = true; window.location.reload(); }
+        });
+      }).catch(err => {
+        console.warn('SW registration failed:', err);
+        setTimeout(() => { if (typeof showToast === 'function') showToast('⚠️ オフラインモード無効'); }, 2000);
+      });
     }
   </script>
 
