@@ -1374,10 +1374,10 @@
 <div id="toast" class="toast"></div>
 
   <!-- SW update banner -->
-  <div id="pwaUpdateBanner" role="dialog" aria-label="アップデート">
-    <div class="upd-text">🌿 新バージョンが利用可能です</div>
-    <button class="upd-btn" onclick="applySwUpdate()">今すぐ更新</button>
-    <button class="upd-close" onclick="document.getElementById('pwaUpdateBanner').classList.remove('show')" aria-label="閉じる">✕</button>
+  <div id="pwaUpdateBanner" role="dialog" data-i18n-aria="pwa.update_aria" aria-label="アップデート">
+    <div class="upd-text" data-i18n="pwa.update_avail">🌿 新バージョンが利用可能です</div>
+    <button class="upd-btn" onclick="applySwUpdate()" data-i18n="pwa.update_now">今すぐ更新</button>
+    <button class="upd-close" onclick="document.getElementById('pwaUpdateBanner').classList.remove('show')" data-i18n-aria="pwa.close_aria" aria-label="閉じる">✕</button>
   </div>
 
 <!-- Bottom Navigation -->
@@ -1522,6 +1522,7 @@
       'confirm.erase_all':'全テントのデータを初期状態に戻しますか？',
       'confirm.delete_log':'このログを削除しますか？',
       'confirm.ok_btn':'削除','confirm.cancel_btn':'キャンセル','confirm.start_btn':'開始','confirm.enable_btn':'有効化',
+      'pwa.update_avail':'🌿 新バージョンが利用可能です','pwa.update_now':'今すぐ更新','pwa.update_aria':'アップデート','pwa.close_aria':'閉じる',
       'action.hum_up':'湿度 +','action.hum_down':'湿度 -',
       'action.temp_down':'温度 -1.0℃','action.temp_up':'温度 +1.0℃',
       'action.flush':'フラッシュを推奨','action.ec_up':'ECを少し上げる','action.no_change':'変更不要',
@@ -1604,6 +1605,7 @@
       'confirm.erase_all':'Reset all tent data to defaults?',
       'confirm.delete_log':'Delete this log entry?',
       'confirm.ok_btn':'Delete','confirm.cancel_btn':'Cancel','confirm.start_btn':'Start','confirm.enable_btn':'Enable',
+      'pwa.update_avail':'🌿 New version available','pwa.update_now':'Update now','pwa.update_aria':'Update','pwa.close_aria':'Close',
       'action.hum_up':'RH +','action.hum_down':'RH -',
       'action.temp_down':'Temp -1.0°C','action.temp_up':'Temp +1.0°C',
       'action.flush':'Flush recommended','action.ec_up':'Raise EC slightly','action.no_change':'No changes needed',
@@ -1699,6 +1701,14 @@
   harvest:      { name: 'Harvest',    vpd: [0.6,0.9],  ppfd: [0,0],      ppfdCo2: [0,0],      color: '#f5c842', co2: [0.6,0.9], ecInput: [0,0],      ecRunoff: [0,0],      temp: null,    hum: null    }
   };
 
+  // ライブ stages から VPD 目標範囲を引く（ユーザーの dry カスタム値も反映）。
+  // 統計・スパークラインはここを参照し、ハードコードを避ける。
+  function vpdRangeFor(stageKey) {
+    const s = stages[stageKey] || stages.veg;
+    const v = (s && s.vpd) ? s.vpd : stages.veg.vpd;
+    return { min: v[0], max: v[1] };
+  }
+
   /* === Crypto (AES-256-GCM, PIN-derived key) ===
      データは PIN から導出した鍵で暗号化して保存する。
      鍵はメモリ上の _cryptoKey のみに存在し、ディスクには一切書かない。
@@ -1708,7 +1718,15 @@
   const _ENC_STORES  = ['tents', 'logs'];
   let _cryptoKey = null;   // AES-GCM CryptoKey — null = ロック中／PIN未設定
 
-  const _b64   = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  const _b64   = buf => {
+    // チャンク変換：大きな配列を ...展開すると引数上限超過でクラッシュするため
+    const u = new Uint8Array(buf);
+    let s = '';
+    for (let i = 0; i < u.length; i += 0x8000) {
+      s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+    }
+    return btoa(s);
+  };
   const _unb64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
 
   function _getSalt() {
@@ -2102,11 +2120,13 @@
   }
   async function saveCurrentTentState() {
     const t = tents[currentTent];
+    // 空欄／無効入力の瞬間にテント切替が起きても NaN を永続化しない（直前の良い値を保持）
     const rawTemp = parseFloat(document.getElementById('tempVal').value);
-    t.temp = useFahrenheit ? (rawTemp - 32) * 5/9 : rawTemp;
-    t.hum  = parseFloat(document.getElementById('humVal').value);
+    if (!isNaN(rawTemp)) t.temp = useFahrenheit ? (rawTemp - 32) * 5/9 : rawTemp;
+    const rawHum = parseFloat(document.getElementById('humVal').value);
+    if (!isNaN(rawHum)) t.hum = rawHum;
     const rawOffset = parseFloat(document.getElementById('leafOffsetInput').value);
-    t.leafOffset = useFahrenheit ? rawOffset * 5/9 : rawOffset;
+    if (!isNaN(rawOffset)) t.leafOffset = useFahrenheit ? rawOffset * 5/9 : rawOffset;
     t.ppfd = parseInt(document.getElementById('ppfdVal').value || '0', 10) || 0;
     // 給水フォームの入力値をテントに紐付けて保存
     t.lastFeeding = {
@@ -2507,9 +2527,17 @@
   async function adjustTemp(delta) {
     let c = tents[currentTent].temp;
     if (isNaN(c)) c = 24;
-    c = Math.max(10, Math.min(45, Math.round(c + delta)));
-    tents[currentTent].temp = c;
-    document.getElementById('tempVal').value = useFahrenheit ? Math.round(c * 9/5 + 32) : c;
+    if (useFahrenheit) {
+      // °F モードでは華氏で1刻み（摂氏に+1すると1.8°F刻みで不均一になる）
+      const f = Math.max(50, Math.min(113, Math.round(c * 9/5 + 32) + delta));
+      c = (f - 32) * 5/9;
+      tents[currentTent].temp = c;
+      document.getElementById('tempVal').value = Math.round(f);
+    } else {
+      c = Math.max(10, Math.min(45, Math.round(c + delta)));
+      tents[currentTent].temp = c;
+      document.getElementById('tempVal').value = c;
+    }
     document.getElementById('tempVal').style.color = 'var(--accent)';
     await dbPut('tents', tents[currentTent]);
     update();
@@ -3865,28 +3893,31 @@
       const _pxDenom = vals.length > 1 ? vals.length - 1 : 1;
       const px = (i) => pad + (i / _pxDenom) * (W - pad*2);
       const py = (v) => topPad + (H - topPad - pad) - ((v - min) / range) * (H - topPad - pad);
-      // range bands
+      // 帯は現在ステージの目標ゾーン（ライブ stages 参照）
       const stage = tent.stage || 'veg';
-      const stageData = { clone:{min:0.4,max:0.8}, seedling:{min:0.4,max:0.8}, veg:{min:0.8,max:1.1}, flower:{min:0.8,max:1.5}, lateflower:{min:1.2,max:1.6}, dry:{min:0.6,max:0.8}, harvest:{min:0.6,max:0.9} };
-      const r = stageData[stage] || stageData.veg;
+      const r = vpdRangeFor(stage);
+      // 各ログはそれぞれ記録時のステージで適否判定（混在サイクル対応）
+      const rowRange = (row) => vpdRangeFor(row.stage || stage);
       const bandY1 = py(Math.min(r.max, max));
       const bandY2 = py(Math.max(r.min, min));
       // draw colored line segments
       const segments = vals.slice(0,-1).map((v,i) => {
         const x1 = px(i), y1 = py(v), x2 = px(i+1), y2 = py(vals[i+1]);
-        const inRange = v>=r.min&&v<=r.max && vals[i+1]>=r.min&&vals[i+1]<=r.max;
+        const ra = rowRange(rows[i]), rb = rowRange(rows[i+1]);
+        const inRange = v>=ra.min&&v<=ra.max && vals[i+1]>=rb.min&&vals[i+1]<=rb.max;
         return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${inRange?'rgba(52,199,89,0.9)':'rgba(255,69,58,0.8)'}" stroke-width="2" stroke-linecap="round"/>`;
       }).join('');
       const fill = vals.map((v,i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ') + ` ${px(vals.length-1).toFixed(1)},${H} ${pad},${H}`;
       // last value label (HTML overlay — avoids non-uniform SVG text stretch)
       const lastV = vals[vals.length-1];
       const lastX = px(vals.length-1), lastY = py(lastV);
-      const lastInRange = lastV>=r.min&&lastV<=r.max;
+      const lastR = rowRange(rows[rows.length-1]);
+      const lastInRange = lastV>=lastR.min&&lastV<=lastR.max;
       svg.innerHTML = `
         <rect x="${pad}" y="${bandY1.toFixed(1)}" width="${W-pad*2}" height="${Math.max(0,bandY2-bandY1).toFixed(1)}" fill="rgba(52,199,89,0.13)" rx="1"/>
         <polygon points="${fill}" fill="rgba(52,199,89,0.07)"/>
         ${segments}
-        ${vals.map((v,i) => `<circle cx="${px(i).toFixed(1)}" cy="${py(v).toFixed(1)}" r="${i===vals.length-1?3.5:2.5}" fill="${v>=r.min&&v<=r.max?'#34c759':'#ff453a'}"/>`).join('')}
+        ${vals.map((v,i) => { const rr = rowRange(rows[i]); return `<circle cx="${px(i).toFixed(1)}" cy="${py(v).toFixed(1)}" r="${i===vals.length-1?3.5:2.5}" fill="${v>=rr.min&&v<=rr.max?'#34c759':'#ff453a'}"/>`; }).join('')}
       `;
       if (label) {
         // SVG viewBox is 200x50 → map coords to wrapper percentages (height 1:1 at 50px).
@@ -3912,10 +3943,12 @@
       const rows = all.filter(r => r.tentId === tent.id && (Number(r.cycle)||1) === analysisCycle() && r.vpd != null).sort((a,b) => b.ts - a.ts).slice(0, 50);
       if (!rows.length) { avgEl.textContent = '—'; okEl.textContent = '—'; cntEl.textContent = '0'; trendEl.textContent = ''; return; }
       const avg = rows.reduce((s,r) => s + r.vpd, 0) / rows.length;
-      const stage = tent.stage || 'veg';
-      const stageVpdMap = { clone:{min:0.4,max:0.8}, seedling:{min:0.4,max:0.8}, veg:{min:0.8,max:1.1}, flower:{min:0.8,max:1.5}, lateflower:{min:1.2,max:1.6}, dry:{min:0.6,max:0.8}, harvest:{min:0.6,max:0.9} };
-      const range = stageVpdMap[stage] || stageVpdMap.veg;
-      const okCount = rows.filter(r => r.vpd >= range.min && r.vpd <= range.max).length;
+      // 表示中サイクルの代表ステージ（最新ログ優先）でバンドを描く
+      const stage = (rows[0] && rows[0].stage) || tent.stage || 'veg';
+      const range = vpdRangeFor(stage);
+      const rowRange = (row) => vpdRangeFor(row.stage || stage);
+      // OK% は各ログ自身のステージ範囲で判定（混在サイクル対応＋ユーザー dry 設定反映）
+      const okCount = rows.filter(r => { const rr = rowRange(r); return r.vpd >= rr.min && r.vpd <= rr.max; }).length;
       avgEl.textContent = avg.toFixed(2);
       okEl.textContent = Math.round(okCount / rows.length * 100) + '%';
       cntEl.textContent = rows.length;
@@ -3935,7 +3968,7 @@
         const y = v => H - PAD - (v - minV) / (maxV - minV || 1) * (H - PAD * 2);
         const okY1 = y(range.max), okY2 = y(range.min);
         const polyline = pts.map((r, i) => `${x(i).toFixed(1)},${y(r.vpd).toFixed(1)}`).join(' ');
-        const dotColor = r => r.vpd >= range.min && r.vpd <= range.max ? 'var(--ok)' : r.vpd > range.max ? 'var(--warning)' : 'var(--danger)';
+        const dotColor = r => { const rr = rowRange(r); return r.vpd >= rr.min && r.vpd <= rr.max ? 'var(--ok)' : r.vpd > rr.max ? 'var(--warning)' : 'var(--danger)'; };
         statSvg.innerHTML = `
           <rect x="${PAD}" y="${Math.min(okY1,okY2).toFixed(1)}" width="${W-PAD*2}" height="${Math.abs(okY2-okY1).toFixed(1)}" fill="rgba(34,197,94,0.12)"/>
           <polyline points="${polyline}" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2"/>
@@ -4169,7 +4202,9 @@
     const cols = ['timestamp','tent','cycle','type','stage','temp_c','hum_pct','vpd_kpa','leaf_vpd_kpa','ppfd','ph','ec_in','ec_runoff','water_temp','note'];
     const esc = v => {
       if (v == null || v === '') return '';
-      const s = String(v);
+      let s = String(v);
+      // 数式インジェクション対策：= + - @ で始まるセルは Excel/Sheets が数式と解釈するため無害化
+      if (/^[=+\-@]/.test(s)) s = "'" + s;
       return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
     };
     const rows = logs
@@ -4272,12 +4307,13 @@
   }
 
   /* === Backup機能 === */
+  // エクスポート／インポート両方で使う設定キーのホワイトリスト（信頼境界）
+  const SETTINGS_KEYS = ['appLang','vpdTheme','dayCountVisible','spotTolTemp','spotTolHum','spotTolPpfd','dryTemp','dryHum','dryVpd','showEcRows','aiEnabled','lmUrl','useFahrenheit'];
   async function exportData() {
     const tentsData = tents.slice();
     const logs = await dbGetAll('logs');
-    const settingsKeys = ['appLang','vpdTheme','dayCountVisible','spotTolTemp','spotTolHum','spotTolPpfd','dryTemp','dryHum','dryVpd','showEcRows','aiEnabled','lmUrl','useFahrenheit'];
     const settings = {};
-    settingsKeys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) settings[k] = v; });
+    SETTINGS_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v !== null) settings[k] = v; });
     const payload = { tents: tentsData, logs, settings };
     let out;
     if (_cryptoKey) {
@@ -4296,7 +4332,8 @@
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // iOS Safari ではダウンロード開始前に revoke すると中断されるため遅延（CSV/ICS と同様）
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast(appLang === 'en' ? `💾 Backup saved (${logs.length} logs, ${tentsData.length} tents)` : `💾 バックアップ保存 (${logs.length}件のログ、${tentsData.length}テント)`);
   }
   function importData() {
@@ -4371,7 +4408,8 @@
         }
         // Restore settings from backup
         if (data.settings && typeof data.settings === 'object') {
-          Object.entries(data.settings).forEach(([k, v]) => localStorage.setItem(k, v));
+          // ホワイトリストのキーのみ復元（壊れた／改変バックアップから未知キー注入を防ぐ）
+          Object.entries(data.settings).filter(([k]) => SETTINGS_KEYS.includes(k)).forEach(([k, v]) => localStorage.setItem(k, v));
           appLang = localStorage.getItem('appLang') || 'ja';
           loadDrySettings();
           _showEcRows = localStorage.getItem('showEcRows') === 'true';
@@ -5699,6 +5737,9 @@ function classifyVpd(vpd, lo, hi) {
     });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
       el.placeholder = tr(el.getAttribute('data-i18n-placeholder'));
+    });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+      el.setAttribute('aria-label', tr(el.getAttribute('data-i18n-aria')));
     });
     const jaBtn = document.getElementById('langJA');
     const enBtn = document.getElementById('langEN');

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'canopy-v151';
+const CACHE_VERSION = 'canopy-v152';
 const ASSETS = [
   './',
   './index.html',
@@ -70,6 +70,24 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
+  // ナビゲーション（HTML）は network-first：
+  // オンライン時は常に最新の index.html を取得し、オフライン時のみキャッシュへ。
+  // cache-first だと CACHE_VERSION を上げ忘れた瞬間に古い版へ固定されるため。
+  if (req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req).then(response => {
+        if (response && response.status === 200 && response.type !== 'opaque') {
+          const clone = response.clone();
+          caches.open(CACHE_VERSION).then(c => c.put(req, clone));
+        }
+        return response;
+      }).catch(() => caches.match(req).then(c => c || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // それ以外（アイコン・manifest 等の静的アセット）は cache-first。
+  // 取得失敗時に index.html を返すと MIME 不一致になるため、ここでは握りつぶさない。
   e.respondWith(
     caches.match(req).then(cached => {
       if (cached) return cached;
@@ -79,7 +97,7 @@ self.addEventListener('fetch', e => {
         const clone = response.clone();
         caches.open(CACHE_VERSION).then(c => c.put(req, clone));
         return response;
-      }).catch(() => caches.match('./index.html'));
+      });
     })
   );
 });
