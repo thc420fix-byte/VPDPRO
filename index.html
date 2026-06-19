@@ -396,6 +396,19 @@
       transform: translateX(-50%);
       transition: left 0.3s ease, background 0.3s;
     }
+    /* 脇役マーカー（評価対象でない方の VPD）は細く控えめに */
+    .vpd-zone-marker.alt {
+      width: 2px; height: 16px; top: -2px;
+      background: rgba(255,255,255,0.5);
+      box-shadow: none;
+    }
+    .vpd-zone-marker .mk-label {
+      position: absolute; bottom: 100%; left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.5rem; font-weight: 800; line-height: 1;
+      color: inherit; margin-bottom: 1px;
+      letter-spacing: 0;
+    }
     .vpd-zonebar-scale {
       display: flex; justify-content: space-between;
       font-size: 0.58rem; color: var(--text); opacity: 0.55;
@@ -1000,7 +1013,8 @@
       <div class="vpd-zonebar-wrap">
         <div class="vpd-zonebar">
           <div id="vpdZoneTarget" class="vpd-zone-target"></div>
-          <div id="vpdZoneMarker" class="vpd-zone-marker"></div>
+          <div id="vpdZoneMarkerAir" class="vpd-zone-marker"><span class="mk-label">A</span></div>
+          <div id="vpdZoneMarkerLeaf" class="vpd-zone-marker alt"><span class="mk-label">L</span></div>
         </div>
         <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
         <div id="vpdTargetLabel" class="vpd-target-label"></div>
@@ -3347,16 +3361,31 @@
     const badge = document.getElementById('statusBadge');
     const recEl= document.getElementById('rec');
     const state = classifyVpd(check, lo, hi);
-    // ゾーンバー: 目標レンジと現在値マーカーを 0〜2.0 kPa スケールに配置
+    // ゾーンバー: 目標レンジ + Air/Leaf 両方の現在値マーカーを 0〜2.0 kPa スケールに配置
     const zoneTarget = document.getElementById('vpdZoneTarget');
-    const zoneMarker = document.getElementById('vpdZoneMarker');
-    if (zoneTarget && zoneMarker) {
+    const mkAir = document.getElementById('vpdZoneMarkerAir');
+    const mkLeaf = document.getElementById('vpdZoneMarkerLeaf');
+    if (zoneTarget && mkAir && mkLeaf) {
       const ZONE_MAX = 2.0;
       const pct = v => Math.max(0, Math.min(100, v / ZONE_MAX * 100));
       zoneTarget.style.left = pct(lo) + '%';
       zoneTarget.style.width = Math.max(0, pct(hi) - pct(lo)) + '%';
-      zoneMarker.style.left = pct(check) + '%';
-      zoneMarker.style.background = state === 'danger' ? 'var(--danger)' : state === 'warning' ? 'var(--warning,#ff9500)' : 'var(--accent)';
+      const stateCol = state === 'danger' ? 'var(--danger)' : state === 'warning' ? 'var(--warning,#ff9500)' : 'var(--accent)';
+      const muted = 'rgba(255,255,255,0.5)';
+      const leafActiveMk = !!t.leaf;
+      // 主役マーカー = 評価中の値（Leafモードなら Leaf、それ以外は Air）。状態色で強調、もう一方は控えめ。
+      const setMk = (el, v, isActive) => {
+        const avail = !isNaN(v);
+        el.style.display = avail ? '' : 'none';
+        if (!avail) return;
+        el.style.left = pct(v) + '%';
+        const col = isActive ? stateCol : muted;
+        el.style.background = col;
+        el.style.color = col; // ラベル文字色（A/L）も同色に
+        el.classList.toggle('alt', !isActive);
+      };
+      setMk(mkAir, airV, !leafActiveMk);
+      setMk(mkLeaf, leafV, leafActiveMk);
     }
     updateDli();
     const airEl = document.getElementById('vpdAir');
