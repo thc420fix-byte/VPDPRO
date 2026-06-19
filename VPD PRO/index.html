@@ -535,39 +535,6 @@
       white-space: nowrap;
     }
     .toast.show { opacity: 1; }
-    /* PWA install banner */
-    #pwaInstallBanner {
-      position: fixed;
-      bottom: calc(72px + env(safe-area-inset-bottom));
-      left: 12px; right: 12px;
-      background: var(--surface);
-      border: 1.5px solid var(--accent);
-      border-radius: 16px;
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      z-index: 5500;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-      transform: translateY(120%);
-      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
-    }
-    #pwaInstallBanner.show { transform: translateY(0); }
-    #pwaInstallBanner .pwa-icon {
-      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
-    }
-    #pwaInstallBanner .pwa-text { flex: 1; min-width: 0; }
-    #pwaInstallBanner .pwa-text strong { display: block; font-size: 0.88rem; color: var(--text); }
-    #pwaInstallBanner .pwa-text span { font-size: 0.76rem; color: var(--text2); }
-    #pwaInstallBanner .pwa-btn {
-      padding: 8px 14px; background: var(--accent); border: none;
-      border-radius: 10px; color: #000; font-size: 0.8rem; font-weight: 700;
-      cursor: pointer; white-space: nowrap; flex-shrink: 0;
-    }
-    #pwaInstallBanner .pwa-close {
-      background: transparent; border: none; color: var(--text2);
-      font-size: 1.1rem; cursor: pointer; padding: 4px; flex-shrink: 0; line-height: 1;
-    }
     /* SW update banner */
     #pwaUpdateBanner {
       position: fixed;
@@ -761,6 +728,15 @@
             <div id="langEN" onclick="setLang('en')" style="padding:3px 10px;font-size:0.75rem;cursor:pointer;">EN</div>
           </div>
         </div>
+      </div>
+
+      <!-- Install to Home Screen (hidden until installable / shown on iOS) -->
+      <div id="pwaInstallSection" style="display:none;background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:8px;">
+        <div id="pwaInstallRow" onclick="handleInstallTap()" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;">
+          <span style="font-size:0.88rem;color:var(--accent);">📲 <span data-i18n="settings.add_home">ホーム画面に追加</span></span>
+          <span style="font-size:0.75rem;color:var(--text2);">›</span>
+        </div>
+        <div id="pwaIosHint" style="display:none;padding:0 14px 11px;font-size:0.72rem;color:var(--text2);line-height:1.6;"></div>
       </div>
 
       <!-- Backup -->
@@ -1340,17 +1316,6 @@
 
 <div id="toast" class="toast"></div>
 
-  <!-- PWA install banner -->
-  <div id="pwaInstallBanner" role="dialog" aria-label="アプリをインストール">
-    <img src="./icon-192.png" class="pwa-icon" alt="Canopy">
-    <div class="pwa-text">
-      <strong>Canopy をホーム画面に追加</strong>
-      <span id="pwaInstallSubtext">オフラインでも使えます</span>
-    </div>
-    <button class="pwa-btn" id="pwaInstallBtn" onclick="triggerPwaInstall()">追加</button>
-    <button class="pwa-close" onclick="dismissPwaBanner()" aria-label="閉じる">✕</button>
-  </div>
-
   <!-- SW update banner -->
   <div id="pwaUpdateBanner" role="dialog" aria-label="アップデート">
     <div class="upd-text">🌿 新バージョンが利用可能です</div>
@@ -1534,7 +1499,7 @@
       'stepper.temp':'温度','stepper.humidity':'湿度','stepper.leafdt':'葉温差','stepper.water':'水温','leaf.offset_hint':'葉温 = 気温 + オフセット',
       'stats.avg_vpd':'平均 VPD','stats.ok_rate':'OK 率','stats.saves':'記録数',
       'settings.title':'設定','settings.dark_mode':'ダークモード','settings.week_day_count':'週 / 日 カウント',
-      'settings.temperature':'温度単位','settings.language':'言語',
+      'settings.temperature':'温度単位','settings.language':'言語','settings.add_home':'ホーム画面に追加',
       'settings.backup':'バックアップ','settings.export_json':'JSON 書き出し','settings.export_csv':'CSV 書き出し','settings.import_json':'JSON 読み込み',
       'settings.data':'データ','settings.new_cycle':'新しいサイクル','settings.clear_log':'ログを消去','settings.erase_all':'全データを削除',
       'settings.security':'セキュリティ','settings.set_pin':'PIN を設定','settings.remove_pin':'PIN を削除','settings.decoy_screen':'デコイ画面',
@@ -1616,7 +1581,7 @@
       'stepper.temp':'Temp','stepper.humidity':'Humidity','stepper.leafdt':'Leaf ΔT','stepper.water':'Water','leaf.offset_hint':'Leaf Temp = Air Temp + Offset',
       'stats.avg_vpd':'AVG VPD','stats.ok_rate':'OK RATE','stats.saves':'SAVES',
       'settings.title':'Settings','settings.dark_mode':'Dark Mode','settings.week_day_count':'Week / Day count',
-      'settings.temperature':'Temperature','settings.language':'Language',
+      'settings.temperature':'Temperature','settings.language':'Language','settings.add_home':'Add to Home Screen',
       'settings.backup':'Backup','settings.export_json':'Export JSON','settings.export_csv':'Export CSV','settings.import_json':'Import JSON',
       'settings.data':'Data','settings.new_cycle':'New Cycle','settings.clear_log':'Clear Log','settings.erase_all':'Erase All Data',
       'settings.security':'Security','settings.set_pin':'Set PIN','settings.remove_pin':'Remove PIN','settings.decoy_screen':'Decoy Screen',
@@ -5902,33 +5867,42 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
   </script>
 
   <script>
-    /* ── PWA install & update logic ── */
+    /* ── PWA install & update logic ──
+       自動ポップアップは廃止。インストールは設定メニュー内の行から手動で。 */
     let _pwaPrompt = null;
     let _swWaiting = null;
-    const _BANNER_DISMISSED_KEY = 'pwa_banner_dismissed_v2';
 
-    /* Use localStorage so dismissal survives across sessions */
-    function _showInstallBanner() {
-      if (localStorage.getItem(_BANNER_DISMISSED_KEY)) return;
-      setTimeout(() => {
-        document.getElementById('pwaInstallBanner').classList.add('show');
-      }, 3500);
+    const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || ('standalone' in navigator && !!navigator.standalone);
+    const _isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    /* 設定メニュー内のインストール行の表示制御 */
+    function _refreshInstallRow() {
+      const sec = document.getElementById('pwaInstallSection');
+      if (!sec) return;
+      if (_isStandalone) { sec.style.display = 'none'; return; }  // すでにインストール済み
+      /* Android/Chrome: prompt が取れたら / iOS: 常に案内 */
+      if (_pwaPrompt || _isIos) sec.style.display = 'block';
     }
 
-    function dismissPwaBanner() {
-      document.getElementById('pwaInstallBanner').classList.remove('show');
-      localStorage.setItem(_BANNER_DISMISSED_KEY, '1');
-    }
-
-    function triggerPwaInstall() {
+    /* 設定行タップ時の動作 */
+    function handleInstallTap() {
       if (_pwaPrompt) {
+        /* Android/Chrome — ネイティブのインストールダイアログ */
         _pwaPrompt.prompt();
-        _pwaPrompt.userChoice.then(r => {
-          if (r.outcome === 'accepted') {
-            dismissPwaBanner();
-          }
-          _pwaPrompt = null;
-        });
+        _pwaPrompt.userChoice.then(() => { _pwaPrompt = null; _refreshInstallRow(); });
+      } else if (_isIos) {
+        /* iOS Safari — 手順を展開表示 */
+        const hint = document.getElementById('pwaIosHint');
+        if (hint) {
+          hint.textContent = (typeof appLang !== 'undefined' && appLang === 'en')
+            ? 'Tap the Share button (□↑) at the bottom of Safari → "Add to Home Screen"'
+            : 'Safari 下部の 共有ボタン（□↑）をタップ →「ホーム画面に追加」を選択';
+          hint.style.display = hint.style.display === 'block' ? 'none' : 'block';
+        }
+      } else {
+        if (typeof showToast === 'function') showToast('お使いのブラウザの「ホーム画面に追加」機能をご利用ください');
       }
     }
 
@@ -5945,17 +5919,21 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
     window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault();
       _pwaPrompt = e;
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      if (!isStandalone) _showInstallBanner();
+      _refreshInstallRow();
     });
 
     /* appinstalled confirmation */
     window.addEventListener('appinstalled', () => {
-      dismissPwaBanner();
+      _pwaPrompt = null;
+      const sec = document.getElementById('pwaInstallSection');
+      if (sec) sec.style.display = 'none';
       setTimeout(() => {
         if (typeof showToast === 'function') showToast('✅ ホーム画面に追加しました');
       }, 600);
     });
+
+    /* iOS は beforeinstallprompt が来ないので初期表示で行を出す */
+    _refreshInstallRow();
 
     /* Service Worker registration + update detection */
     if ('serviceWorker' in navigator) {
