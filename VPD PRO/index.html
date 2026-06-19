@@ -839,6 +839,22 @@
   </div>
   <!-- ライトメーター（カメラ計測）モーダル -->
   <div id="lightMeterModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:10000;flex-direction:column;align-items:stretch;">
+    <!-- フロントカメラ位置ガイド（ディフューザーをインカメに当てるための照準） -->
+    <div id="lmCamGuide" style="position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:20;pointer-events:none;display:flex;flex-direction:column;align-items:center;">
+      <svg width="150" height="190" viewBox="0 0 150 190" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+        <!-- 照準リング -->
+        <circle cx="75" cy="38" r="52" stroke="#FF8C1A" stroke-width="3"/>
+        <!-- 中央ドット（カメラ位置） -->
+        <circle cx="75" cy="38" r="5" fill="#22c55e"/>
+        <!-- ティック（上・左・右） -->
+        <line x1="75" y1="-14" x2="75" y2="14" stroke="#FF8C1A" stroke-width="3"/>
+        <line x1="9" y1="38" x2="35" y2="38" stroke="#FF8C1A" stroke-width="3"/>
+        <line x1="115" y1="38" x2="141" y2="38" stroke="#FF8C1A" stroke-width="3"/>
+        <!-- 下方向のガイドライン -->
+        <line x1="75" y1="62" x2="75" y2="150" stroke="#FF8C1A" stroke-width="3"/>
+      </svg>
+      <div style="margin-top:2px;background:rgba(255,140,26,0.92);color:#000;font-size:0.7rem;font-weight:700;padding:4px 12px;border-radius:12px;white-space:nowrap;" data-i18n="lightmeter.cam_guide">📷 ここにディフューザーを当てる</div>
+    </div>
     <!-- ヘッダー -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:max(14px,env(safe-area-inset-top)) 16px 12px;background:rgba(0,0,0,0.85);flex-shrink:0;">
       <div>
@@ -1486,7 +1502,7 @@
       'rename.tent':'テント名を変更','rename.fertilizer':'肥料名を変更',
       'edit.title':'ログ編集','edit.fertilizers':'🌿 肥料','edit.delete_photo':'🗑 写真を削除','edit.deleted':'🗑 削除済み','edit.note_label':'メモ',
       'lightmeter.close':'✕ 閉じる','lightmeter.subtitle':'カメラでリアルタイム計測','lightmeter.stage_target':'ステージ目標: ',
-      'lightmeter.apply':'PPFD に適用','lightmeter.retry':'再試行',
+      'lightmeter.apply':'PPFD に適用','lightmeter.retry':'再試行','lightmeter.cam_guide':'📷 ここにディフューザーを当てる',
       'lm.source':'光源','lm.calib':'補正 ×','lm.reset':'リセット','lm.accuracy':'精度はカメラに依存します。Photone と比較して補正係数をキャリブレーションしてください。',
       'stage.set_date':'+ 開始日を設定',
       'stage.clone':'苗期','stage.veg':'成長期','stage.flower':'開花期','stage.dry':'乾燥','stage.harvest':'収穫',
@@ -1568,7 +1584,7 @@
       'rename.tent':'Rename Tent','rename.fertilizer':'Rename Fertilizer',
       'edit.title':'EDIT LOG','edit.fertilizers':'🌿 Fertilizers','edit.delete_photo':'🗑 Delete Photo','edit.deleted':'🗑 Deleted','edit.note_label':'Note',
       'lightmeter.close':'✕ Close','lightmeter.subtitle':'Real-time camera light measurement','lightmeter.stage_target':'Stage target: ',
-      'lightmeter.apply':'Apply to PPFD','lightmeter.retry':'Retry',
+      'lightmeter.apply':'Apply to PPFD','lightmeter.retry':'Retry','lightmeter.cam_guide':'📷 Place diffuser here',
       'lm.source':'Source','lm.calib':'Calib ×','lm.reset':'Reset','lm.accuracy':'Accuracy depends on your camera. Compare against Photone readings to calibrate the correction factor.',
       'stage.set_date':'+ Set start date',
       'stage.clone':'Clone','stage.veg':'Veg','stage.flower':'Flower','stage.dry':'Dry','stage.harvest':'Harvest',
