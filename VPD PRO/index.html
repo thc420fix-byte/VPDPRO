@@ -2405,7 +2405,14 @@
 
   async function applyInlineVal(type, val) {
     let v = parseFloat(String(val).replace(',', '.'));
-    if (isNaN(v)) return;
+    if (isNaN(v)) {
+      // 無効入力は破棄し、表示を現在の保存値へ復元（表示とモデルの乖離を防ぐ）
+      const _t = tents[currentTent];
+      if (type === 'temp') { const el = document.getElementById('tempVal'); if (el) el.value = useFahrenheit ? Math.round(_t.temp * 9/5 + 32) : Math.round(_t.temp); }
+      else if (type === 'hum') { const el = document.getElementById('humVal'); if (el) el.value = Math.round(_t.hum); }
+      else if (type === 'ppfd') { const el = document.getElementById('ppfdVal'); if (el) el.value = _t.ppfd; }
+      return;
+    }
     if (type === 'temp') {
       let c = useFahrenheit ? (v - 32) * 5/9 : v;
       c = Math.max(10, Math.min(45, c));
