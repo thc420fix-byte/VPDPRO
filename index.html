@@ -1871,13 +1871,27 @@
     for (const store of _ENC_STORES)
       for (const rec of data[store]) await dbPut(store, rec);
   }
-  /* 鍵を新PINで張り替え、全レコードを再暗号化（PIN変更時） */
+  /* 鍵を新PINで張り替え、全レコードを再暗号化（PIN変更時）。
+     途中失敗時は旧鍵へロールバックして整合を回復し、例外を再送出する。
+     （成功してから呼び出し側が検証子を保存する前提＝中断してもロックアウトしない） */
   async function _rekeyExistingData(newPin) {
+    const oldKey = _cryptoKey;
     const data = {};
     for (const store of _ENC_STORES) data[store] = await dbGetAll(store);  // 旧鍵で復号
-    _cryptoKey = await _deriveKey(newPin);                                 // 新鍵に切替
-    for (const store of _ENC_STORES)
-      for (const rec of data[store]) await dbPut(store, rec);              // 新鍵で暗号化
+    const newKey = await _deriveKey(newPin);                               // 新鍵（ソルトは不変）
+    _cryptoKey = newKey;
+    try {
+      for (const store of _ENC_STORES)
+        for (const rec of data[store]) await dbPut(store, rec);            // 新鍵で暗号化
+    } catch (e) {
+      // 失敗：旧鍵へ戻し、旧鍵で書き直して整合回復
+      _cryptoKey = oldKey;
+      try {
+        for (const store of _ENC_STORES)
+          for (const rec of data[store]) await dbPut(store, rec);
+      } catch (_) {}
+      throw e;
+    }
   }
 
   /* === ユーティリティ === */
@@ -2056,10 +2070,12 @@
     loadTentToUI(currentTent);
     update();
     buildStageTable();
-    renderFeedRecentLogs();
-    renderVpdStats();
-    renderVpdSparkline();
-    dbGetAll('logs').then(renderStageTimeline);
+    dbGetAll('logs').then(logs => {  // 1回取得して全レンダーで共有
+      renderFeedRecentLogs(logs);
+      renderVpdStats(logs);
+      renderVpdSparkline(logs);
+      renderStageTimeline(logs);
+    });
     showToast(appLang === 'en' ? '🗑 Tent deleted' : '🗑 テントを削除しました');
   }
 
@@ -2133,10 +2149,10 @@
     update();
     buildStageTable();
     updateFeedingHeader();
-    renderFeedRecentLogs();
-    renderVpdStats();
-    renderVpdSparkline();
-    const logs = await dbGetAll('logs');
+    const logs = await dbGetAll('logs');  // 1回だけ取得して各レンダーで共有（復号コスト削減）
+    renderFeedRecentLogs(logs);
+    renderVpdStats(logs);
+    renderVpdSparkline(logs);
     renderStageTimeline(logs);
   }
   async function saveCurrentTentState() {
@@ -3387,6 +3403,11 @@
   // タブが非表示になったらカメラを停止（点灯したまま放置されるのを防ぐ。プライバシー・電池対策）
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && _lmStream) stopLightMeter();
+    // デコイの背面トーチもバックグラウンド化で消灯（点けっぱなしの電池・カメラ点灯放置を防止）
+    if (document.hidden && typeof _decoyTorchStream !== 'undefined' && _decoyTorchStream) {
+      _decoyTorchStream.getTracks().forEach(t => t.stop());
+      _decoyTorchStream = null;
+    }
   });
 
   /* === VPD計算および表示 === */
@@ -3867,9 +3888,11 @@
     if (feedNoteEl) { feedNoteEl.value = ''; const fc = document.getElementById('feedingNoteCount'); if (fc) fc.textContent = '100'; }
     clearPhoto();
     buildTentBar();
-    renderFeedRecentLogs();
-    renderVpdSparkline();
-    renderVpdStats();
+    dbGetAll('logs').then(logs => {  // 1回取得して3レンダーで共有
+      renderFeedRecentLogs(logs);
+      renderVpdSparkline(logs);
+      renderVpdStats(logs);
+    });
     const fertNames = (log.fertilizers || []).map(f => esc(f.name)).filter(Boolean).join('、');
     const dispTemp = useFahrenheit ? (log.temp * 9/5 + 32).toFixed(1) + '°F' : log.temp + '°C';
     showSavePopup(appLang === 'en' ? 'Feeding Saved ✅' : '給水を記録しました ✅', [
@@ -3883,13 +3906,13 @@
     ].filter(Boolean));
   }
 
-  function renderVpdSparkline() {
+  function renderVpdSparkline(preloaded) {
     const svg = document.getElementById('vpdSparkline');
     if (!svg) return;
     const wrap = document.getElementById('vpdSparkWrap');
     const label = document.getElementById('vpdSparkLabel');
     const _sparkIdx = currentTent;
-    dbGetAll('logs').then(all => {
+    (preloaded ? Promise.resolve(preloaded) : dbGetAll('logs')).then(all => {
       if (_sparkIdx !== currentTent) return;
       const tent = tents[currentTent];
       const rows = all.filter(r => r.tentId === tent.id && (Number(r.cycle)||1) === (Number(tent.cycle)||1) && r.vpd != null)
@@ -3944,14 +3967,14 @@
     });
   }
 
-  function renderVpdStats() {
+  function renderVpdStats(preloaded) {
     const avgEl = document.getElementById('statAvgVpd');
     const okEl = document.getElementById('statOkPct');
     const cntEl = document.getElementById('statLogCount');
     const trendEl = document.getElementById('statTrend');
     if (!avgEl) return;
     const _statsIdx = currentTent;
-    dbGetAll('logs').then(all => {
+    (preloaded ? Promise.resolve(preloaded) : dbGetAll('logs')).then(all => {
       if (_statsIdx !== currentTent) return;
       const tent = tents[currentTent];
       if (!tent) { avgEl.textContent = '—'; okEl.textContent = '—'; cntEl.textContent = '0'; trendEl.textContent = ''; return; }
@@ -4010,11 +4033,11 @@
     });
   }
 
-  function renderFeedRecentLogs() {
+  function renderFeedRecentLogs(preloaded) {
     const el = document.getElementById('feedRecentLogs');
     if (!el) return;
     const _feedIdx = currentTent;
-    dbGetAll('logs').then(all => {
+    (preloaded ? Promise.resolve(preloaded) : dbGetAll('logs')).then(all => {
       if (_feedIdx !== currentTent) return;
       const tent = tents[currentTent];
       if (!tent) { el.innerHTML = ''; return; }
@@ -4203,9 +4226,9 @@
     buildTentBar();
     const logs = await dbGetAll('logs');
     renderStageTimeline(logs);
-    renderVpdStats();
-    renderVpdSparkline();
-    renderFeedRecentLogs();
+    renderVpdStats(logs);
+    renderVpdSparkline(logs);
+    renderFeedRecentLogs(logs);
     showToast(appLang === 'en' ? `🌱 Cycle ${t.cycle} started` : `🌱 サイクル ${t.cycle} を開始`);
   }
 
@@ -4252,11 +4275,13 @@
     await dbDelete('logs', id);
     const t = tents[currentTent];
     if (t) { t.logs = (t.logs || []).filter(lid => String(lid) !== String(id)); await dbPut('tents', t); }
-    renderFeedRecentLogs();
-    renderVpdStats();
-    renderVpdSparkline();
     buildTentBar();
-    dbGetAll('logs').then(renderStageTimeline);
+    dbGetAll('logs').then(logs => {  // 1回取得して全レンダーで共有
+      renderFeedRecentLogs(logs);
+      renderVpdStats(logs);
+      renderVpdSparkline(logs);
+      renderStageTimeline(logs);
+    });
     showToast(appLang === 'en' ? '🗑 Log deleted' : '🗑 ログを削除しました');
   }
 
@@ -4283,9 +4308,9 @@
     buildTentBar();
     const logs2 = await dbGetAll('logs');
     renderStageTimeline(logs2);
-    renderVpdStats();
-    renderVpdSparkline();
-    renderFeedRecentLogs();
+    renderVpdStats(logs2);
+    renderVpdSparkline(logs2);
+    renderFeedRecentLogs(logs2);
     document.getElementById('settingsModal').classList.remove('open');
     showToast(appLang === 'en' ? `🗑 Logs cleared for ${tentName}` : `🗑 ${tentName} のログを削除しました`);
   }
@@ -4419,6 +4444,8 @@
         // Import logs
         for (const log of data.logs) {
           if (log && log.fertilizers) log.fertilizers = _sanitizeFerts(log.fertilizers);
+          // 写真は data:image/ のデータURLのみ許可（改変バックアップからの属性ブレイクアウトXSS防止）
+          if (log && log.photo && !/^data:image\//.test(String(log.photo))) log.photo = null;
           await dbPut('logs', log);
         }
         // Restore settings from backup
@@ -4439,9 +4466,11 @@
         buildMatrix();
         update();
         applyLang();
-        renderVpdSparkline();
-        renderVpdStats();
-        renderFeedRecentLogs();
+        dbGetAll('logs').then(logs => {  // 1回取得して共有
+          renderVpdSparkline(logs);
+          renderVpdStats(logs);
+          renderFeedRecentLogs(logs);
+        });
         showToast(tr('toast.import_ok'));
       } else {
         showToast(tr('toast.import_bad_format'));
@@ -4486,9 +4515,9 @@
     update();
     buildStageTable();
     renderStageTimeline([]);
-    renderFeedRecentLogs();
-    renderVpdStats();
-    renderVpdSparkline();
+    renderFeedRecentLogs([]);
+    renderVpdStats([]);
+    renderVpdSparkline([]);
     document.getElementById('settingsModal').classList.remove('open');
     showToast(appLang === 'en' ? '🗑 All data reset' : '🗑 全データをリセットしました');
   }
@@ -4636,7 +4665,7 @@ function classifyVpd(vpd, lo, hi) {
     const cur = Number(t?.cycle) || 1;
     const n = Number(c) || cur;
     _viewCycle = (n >= cur) ? null : Math.max(1, n);
-    dbGetAll('logs').then(logs => { renderStageTimeline(logs); renderVpdStats(); });
+    dbGetAll('logs').then(logs => { renderStageTimeline(logs); renderVpdStats(logs); });
   }
   function renderCycleSelector() {
     const wrap = document.getElementById('cycleSelectorWrap');
@@ -4837,7 +4866,7 @@ function classifyVpd(vpd, lo, hi) {
                   const tl = `${pt.getHours()}:${String(pt.getMinutes()).padStart(2,'0')}`;
                   const pid = String(p.id).replace(/'/g, "\\'");
                   const pNote = p.note ? `<div style="font-size:0.6rem;color:rgba(255,255,255,0.6);text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📝 ${esc(p.note)}</div>` : '';
-                  photosHtml += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;cursor:pointer;" onclick="event.stopPropagation();editLog('${pid}')"><img src="${p.photo}" style="width:88px;height:88px;object-fit:cover;border-radius:7px;" onclick="event.stopPropagation();(()=>{document.getElementById('overlayImg').src=this.src;document.getElementById('photoOverlay').style.display='flex';})()"><span style="font-size:0.6rem;opacity:0.7;">${tl}</span>${pNote}<button onclick="event.stopPropagation();deleteGalleryPhoto('${p.id}')" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(255,60,60,0.85);border:none;color:#fff;font-size:0.55rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>`;
+                  photosHtml += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;cursor:pointer;" onclick="event.stopPropagation();editLog('${pid}')"><img src="${esc(p.photo)}" style="width:88px;height:88px;object-fit:cover;border-radius:7px;" onclick="event.stopPropagation();(()=>{document.getElementById('overlayImg').src=this.src;document.getElementById('photoOverlay').style.display='flex';})()"><span style="font-size:0.6rem;opacity:0.7;">${tl}</span>${pNote}<button onclick="event.stopPropagation();deleteGalleryPhoto('${p.id}')" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(255,60,60,0.85);border:none;color:#fff;font-size:0.55rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>`;
                 });
                 photosHtml += `</div>`;
               }
@@ -4853,9 +4882,9 @@ function classifyVpd(vpd, lo, hi) {
               : [l.ph ? `pH ${l.ph}` : '', l.waterTemp != null ? `💧${useFahrenheit ? (l.waterTemp * 9/5 + 32).toFixed(1) : l.waterTemp}${useFahrenheit ? '°F' : '°C'}` : '', l.ec ? `EC ${l.ec}` : '', l.runoffEc ? `→${l.runoffEc}` : ''].filter(Boolean).join('　');
             const label = isMonitor ? '📊' : '💧';
             const fertTags = !isMonitor && l.fertilizers && l.fertilizers.length
-              ? `<div style="display:flex;justify-content:flex-end;opacity:1;font-size:0.72rem;color:var(--text);margin-top:0;padding-right:0;width:100%;box-sizing:border-box;">${(l.fertilizers).map(f => `${esc(f.name) || '?'}${f.amountMl ? ' ' + esc(String(f.amountMl)) + 'ml' : ''}`).join('　')}</div>`
+              ? `<div style="display:flex;justify-content:flex-end;opacity:1;font-size:0.72rem;color:var(--text);margin-top:0;padding-right:0;width:100%;box-sizing:border-box;">${(l.fertilizers).map(f => `${esc(f.name || '?')}${f.amountMl ? ' ' + esc(String(f.amountMl)) + 'ml' : ''}`).join('　')}</div>`
               : '';
-            const photoThumb = l.photo ? `<div style="margin-top:3px;"><img src="${l.photo}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;cursor:pointer;" onclick="(()=>{document.getElementById('overlayImg').src=this.src;document.getElementById('photoOverlay').style.display='flex';})()"></div>` : '';
+            const photoThumb = l.photo ? `<div style="margin-top:3px;"><img src="${esc(l.photo)}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;cursor:pointer;" onclick="(()=>{document.getElementById('overlayImg').src=this.src;document.getElementById('photoOverlay').style.display='flex';})()"></div>` : '';
             const noteHtml = l.note ? `<div style="font-size:0.68rem;color:rgba(255,255,255,0.6);margin-top:2px;padding-left:2px;">📝 ${esc(l.note)}</div>` : '';
             const logId = String(l.id).replace(/'/g, "\\'");
             return `<div class="slog-item"
@@ -4992,7 +5021,7 @@ function classifyVpd(vpd, lo, hi) {
 
     if (log.photo) {
       rows += `<div style="margin-top:10px;display:flex;align-items:center;gap:10px;">
-        <img src="${log.photo}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;">
+        <img src="${esc(log.photo)}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;">
         <button type="button" onclick="_editDeletePhoto=true;this.textContent=tr('edit.deleted');this.disabled=true;this.style.opacity='0.5';"
                 style="background:transparent;border:1px solid rgba(255,100,100,0.6);border-radius:6px;color:rgba(255,120,120,0.9);font-size:0.75rem;padding:4px 10px;cursor:pointer;">${tr('edit.delete_photo')}</button>
       </div>`;
@@ -5052,14 +5081,14 @@ function classifyVpd(vpd, lo, hi) {
     await dbPut('logs', log);
     closeEditLogModal();
     showToast(appLang === 'en' ? '✓ Log updated' : '✓ ログを更新しました');
-    renderFeedRecentLogs();
-    renderVpdStats();
-    renderVpdSparkline();
 
     const openStages = Array.from(document.querySelectorAll('[id^="slog-"]'))
       .filter(el => el.style.display !== 'none').map(el => el.id);
     const scrollY = window.scrollY;
-    const logs = await dbGetAll('logs');
+    const logs = await dbGetAll('logs');  // 1回取得して全レンダーで共有
+    renderFeedRecentLogs(logs);
+    renderVpdStats(logs);
+    renderVpdSparkline(logs);
     renderStageTimeline(logs);
     openStages.forEach(sid => {
       const el = document.getElementById(sid);
@@ -5344,11 +5373,18 @@ function classifyVpd(vpd, lo, hi) {
       _showPinOverlay('change3');
     } else if (_pinMode === 'change3') {
       if (buf === _pinTmp) {
-        await _pinStore(buf);
-        await _rekeyExistingData(buf);   // 新PINの鍵で全データを再暗号化
-        _hidePinOverlay();
-        showToast(appLang === 'en' ? '🔒 PIN updated' : '🔒 PIN変更完了');
-        _updatePinSettingsUI();
+        try {
+          // 先に全データを再暗号化し、成功してから検証子を更新する。
+          // 逆順だと再暗号化が中断した際に旧鍵データ＋新PIN検証子でロックアウトする。
+          await _rekeyExistingData(buf);
+          await _pinStore(buf);
+          _hidePinOverlay();
+          showToast(appLang === 'en' ? '🔒 PIN updated' : '🔒 PIN変更完了');
+          _updatePinSettingsUI();
+        } catch (e) {
+          _hidePinOverlay();
+          showToast(appLang === 'en' ? '⚠️ PIN change failed — data kept under old PIN' : '⚠️ PIN変更に失敗。データは元のPINのままです');
+        }
       } else {
         document.getElementById('pinMessage').textContent = appLang === 'en' ? 'Mismatch — try again' : 'PINが一致しません';
         _pinShake();
@@ -5509,8 +5545,7 @@ function classifyVpd(vpd, lo, hi) {
     if (lmInput) lmInput.value = localStorage.getItem('lmUrl') || '';
     applyAiToggle();
     _resumeReminder();
-    renderVpdSparkline();
-    renderVpdStats();
+    dbGetAll('logs').then(logs => { renderVpdSparkline(logs); renderVpdStats(logs); });
     // First-run hint
     if (!localStorage.getItem('vpdFirstRunSeen')) {
       localStorage.setItem('vpdFirstRunSeen', '1');
@@ -5786,10 +5821,12 @@ function classifyVpd(vpd, lo, hi) {
     buildTentBar();
     buildStageTable();
     updateReminderUI();
-    renderFeedRecentLogs();
-    renderVpdStats();
-    renderVpdSparkline();
-    dbGetAll('logs').then(logs => renderStageTimeline(logs));
+    dbGetAll('logs').then(logs => {  // 1回取得して全レンダーで共有
+      renderFeedRecentLogs(logs);
+      renderVpdStats(logs);
+      renderVpdSparkline(logs);
+      renderStageTimeline(logs);
+    });
     updateStageSelector(tents[currentTent].stage);
     _updateDayNightBtn(tents[currentTent].dayNight || 'day');
     const rl = document.getElementById('reminderLabel');
@@ -5853,7 +5890,7 @@ function classifyVpd(vpd, lo, hi) {
     if (tc) tc.classList.add('active');
     if (target === 'monitor') { renderVpdSparkline(); }
     if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); renderFeedRecentLogs(); prefillLastWatering(); }
-    if (target === 'analysis') { dbGetAll('logs').then(logs => { renderStageTimeline(logs); }); renderVpdStats(); renderVpdSparkline(); }
+    if (target === 'analysis') { dbGetAll('logs').then(logs => { renderStageTimeline(logs); renderVpdStats(logs); renderVpdSparkline(logs); }); }
     if (target === 'table') { buildStageTable(); buildMatrix(); }
     // AI Chat FAB: show only on analysis/table tabs (avoid conflicting with inline AI buttons)
     const chatFab = document.getElementById('aiChatFab');
@@ -5947,8 +5984,8 @@ function classifyVpd(vpd, lo, hi) {
       if (e.name === 'AbortError') {
         throw new Error('Timeout — LM Studio did not respond within 30s');
       }
-      // CORS or network error
-      if (e.message.includes('fetch') || e.name === 'TypeError') {
+      // CORS or network error（メッセージ文言はロケール/エンジン依存なので name で判定）
+      if (e.name === 'TypeError') {
         throw new Error('CORS or network error — In LM Studio: Local Server → Settings → enable CORS (Allow All Origins)');
       }
       throw e;
@@ -6074,7 +6111,10 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
     _aiChatHistory.push({ role: 'user', content: text });
     const typing = appendChatBubble('assistant', '…');
     try {
-      const reply = await askLLM(_aiChatHistory.slice(-10)); // last 10 msgs for context
+      // system(先頭) は常に保持し、残りは直近9件。slice(-10)だと会話が伸びるとsystemが脱落し言語指定が消える
+      const _sys = _aiChatHistory[0];
+      const _recent = _aiChatHistory.slice(1).slice(-9);
+      const reply = await askLLM(_sys ? [_sys, ..._recent] : _recent);
       _aiChatHistory.push({ role: 'assistant', content: reply });
       if (typing) typing.textContent = reply;
     } catch(e) {
@@ -6154,8 +6194,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
     if (noteEl) { noteEl.value = ''; const mc = document.getElementById('monitorNoteCount'); if (mc) mc.textContent = '100'; }
     buildTentBar();
     const airVpdNow = log.vpd.toFixed(2);
-    renderVpdSparkline();
-    renderVpdStats();
+    dbGetAll('logs').then(logs => { renderVpdSparkline(logs); renderVpdStats(logs); });
     const dispMonTemp = useFahrenheit ? (log.temp * 9/5 + 32).toFixed(1) + '°F' : log.temp + '°C';
     const _L = appLang === 'en';
     showSavePopup(_L ? 'Monitor Saved ✅' : '環境を記録しました ✅', [
