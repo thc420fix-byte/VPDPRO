@@ -3003,9 +3003,10 @@
     return lux > 0 ? ppfd : 0;
   }
   async function applyLuxResult() {
-    const ppfd = convertLux();
+    let ppfd = convertLux();
     closeLuxConverter();
     if (!ppfd) return;
+    ppfd = Math.max(0, Math.min(2000, ppfd)); // PPFD入力欄と同じ上限でクランプ
     const t = tents[currentTent];
     t.ppfd = ppfd;
     const inp = document.getElementById('ppfdVal');
