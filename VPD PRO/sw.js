@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'canopy-v138';
+const CACHE_VERSION = 'canopy-v139';
 const ASSETS = [
   './',
   './index.html',
@@ -59,14 +59,25 @@ self.addEventListener('message', e => {
 });
 
 self.addEventListener('fetch', e => {
+  const req = e.request;
+
+  // GET 以外（LM Studio への POST など）は一切傍受しない。
+  // SW が POST を再発行するとボディ（messages）が欠落し API が壊れるため。
+  if (req.method !== 'GET') return;
+
+  // クロスオリジン（ローカル AI / 外部 API など）は傍受しない。
+  // 同一オリジンの静的アセットだけをキャッシュ対象にする。
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+
   e.respondWith(
-    caches.match(e.request).then(cached => {
+    caches.match(req).then(cached => {
       if (cached) return cached;
-      return fetch(e.request).then(response => {
+      return fetch(req).then(response => {
         if (!response || response.status !== 200) return response;
         if (response.type === 'opaque') return response;
         const clone = response.clone();
-        caches.open(CACHE_VERSION).then(c => c.put(e.request, clone));
+        caches.open(CACHE_VERSION).then(c => c.put(req, clone));
         return response;
       }).catch(() => caches.match('./index.html'));
     })
