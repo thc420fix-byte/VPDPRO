@@ -351,6 +351,26 @@
       min-width: 34px;
       letter-spacing: 0;
     }
+    /* pH/EC の目標レンジ表示（入力欄の直下） */
+    .stepper-target {
+      font-size: 0.6rem;
+      color: var(--text2);
+      text-align: center;
+      margin: -3px 0 3px;
+      letter-spacing: 0.02em;
+      min-height: 0.8em;
+    }
+    .stepper-target b { color: var(--accent); font-weight: 700; }
+    /* 栄養素レシピ一覧 */
+    .fert-recipe { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
+    .fert-recipe-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 0.72rem; padding: 3px 8px; border-radius: 7px;
+      background: rgba(255,255,255,0.04);
+    }
+    .fert-recipe-row .frn { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fert-recipe-row .frv { color: var(--accent); font-weight: 700; flex-shrink: 0; margin-left: 8px; }
+    .fert-recipe-row .frv small { color: var(--text2); font-weight: 500; }
     /* VPD zone bar: current value vs stage target range at a glance */
     .vpd-zonebar-wrap { width: 100%; margin: 8px 0 4px; padding: 0 4px; box-sizing: border-box; }
     .vpd-zonebar {
@@ -1179,6 +1199,8 @@
       <div id="fertTabBar" class="toggle-row" style="margin-bottom:6px;"></div>
       <!-- タブコンテンツ -->
       <div id="fertTabContent" style="display:none;"></div>
+      <!-- 全栄養素レシピ一覧 -->
+      <div id="fertRecipe" class="fert-recipe" style="display:none;"></div>
     </div>
     <div class="stepper-rows">
       <!-- pH -->
@@ -1186,11 +1208,12 @@
         <button class="stepper-btn" onclick="adjustPh(-0.1)">−</button>
         <div class="stepper-center">
           <span class="stepper-label">pH</span>
-          <input id="phInput" class="stepper-val" type="text" inputmode="decimal" placeholder="6.0" onfocus="this.select()">
+          <input id="phInput" class="stepper-val" type="text" inputmode="decimal" placeholder="6.0" onfocus="this.select()" oninput="updateFeedingTargets()">
           <span class="stepper-unit"></span>
         </div>
         <button class="stepper-btn" onclick="adjustPh(0.1)">+</button>
       </div>
+      <div id="phTargetHint" class="stepper-target"></div>
       <!-- Water Temp -->
       <div class="stepper-row">
         <button class="stepper-btn" onclick="adjustWaterTemp(-0.5)">−</button>
@@ -1213,21 +1236,23 @@
         <button class="stepper-btn" onclick="adjustEc(-0.1)">−</button>
         <div class="stepper-center">
           <span id="inputEcLabel" class="stepper-label" data-i18n="feed.input_ec">Input EC</span>
-          <input id="ecInput" class="stepper-val" type="text" inputmode="decimal" placeholder="1.5" onfocus="this.select()">
+          <input id="ecInput" class="stepper-val" type="text" inputmode="decimal" placeholder="1.5" onfocus="this.select()" oninput="updateFeedingTargets()">
           <span class="stepper-unit">mS</span>
         </div>
         <button class="stepper-btn" onclick="adjustEc(0.1)">+</button>
       </div>
+      <div id="ecTargetHint" class="stepper-target" style="display:none;"></div>
       <!-- Runoff EC -->
       <div id="runoffEcRow" class="stepper-row" style="display:none;">
         <button class="stepper-btn" onclick="adjustRunoffEc(-0.1)">−</button>
         <div class="stepper-center">
           <span class="stepper-label" data-i18n="feed.runoff_ec">Runoff EC</span>
-          <input id="runoffEcInput" class="stepper-val" type="text" inputmode="decimal" placeholder="1.8" onfocus="this.select()">
+          <input id="runoffEcInput" class="stepper-val" type="text" inputmode="decimal" placeholder="1.8" onfocus="this.select()" oninput="updateFeedingTargets()">
           <span class="stepper-unit">mS</span>
         </div>
         <button class="stepper-btn" onclick="adjustRunoffEc(0.1)">+</button>
       </div>
+      <div id="runoffTargetHint" class="stepper-target" style="display:none;"></div>
     </div>
     <!-- EC Theory reference (Theory mode only) -->
     <div id="feedingRef" style="font-size:0.68rem;color:var(--text);text-align:center;opacity:0.8;border-top:1px solid rgba(255,255,255,0.06);padding:5px 0;line-height:1.7;"></div>
@@ -1436,9 +1461,14 @@
     const th = document.getElementById('ecToggleThumb');
     if (sw) sw.style.background = show ? 'var(--accent)' : 'rgba(255,255,255,0.12)';
     if (th) { th.style.left = show ? '18px' : '2px'; th.style.background = show ? '#000' : 'var(--text2)'; }
-    // Hide EC target hint when rows are visible (redundant info)
+    // EC 目標はインラインヒントへ移したので、行表示中は下部 feedingRef を隠す（重複回避）
     const ref = document.getElementById('feedingRef');
     if (ref) ref.style.display = show ? 'none' : '';
+    const eh = document.getElementById('ecTargetHint');
+    const rh = document.getElementById('runoffTargetHint');
+    if (eh) eh.style.display = show ? '' : 'none';
+    if (rh) rh.style.display = show ? '' : 'none';
+    if (typeof updateFeedingTargets === 'function') updateFeedingTargets();
   }
   function toggleEcRows() {
     _showEcRows = !_showEcRows;
@@ -2638,6 +2668,40 @@
         refEl.textContent = '';
       }
     }
+    updateFeedingTargets();
+  }
+
+  // pH の目標レンジ（コ・コ／ハイドロの養分吸収スイートスポット）
+  const PH_TARGET = [5.8, 6.2];
+  // 値をレンジで分類: ok=範囲内 / warning=端の外側15%以内 / danger=それ以上外れ / null=目標なし
+  function classifyRange(v, lo, hi) {
+    if (isNaN(v) || !(hi > 0)) return null;
+    const m = (hi - lo) * 0.15;
+    if (v < lo - m || v > hi + m) return 'danger';
+    if (v < lo || v > hi) return 'warning';
+    return 'ok';
+  }
+  // pH / 給液EC / 排液EC の入力欄直下に目標を表示し、現在値を範囲内かで色付け
+  function updateFeedingTargets() {
+    const t = tents[currentTent];
+    if (!t) return;
+    const s = stages[t.stage] || {};
+    const apply = (inputId, hintId, range) => {
+      const inp = document.getElementById(inputId);
+      const hint = document.getElementById(hintId);
+      if (!inp) return;
+      const has = range && range[1] > 0;
+      const v = parseFloat(inp.value || inp.placeholder);
+      if (hint) hint.innerHTML = has ? `${tr('vpd.target')} <b>${range[0].toFixed(1)}–${range[1].toFixed(1)}</b>` : '';
+      const cls = has ? classifyRange(v, range[0], range[1]) : null;
+      const col = cls === 'danger' ? 'var(--danger)' : cls === 'warning' ? 'var(--warning,#ff9500)' : 'var(--accent)';
+      // stepper-val は -webkit-text-fill-color が効くため両方セット
+      inp.style.color = col;
+      inp.style.webkitTextFillColor = col;
+    };
+    apply('phInput', 'phTargetHint', PH_TARGET);
+    apply('ecInput', 'ecTargetHint', s.ecInput);
+    apply('runoffEcInput', 'runoffTargetHint', s.ecRunoff);
   }
 
 
@@ -2692,33 +2756,56 @@
     content.style.display = 'block';
     content.innerHTML = `
       <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);border-radius:10px;padding:10px 12px;position:relative;">
-        <!-- 数値 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end;">
+        <!-- 数値：使用量(ml)を主役に -->
+        <div style="display:grid;grid-template-columns:0.85fr 1.3fr 0.85fr;gap:8px;align-items:end;">
           <div>
-            <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">${tr('fert.water_lbl')}</div>
+            <div style="font-size:0.62rem;color:var(--text2);margin-bottom:3px;">${tr('fert.water_lbl')}</div>
             <div style="display:flex;align-items:baseline;gap:3px;">
               <input value="${f.waterL ?? ''}" placeholder="0" type="number" min="0" step="0.5" oninput="updateFertilizer(${currentFertTab},'waterL',this.value)"
-                style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.18);color:var(--accent);font-size:0.95rem;outline:none;text-align:right;padding:3px 0;">
-              <span style="font-size:0.65rem;color:var(--text);white-space:nowrap;">L</span>
+                style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.18);color:var(--text);font-size:0.9rem;outline:none;text-align:right;padding:3px 0;">
+              <span style="font-size:0.62rem;color:var(--text2);white-space:nowrap;">L</span>
             </div>
           </div>
           <div>
-            <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">${tr('fert.amount_lbl')}</div>
+            <div style="font-size:0.62rem;color:var(--accent);font-weight:700;margin-bottom:3px;">${tr('fert.amount_lbl')}</div>
             <div style="display:flex;align-items:baseline;gap:3px;">
               <input value="${f.amountMl ?? ''}" placeholder="0" type="number" min="0" step="0.5" oninput="updateFertilizer(${currentFertTab},'amountMl',this.value)"
-                style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.18);color:var(--accent);font-size:0.95rem;outline:none;text-align:right;padding:3px 0;">
-              <span style="font-size:0.65rem;color:var(--text);white-space:nowrap;">ml</span>
+                style="width:100%;background:transparent;border:none;border-bottom:1.5px solid rgba(0,255,136,0.5);color:var(--accent);font-size:1.5rem;font-weight:700;outline:none;text-align:right;padding:2px 0;font-family:'Rajdhani',-apple-system,sans-serif;">
+              <span style="font-size:0.72rem;color:var(--accent);white-space:nowrap;font-weight:600;">ml</span>
             </div>
           </div>
           <div>
-            <div style="font-size:0.63rem;color:var(--text);margin-bottom:3px;">${tr('fert.dilution_lbl')}</div>
+            <div style="font-size:0.62rem;color:var(--text2);margin-bottom:3px;">${tr('fert.dilution_lbl')}</div>
             <div style="display:flex;align-items:baseline;gap:3px;">
-              <span style="color:var(--accent);font-size:0.95rem;font-weight:600;">${ratio}</span>
-              <span style="font-size:0.63rem;color:var(--text);white-space:nowrap;">ml/L</span>
+              <span style="color:var(--text);font-size:0.9rem;font-weight:600;">${ratio}</span>
+              <span style="font-size:0.6rem;color:var(--text2);white-space:nowrap;">ml/L</span>
             </div>
           </div>
         </div>
       </div>`;
+
+    // 全栄養素レシピ一覧（2件以上＋投与量ありのとき、給液レシピを一望）
+    const recipe = document.getElementById('fertRecipe');
+    if (recipe) {
+      const nameOf = (x, i) => { const rn = x.name || ''; const def = /^NUTRIENT\d+$/.test(rn); return (rn && !def) ? rn : (appLang === 'en' ? `NUTRIENT${i + 1}` : `栄養素${i + 1}`); };
+      const dosed = list.filter(x => parseFloat(x.amountMl) > 0);
+      if (list.length >= 2 && dosed.length >= 1) {
+        let totalMl = 0;
+        const rowsH = list.map((x, i) => {
+          const ml = parseFloat(x.amountMl);
+          if (isNaN(ml) || ml <= 0) return '';
+          totalMl += ml;
+          const r = (x.waterL > 0) ? (ml / x.waterL).toFixed(2) : null;
+          const active = i === currentFertTab;
+          return `<div class="fert-recipe-row" onclick="selectFertTab(${i})" style="cursor:pointer;${active ? 'outline:1px solid rgba(0,255,136,0.4);' : ''}"><span class="frn">${esc(nameOf(x, i))}</span><span class="frv">${ml}<small> ml${r ? ` · ${r} ml/L` : ''}</small></span></div>`;
+        }).join('');
+        recipe.innerHTML = rowsH + `<div class="fert-recipe-row" style="background:transparent;"><span class="frn" style="color:var(--text2);font-size:0.66rem;">${appLang === 'en' ? 'Total' : '合計'}</span><span class="frv">${totalMl.toFixed(1)}<small> ml</small></span></div>`;
+        recipe.style.display = 'flex';
+      } else {
+        recipe.innerHTML = '';
+        recipe.style.display = 'none';
+      }
+    }
   }
 
   function selectFertTab(idx) {
@@ -3975,6 +4062,7 @@
     if (isNaN(val)) val = 0;
     val = Math.max(0, Math.round((val + delta) * 10) / 10);
     input.value = val.toFixed(1);
+    updateFeedingTargets();
   }
 
   /* === グロウサイクル管理 === */
@@ -4105,6 +4193,7 @@
     if (isNaN(val)) val = 0;
     val = Math.max(0, Math.min(14, Math.round((val + delta) * 10) / 10));
     input.value = val.toFixed(1);
+    updateFeedingTargets();
   }
   function adjustEc(delta) {
     const input = document.getElementById('ecInput');
@@ -4113,6 +4202,7 @@
     if (isNaN(val)) val = 0;
     val = Math.max(0, Math.min(10, Math.round((val + delta) * 10) / 10));
     input.value = val.toFixed(1);
+    updateFeedingTargets();
   }
   function adjustWaterTemp(delta) {
     const input = document.getElementById('waterTempInput');
