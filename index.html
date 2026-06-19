@@ -2565,7 +2565,7 @@
     if (phEl.value && wtEl?.value && ecEl?.value) return; // already filled
     dbGetAll('logs').then(all => {
       const tent = tents[currentTent];
-      const last = all.filter(l => l.tentId === tent.id && (l.ph || l.waterTemp || l.ec))
+      const last = all.filter(l => l.tentId === tent.id && (Number(l.cycle)||1) === (Number(tent.cycle)||1) && (l.ph || l.waterTemp || l.ec))
                       .sort((a, b) => (b.ts || 0) - (a.ts || 0))[0];
       if (!last) return;
       if (!phEl.value && last.ph)                      { phEl.value = last.ph; }
@@ -4443,7 +4443,7 @@ function classifyVpd(vpd, lo, hi) {
     html += '</div>';
     el.innerHTML = html;
     const emptyEl = document.getElementById('analysisEmptyState');
-    if (emptyEl) emptyEl.style.display = (_logs || []).filter(l => l.tentId === tents[currentTent]?.id).length === 0 ? '' : 'none';
+    if (emptyEl) { const _ct = tents[currentTent]; emptyEl.style.display = (_logs || []).filter(l => l.tentId === _ct?.id && (Number(l.cycle)||1) === (Number(_ct?.cycle)||1)).length === 0 ? '' : 'none'; }
   }
   async function deleteStageLog(id, stageKey) {
 
