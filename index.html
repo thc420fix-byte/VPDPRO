@@ -5467,19 +5467,28 @@ function classifyVpd(vpd, lo, hi) {
   async function askLLM(messages) {
     const base = (localStorage.getItem('lmUrl') || 'http://localhost:11234').replace(/\/$/, '');
     let res;
+    // 到達不能なサーバでfetchが無限に待機して入力欄が固まるのを防ぐ（30秒で中断）
+    const _ctrl = new AbortController();
+    const _to = setTimeout(() => _ctrl.abort(), 30000);
     try {
       res = await fetch(base + '/v1/chat/completions', {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'local', messages, temperature: 0.7, max_tokens: 400 })
+        body: JSON.stringify({ model: 'local', messages, temperature: 0.7, max_tokens: 400 }),
+        signal: _ctrl.signal
       });
     } catch(e) {
+      if (e.name === 'AbortError') {
+        throw new Error('Timeout — LM Studio did not respond within 30s');
+      }
       // CORS or network error
       if (e.message.includes('fetch') || e.name === 'TypeError') {
         throw new Error('CORS or network error — In LM Studio: Local Server → Settings → enable CORS (Allow All Origins)');
       }
       throw e;
+    } finally {
+      clearTimeout(_to);
     }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     let d;
