@@ -1007,7 +1007,7 @@
         <input id="stageStartDate" type="date" style="width:110px;flex-shrink:0;font-size:0.78rem;height:24px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(52,199,89,0.3);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
         <button id="clearDateBtn" oncontextmenu="return false;" style="background:transparent;border:none;color:rgba(255,120,120,0.6);font-size:0.7rem;width:22px;height:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;display:none;">✕</button>
       </div>
-      <div id="addDateRow" onclick="document.getElementById('stageStartDate').click()" style="text-align:center;margin-bottom:4px;cursor:pointer;font-size:0.68rem;color:var(--muted);letter-spacing:0.04em;" data-i18n="stage.set_date">+ Set start date</div>
+      <div id="addDateRow" onclick="openStartDatePicker()" style="text-align:center;margin-bottom:4px;cursor:pointer;font-size:0.68rem;color:var(--muted);letter-spacing:0.04em;padding:8px 0;" data-i18n="stage.set_date">+ Set start date</div>
       <!-- 収量記録 (Harvestステージのみ) -->
       <div id="yieldRow" class="input-row" style="display:none;margin-bottom:2px;align-items:center;gap:8px;justify-content:center;">
         <label style="font-size:0.95rem;color:var(--text);font-weight:700;flex-shrink:0;" data-i18n="yield.label">🏆 収量</label>
@@ -2109,6 +2109,25 @@
     _updateYieldRow();
     const linked = getLinkedDayCountDates(t, t.stage);
     updateStageDayCount(linked.base, linked.end, t.stage);
+  }
+
+  // 「+ 開始日を設定」タップ時：入力欄を表示してからネイティブ日付ピッカーを開く。
+  // iOS Safari は display:none の input には showPicker()/click() でピッカーを開けないため、
+  // 先に表示 → 同じユーザー操作内で showPicker() を呼ぶ。
+  function openStartDatePicker() {
+    const inp = document.getElementById('stageStartDate');
+    const row = document.getElementById('startDateRow');
+    const addRow = document.getElementById('addDateRow');
+    if (!inp) return;
+    // 入力欄を可視化（addRow を隠す）
+    if (row) row.style.display = 'flex';
+    if (addRow) addRow.style.display = 'none';
+    // 表示直後にピッカーを開く。showPicker 未対応環境は focus+click にフォールバック。
+    try {
+      inp.showPicker();
+    } catch (e) {
+      try { inp.focus(); inp.click(); } catch (_) {}
+    }
   }
 
   function _updateClearDateBtn() {
