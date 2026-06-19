@@ -4338,7 +4338,7 @@ function classifyVpd(vpd, lo, hi) {
       const label = c === cur ? (appLang === 'en' ? `Cycle ${c} (now)` : `サイクル ${c}（現在）`) : (appLang === 'en' ? `Cycle ${c}` : `サイクル ${c}`);
       opts.push(`<option value="${c}" ${c === sel ? 'selected' : ''}>${label}</option>`);
     }
-    wrap.innerHTML = `<select onchange="setViewCycle(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.72rem;padding:3px 6px;cursor:pointer;font-family:inherit;">🔄 ${opts.join('')}</select>`;
+    wrap.innerHTML = `<span style="font-size:0.72rem;opacity:0.8;margin-right:3px;">🔄</span><select onchange="setViewCycle(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.72rem;padding:3px 6px;cursor:pointer;font-family:inherit;">${opts.join('')}</select>`;
   }
 
   async function renderStageTimeline(_logs) {
@@ -4352,7 +4352,7 @@ function classifyVpd(vpd, lo, hi) {
     // 過去サイクル閲覧時の読み取り専用バナー & 新規写真追加ボタンの抑制（新規ログは常に現サイクルに付くため）
     const _banner = document.getElementById('cycleViewBanner');
     if (_banner) {
-      if (_viewingPast) { _banner.style.display = 'block'; _banner.textContent = appLang === 'en' ? `📖 Viewing Cycle ${_ac} (read-only). Switch to the current cycle to add or edit.` : `📖 サイクル ${_ac} を閲覧中（読み取り専用）。追加・編集は現在のサイクルに切り替えてください。`; }
+      if (_viewingPast) { _banner.style.display = 'block'; _banner.textContent = appLang === 'en' ? `📖 Viewing Cycle ${_ac}. New entries are always added to the current cycle.` : `📖 サイクル ${_ac} を表示中。新規の記録は常に現在のサイクルに追加されます。`; }
       else { _banner.style.display = 'none'; }
     }
     const _addBtns = document.getElementById('galleryAddBtns');
