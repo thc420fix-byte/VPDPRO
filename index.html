@@ -1250,6 +1250,11 @@
       <div style="font-size:0.85rem;color:var(--text2);line-height:1.6;" data-i18n-html="analysis.empty">まだデータがありません。<br>環境タブで値を入力して<br>Save してください。</div>
     </div>
   </div>
+  <!-- サイクル履歴・収量比較 -->
+  <div class="card" id="cycleHistoryCard" style="display:none;">
+    <div class="card-title" style="margin-bottom:8px;" data-i18n="analysis.cycle_history">CYCLE HISTORY</div>
+    <div id="cycleHistoryBody"></div>
+  </div>
   <!-- How to use hint -->
   <div class="card" style="opacity:0.72;" id="howToUseCard">
     <div class="card-title" style="margin-bottom:8px;" data-i18n="howto.title">HOW TO USE</div>
@@ -1401,7 +1406,7 @@
       'ref.co2_on':'CO₂ ON','ref.co2_off':'CO₂ OFF',
       'ref.stage_guide':'ステージガイド','ref.soil':'土壌','ref.hydro':'ハイドロ/ココ',
       'ref.water_temp':'💧 水温目安: 18〜22°C（根の健康・溶存酸素量の観点から）',
-      'analysis.stage_progress':'ステージ進捗',
+      'analysis.stage_progress':'ステージ進捗','analysis.cycle_history':'サイクル履歴',
       'analysis.no_logs':'記録なし',
       'analysis.empty':'まだデータがありません。<br>環境タブで値を入力して<br>保存してください。',
       'analysis.total_days':'合計: ','analysis.days':'日','analysis.week':'Week ','analysis.day_abbr':'Day ',
@@ -1483,7 +1488,7 @@
       'ref.co2_on':'CO₂ ON','ref.co2_off':'CO₂ OFF',
       'ref.stage_guide':'STAGE CHART','ref.soil':'Soil','ref.hydro':'Hydro/Coco',
       'ref.water_temp':'💧 Water temp: 18–22°C (for root health & dissolved oxygen)',
-      'analysis.stage_progress':'STAGE PROGRESS',
+      'analysis.stage_progress':'STAGE PROGRESS','analysis.cycle_history':'CYCLE HISTORY',
       'analysis.no_logs':'No records',
       'analysis.empty':'No data yet.<br>Enter values in the Environ tab<br>and press Save.',
       'analysis.total_days':'Total: ','analysis.days':' days','analysis.week':'Week ','analysis.day_abbr':'Day ',
@@ -1760,6 +1765,7 @@
       photoperiod: 18,
       cycle: 1,
       yield: null,
+      cycleHistory: [],
       stageSpots: {},
       logs: []
     };
@@ -3893,6 +3899,15 @@
       ? `End Cycle ${cur} and start Cycle ${cur + 1}?\nAll past logs are preserved.${yieldNote}`
       : `サイクル ${cur} を終了して、新しいサイクル ${cur + 1} を開始しますか？\n過去のログは保存されたまま残ります。${yieldNote}`;
     if (!(await customConfirm(cycleMsg))) return;
+    // 終了するサイクルの日付・収量をスナップショットして保存（過去サイクル閲覧・収量履歴用）
+    t.cycleHistory = Array.isArray(t.cycleHistory) ? t.cycleHistory : [];
+    t.cycleHistory = t.cycleHistory.filter(h => h && h.cycle !== cur); // 二重記録防止
+    t.cycleHistory.push({
+      cycle: cur,
+      yield: t.yield ?? null,
+      stageDates: t.stageDates ? { ...t.stageDates } : {},
+      stageEndDates: t.stageEndDates ? { ...t.stageEndDates } : {}
+    });
     t.cycle = cur + 1;
     _viewCycle = null;   // 新サイクル開始時は現在サイクルを表示
     t.stage = 'clone';
@@ -4341,12 +4356,58 @@ function classifyVpd(vpd, lo, hi) {
     wrap.innerHTML = `<span style="font-size:0.72rem;opacity:0.8;margin-right:3px;">🔄</span><select onchange="setViewCycle(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.72rem;padding:3px 6px;cursor:pointer;font-family:inherit;">${opts.join('')}</select>`;
   }
 
+  // stageDates オブジェクトから栽培総日数を算出（最初の開始日→harvest日 or 最終既知日）
+  function _cycleTotalDays(sd, isCurrent) {
+    if (!sd) return null;
+    const dates = STAGE_ORDER.map(k => sd[k]).filter(Boolean);
+    if (!dates.length) return null;
+    const start = new Date(dates[0]);
+    const end = sd['harvest'] ? new Date(sd['harvest']) : (isCurrent ? new Date() : new Date(dates[dates.length - 1]));
+    const d = Math.round((end - start) / (1000 * 60 * 60 * 24));
+    return d >= 0 ? d : null;
+  }
+  function renderCycleHistory() {
+    const card = document.getElementById('cycleHistoryCard');
+    const body = document.getElementById('cycleHistoryBody');
+    if (!card || !body) return;
+    const t = tents[currentTent];
+    const cur = Number(t?.cycle) || 1;
+    const hist = Array.isArray(t?.cycleHistory) ? t.cycleHistory : [];
+    if (cur <= 1 && hist.length === 0) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    // 現サイクル + 過去サイクルを新しい順に
+    const rows = [];
+    rows.push({ cycle: cur, yield: t.yield ?? null, days: _cycleTotalDays(t.stageDates, true), current: true });
+    hist.slice().sort((a, b) => (b.cycle || 0) - (a.cycle || 0)).forEach(h => {
+      rows.push({ cycle: h.cycle, yield: h.yield ?? null, days: _cycleTotalDays(h.stageDates, false), current: false });
+    });
+    const yields = rows.map(r => r.yield).filter(v => v != null && v > 0);
+    const best = yields.length ? Math.max(...yields) : null;
+    const _ac = analysisCycle();
+    const dLabel = tr('analysis.days') || '日';
+    body.innerHTML = rows.map(r => {
+      const isViewed = r.cycle === _ac;
+      const yieldTxt = r.yield != null ? `${r.yield}g` : '—';
+      const isBest = best != null && r.yield === best && r.yield > 0;
+      const daysTxt = r.days != null ? `${r.days}${dLabel}` : '—';
+      const curTag = r.current ? `<span style="font-size:0.6rem;color:var(--accent);margin-left:5px;">●</span>` : '';
+      return `<div onclick="setViewCycle(${r.cycle})" style="display:flex;justify-content:space-between;align-items:center;padding:7px 8px;border-radius:8px;margin-bottom:4px;cursor:pointer;background:${isViewed ? 'rgba(52,199,89,0.12)' : 'rgba(255,255,255,0.04)'};border:1px solid ${isViewed ? 'rgba(52,199,89,0.3)' : 'transparent'};">
+        <span style="font-size:0.78rem;font-weight:700;color:var(--text);">${appLang === 'en' ? 'Cycle' : 'サイクル'} ${r.cycle}${curTag}</span>
+        <span style="display:flex;gap:12px;align-items:center;">
+          <span style="font-size:0.7rem;color:var(--text2);">${daysTxt}</span>
+          <span style="font-size:0.82rem;font-weight:700;color:${isBest ? 'var(--accent)' : 'var(--text)'};">${isBest ? '🏆 ' : ''}${yieldTxt}</span>
+        </span>
+      </div>`;
+    }).join('');
+  }
+
   async function renderStageTimeline(_logs) {
     const el = document.getElementById('stageTimeline');
     if (!el) return;
     const t = tents[currentTent];
     const order = STAGE_ORDER;
     renderCycleSelector();
+    renderCycleHistory();
     const _viewingPast = isViewingPastCycle();
     const _ac = analysisCycle();
     // 過去サイクル閲覧時の読み取り専用バナー & 新規写真追加ボタンの抑制（新規ログは常に現サイクルに付くため）
@@ -4357,12 +4418,15 @@ function classifyVpd(vpd, lo, hi) {
     }
     const _addBtns = document.getElementById('galleryAddBtns');
     if (_addBtns) _addBtns.style.display = _viewingPast ? 'none' : 'flex';
-    // stageDates はテント単位（現サイクルのみ）。過去サイクル閲覧時は日数オーバーレイを出さない。
-    const allDates = _viewingPast ? [] : order.map(k => t.stageDates && t.stageDates[k]).filter(Boolean);
+    // 閲覧サイクルの日付ソース：現サイクルは t.stageDates、過去サイクルは cycleHistory のスナップショット
+    const _hist = _viewingPast ? (Array.isArray(t.cycleHistory) ? t.cycleHistory.find(h => h && h.cycle === _ac) : null) : null;
+    const _sd  = _viewingPast ? (_hist?.stageDates || {})    : (t.stageDates || {});
+    const allDates = order.map(k => _sd[k]).filter(Boolean);
     const totalEl = document.getElementById('stageTotalDays');
     if (totalEl && allDates.length > 0) {
-      const harvestDate = t.stageDates && t.stageDates['harvest'];
-      const endDate = harvestDate ? new Date(harvestDate) : new Date();
+      const harvestDate = _sd['harvest'];
+      // 過去サイクルは harvest 日が無ければ最終既知日まで、現サイクルは現在まで
+      const endDate = harvestDate ? new Date(harvestDate) : (_viewingPast ? new Date(allDates[allDates.length - 1]) : new Date());
       const totalDays = Math.round((endDate - new Date(allDates[0])) / (1000 * 60 * 60 * 24));
       totalEl.textContent = `${tr('analysis.total_days')}${totalDays}${tr('analysis.days')}`;
     } else if (totalEl) {
@@ -4379,23 +4443,22 @@ function classifyVpd(vpd, lo, hi) {
     let html = '<div style="display:flex;flex-direction:column;gap:6px;">';
     order.forEach((key, idx) => {
       const s = stages[key];
-      // 過去サイクル閲覧時は現サイクルの開始日/現在ステージを当て込まない
+      // 現サイクルのみ「現在ステージ」をハイライト。過去サイクルは _sd（スナップショット）の日付を使う。
       const isCurrent = !_viewingPast && t.stage === key;
-      const dateStr = _viewingPast ? null : (t.stageDates && t.stageDates[key]);
+      const dateStr = _sd[key];
       const nextKey = order[idx + 1];
-      const nextDateStr = !_viewingPast && nextKey && t.stageDates && t.stageDates[nextKey];
+      const nextDateStr = nextKey && _sd[nextKey];
       let daysText = '';
       if (dateStr && key !== 'harvest') {
         // BUG-2 fix: Dry の起算点は自身の開始日（dateStr）に統一。Flush 込みにしない。
         const start = new Date(dateStr);
         // Dry の終了は harvest 日を優先。それ以外は「次に存在するステージ開始日」→「現在」へフォールバック。
-        const dryEnd = key === 'dry' && t.stageDates && t.stageDates['harvest']
-          ? t.stageDates['harvest'] : null;
+        const dryEnd = key === 'dry' && _sd['harvest'] ? _sd['harvest'] : null;
         // BUG-3 fix: スキップで nextDateStr が無い場合、STAGE_ORDER を先送りして次に stageDates がある key を探す。
         let fallbackNext = nextDateStr;
-        if (!fallbackNext && t.stageDates) {
+        if (!fallbackNext) {
           for (let j = idx + 1; j < order.length; j++) {
-            if (t.stageDates[order[j]]) { fallbackNext = t.stageDates[order[j]]; break; }
+            if (_sd[order[j]]) { fallbackNext = _sd[order[j]]; break; }
           }
         }
         const end = dryEnd ? new Date(dryEnd) : (fallbackNext ? new Date(fallbackNext) : (isCurrent ? new Date() : null));
