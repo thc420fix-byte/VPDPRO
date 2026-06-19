@@ -3152,6 +3152,10 @@
     stopLightMeter();
     document.getElementById('lightMeterModal').style.display = 'none';
   }
+  // タブが非表示になったらカメラを停止（点灯したまま放置されるのを防ぐ。プライバシー・電池対策）
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && _lmStream) stopLightMeter();
+  });
 
   /* === VPD計算および表示 === */
   function update() {
