@@ -4385,6 +4385,8 @@ function classifyVpd(vpd, lo, hi) {
   }
   // 分析タブで閲覧中のサイクル。null = 現在のサイクル（tent.cycle に追従）。過去サイクルを選ぶと読み取り専用で閲覧。
   let _viewCycle = null;
+  let _cycleHistExpanded = false;
+  function toggleCycleHistExpand() { _cycleHistExpanded = !_cycleHistExpanded; renderCycleHistory(); }
   function analysisCycle() {
     const t = tents[currentTent];
     const cur = Number(t?.cycle) || 1;
@@ -4442,11 +4444,20 @@ function classifyVpd(vpd, lo, hi) {
     hist.slice().sort((a, b) => (b.cycle || 0) - (a.cycle || 0)).forEach(h => {
       rows.push({ cycle: h.cycle, yield: h.yield ?? null, days: _cycleTotalDays(h.stageDates, false), current: false });
     });
+    // 🏆 は全サイクルから判定（折りたたみ表示でも基準は全体）
     const yields = rows.map(r => r.yield).filter(v => v != null && v > 0);
     const best = yields.length ? Math.max(...yields) : null;
     const _ac = analysisCycle();
     const dLabel = tr('analysis.days') || '日';
-    body.innerHTML = rows.map(r => {
+    // 件数が多いと縦長になるため、既定は現在＋直近で折りたたむ。超過分は「全件表示」で展開。
+    const COLLAPSED_MAX = 5;
+    const overflow = rows.length - COLLAPSED_MAX;
+    const collapsed = !_cycleHistExpanded && overflow > 0;
+    // 閲覧中のサイクルが折りたたみで隠れる場合は、見失わないよう展開しておく。
+    const viewedHidden = collapsed && rows.slice(0, COLLAPSED_MAX).every(r => r.cycle !== _ac);
+    const showAll = _cycleHistExpanded || viewedHidden || overflow <= 0;
+    const visibleRows = showAll ? rows : rows.slice(0, COLLAPSED_MAX);
+    const rowHtml = r => {
       const isViewed = r.cycle === _ac;
       const yieldTxt = r.yield != null ? `${r.yield}g` : '—';
       const isBest = best != null && r.yield === best && r.yield > 0;
@@ -4459,7 +4470,18 @@ function classifyVpd(vpd, lo, hi) {
           <span style="font-size:0.82rem;font-weight:700;color:${isBest ? 'var(--accent)' : 'var(--text)'};">${isBest ? '🏆 ' : ''}${yieldTxt}</span>
         </span>
       </div>`;
-    }).join('');
+    };
+    // 展開時は多数でも画面を埋め尽くさないよう最大高さ＋内部スクロール
+    const listStyle = showAll && rows.length > 8 ? 'max-height:320px;overflow-y:auto;-webkit-overflow-scrolling:touch;' : '';
+    let html = `<div style="${listStyle}">${visibleRows.map(rowHtml).join('')}</div>`;
+    // 折りたたみ／展開トグル
+    if (overflow > 0 && !viewedHidden) {
+      const label = showAll
+        ? (appLang === 'en' ? '▴ Show less' : '▴ 折りたたむ')
+        : (appLang === 'en' ? `▾ Show all ${rows.length}` : `▾ 全 ${rows.length} 件を表示`);
+      html += `<div onclick="toggleCycleHistExpand()" style="text-align:center;padding:8px 0 2px;cursor:pointer;font-size:0.72rem;color:var(--accent);font-weight:600;user-select:none;">${label}</div>`;
+    }
+    body.innerHTML = html;
   }
 
   async function renderStageTimeline(_logs) {
