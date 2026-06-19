@@ -1057,7 +1057,7 @@
       <div id="startDateRow" style="display:none;align-items:center;gap:6px;justify-content:center;margin-bottom:4px;">
         <label style="font-size:0.68rem;color:var(--text2);font-weight:600;flex-shrink:0;letter-spacing:0.06em;text-transform:uppercase;" data-i18n="stage.start_label">Start</label>
         <input id="stageStartDate" type="date" style="width:110px;flex-shrink:0;font-size:0.78rem;height:24px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(52,199,89,0.3);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
-        <button id="clearDateBtn" oncontextmenu="return false;" data-i18n-aria="aria.clear_date" aria-label="開始日をクリア" style="background:transparent;border:none;color:rgba(255,120,120,0.6);font-size:0.85rem;width:32px;height:32px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;display:none;">✕</button>
+        <button id="clearDateBtn" oncontextmenu="return false;" data-i18n-aria="aria.clear_date" aria-label="開始日をクリア" style="background:transparent;border:none;color:rgba(255,120,120,0.6);font-size:0.85rem;width:36px;height:36px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;display:none;">✕</button>
       </div>
       <div id="addDateRow" onclick="openStartDatePicker()" style="text-align:center;margin-bottom:4px;cursor:pointer;font-size:0.68rem;color:var(--muted);letter-spacing:0.04em;padding:8px 0;" data-i18n="stage.set_date">+ Set start date</div>
       <!-- 収量記録 (Harvestステージのみ) -->
@@ -1210,7 +1210,7 @@
     <div style="border-top:1px solid rgba(0,255,136,0.12);padding-top:8px;margin:6px 0 4px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
         <span style="font-size:0.65rem;color:var(--text2);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;" data-i18n="feed.nutrient_label">Nutrient</span>
-        <button onclick="addFertilizer()" data-i18n-aria="aria.add_nutrient" aria-label="肥料を追加" style="width:32px;height:32px;border-radius:50%;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);color:var(--accent);font-size:1.15rem;line-height:1;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
+        <button onclick="addFertilizer()" data-i18n-aria="aria.add_nutrient" aria-label="肥料を追加" style="width:36px;height:36px;border-radius:50%;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);color:var(--accent);font-size:1.15rem;line-height:1;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
       </div>
       <!-- タブバー -->
       <div id="fertTabBar" class="toggle-row" style="margin-bottom:6px;"></div>
@@ -2045,6 +2045,8 @@
   async function deleteTent(i) {
     if (tents.length <= 1) { showToast(tr('toast.last_tent')); return; }
     if (!(await customConfirm(tr('confirm.delete_tent').replace('${name}', tents[i].name)))) return;
+    // 別テントを削除する場合、現在テントの未保存フォーム編集を先に確定（後続のloadTentToUIで破棄されるのを防ぐ）
+    if (i !== currentTent) { try { await saveCurrentTentState(); } catch (_) {} }
     const tentId = tents[i].id;
     const allLogs = await dbGetAll('logs');
     let _failed = 0;
@@ -4087,19 +4089,30 @@
   }
 
   let _reminderTimeout = null;
+  function _fireReminder() {
+    showToast(tr('toast.reminder'));
+    localStorage.removeItem('waterReminderAt');
+    localStorage.removeItem('waterReminderH');
+    updateReminderUI();
+  }
+  // setTimeout の上限(~24.8日)を超える遅延は分割して再アーム（早期誤発火を防ぐ）
+  function _armReminder(fireAt) {
+    if (_reminderTimeout) { clearTimeout(_reminderTimeout); _reminderTimeout = null; }
+    const remaining = fireAt - Date.now();
+    if (remaining <= 0) { _fireReminder(); return; }
+    const delay = Math.min(remaining, 2147483647);
+    _reminderTimeout = setTimeout(() => {
+      if (Date.now() < fireAt) _armReminder(fireAt);  // まだ未到達→残りで再アーム
+      else _fireReminder();
+    }, delay);
+  }
   function setWaterReminder(hours) {
     if (!hours || isNaN(hours) || hours <= 0) { showToast(appLang === 'en' ? '⚠️ Invalid time' : '⚠️ 時間を正しく入力してください'); return; }
     cancelWaterReminder();
     const fireAt = Date.now() + hours * 3600 * 1000;
     localStorage.setItem('waterReminderAt', String(fireAt));
     localStorage.setItem('waterReminderH', String(hours));
-    const delay = Math.min(fireAt - Date.now(), 2147483647);
-    _reminderTimeout = setTimeout(() => {
-      showToast(tr('toast.reminder'));
-      localStorage.removeItem('waterReminderAt');
-      localStorage.removeItem('waterReminderH');
-      updateReminderUI();
-    }, delay);
+    _armReminder(fireAt);
     updateReminderUI();
   }
   function cancelWaterReminder() {
@@ -4165,13 +4178,7 @@
   function _resumeReminder() {
     const at = parseInt(localStorage.getItem('waterReminderAt') || '0');
     if (at && at > Date.now()) {
-      const delay = Math.max(0, Math.min(at - Date.now(), 2147483647));
-      _reminderTimeout = setTimeout(() => {
-        showToast(tr('toast.reminder'));
-        localStorage.removeItem('waterReminderAt');
-        localStorage.removeItem('waterReminderH');
-        updateReminderUI();
-      }, delay);
+      _armReminder(at);
     } else if (at) {
       localStorage.removeItem('waterReminderAt');
       localStorage.removeItem('waterReminderH');
