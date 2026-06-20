@@ -317,6 +317,12 @@
       background: rgba(127, 127, 127, 0.10);
     }
     .date-set .ds-icon { font-size: 0.8rem; line-height: 1; flex-shrink: 0; }
+    .date-set .ds-days {
+      font-size: 0.72rem; font-weight: 600; color: var(--text2);
+      white-space: nowrap; flex-shrink: 0;
+      padding-left: 9px; border-left: 1px solid rgba(127,127,127,0.28);
+    }
+    .date-set .ds-days:empty { display: none; }
     .date-set #stageStartDate {
       width: 102px; flex-shrink: 0;
       font-size: 0.78rem; font-weight: 600; height: 22px;
@@ -1107,15 +1113,15 @@
         <button class="seg-btn" role="tab" data-s="dry" onclick="setStage('dry')" data-i18n="stage.dry">Dry</button>
         <button class="seg-btn" role="tab" data-s="harvest" onclick="setStage('harvest')" data-i18n="stage.harvest">Harvest</button>
       </div>
-      <div id="stageDayCount" style="display:none;text-align:center;font-size:0.74rem;color:var(--text2);font-weight:600;white-space:nowrap;margin:6px 0 2px;"></div>
-      <div id="startDateRow" style="display:none;align-items:center;justify-content:center;margin-bottom:4px;">
+      <div id="startDateRow" style="display:none;align-items:center;justify-content:center;margin:8px 0 4px;">
         <div class="date-set">
           <span class="ds-icon">📅</span>
           <input id="stageStartDate" type="date" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
+          <span id="stageDayCount" class="ds-days"></span>
           <button id="clearDateBtn" oncontextmenu="return false;" data-i18n-aria="aria.clear_date" aria-label="開始日をクリア" style="display:none;">✕</button>
         </div>
       </div>
-      <div id="addDateRow" style="display:flex;justify-content:center;margin-bottom:4px;">
+      <div id="addDateRow" style="display:flex;justify-content:center;margin:8px 0 4px;">
         <button class="date-chip" onclick="openStartDatePicker()" data-i18n="stage.set_date">+ Set start date</button>
       </div>
       <!-- 収量記録 (Harvestステージのみ) -->
@@ -2518,23 +2524,16 @@
   }
 
   function updateStageDayCount(dateStr, endDateStr, stage) {
+    // 日数は日付ピル内に統合表示（空なら :empty で区切り線ごと消える）
     const el = document.getElementById('stageDayCount');
     if (!el) return;
-    if (!dateStr) { el.textContent = ''; el.style.display = 'none'; return; }
-    if (stage === 'harvest') {
-      el.textContent = dateStr.replace(/-/g, '/');
-      el.style.display = '';
-      return;
-    }
+    // 開始日なし／ハーベスト（ピルに日付が出ている）／非表示設定 → 空にする
+    if (!dateStr || stage === 'harvest' || !dayCountVisible) { el.textContent = ''; return; }
     const days = inclusiveDayCount(dateStr, endDateStr);
     const week = Math.ceil(days / 7);
-    if (days >= 1) {
-      el.textContent = endDateStr ? `${tr('analysis.week')}${week} ${tr('analysis.day_abbr')}${days}✓` : `${tr('analysis.week')}${week} ${tr('analysis.day_abbr')}${days}`;
-      el.style.display = dayCountVisible ? '' : 'none';
-    } else {
-      el.textContent = '';
-      el.style.display = 'none';
-    }
+    el.textContent = days >= 1
+      ? `${tr('analysis.week')}${week} ${tr('analysis.day_abbr')}${days}${endDateStr ? '✓' : ''}`
+      : '';
   }
   function _updateDayNightBtn(mode) {
     const btn = document.getElementById('btnDayNight');
