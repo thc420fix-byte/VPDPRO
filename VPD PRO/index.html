@@ -2044,27 +2044,13 @@
       btn.innerHTML = `<span class="t-dot" style="background:${dotColor};opacity:${isActive ? '1' : '0.7'};"></span><span class="t-num">${displayNum}</span><span class="t-stage">${stageLbl}</span>`;
 
       // Double-tap → rename / long-press → cancel rename / single tap → select
-      let _pt = null; let _lp = false; let _lastTap = 0;
-      const startP = () => {
-        _lp = false;
-        _pt = setTimeout(() => {
-          _lp = true;
-          showTentMenu(i, btn);
-        }, 520);
-      };
-      const cancelP = () => { if (_pt) { clearTimeout(_pt); _pt = null; } };
-      btn.addEventListener('mousedown',  startP);
-      btn.addEventListener('touchstart', startP, { passive: true });
-      btn.addEventListener('mouseleave', cancelP);
-      btn.addEventListener('mouseup',    cancelP);
+      let _lastTap = 0;
       btn.addEventListener('touchend', () => {
-        cancelP();
-        if (_lp) return;
         const now = Date.now();
-        if (now - _lastTap < 350) { _lastTap = 0; renameTent(i); }
+        if (now - _lastTap < 350) { _lastTap = 0; showTentMenu(i, btn); }
         else { _lastTap = now; if (i !== currentTent) selectTent(i); }
       });
-      btn.addEventListener('click', () => { if (!_lp && i !== currentTent) selectTent(i); });
+      btn.addEventListener('click', () => { if (i !== currentTent) selectTent(i); });
       bar.appendChild(btn);
     });
     if (tents.length < MAX_TENTS) {

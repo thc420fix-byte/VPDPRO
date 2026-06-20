@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'canopy-v172';
+const CACHE_VERSION = 'canopy-v173';
 const ASSETS = [
   './',
   './index.html',
