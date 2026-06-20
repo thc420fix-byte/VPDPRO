@@ -891,8 +891,8 @@
       </div>
     </div>
   </div>
-  <!-- ライトメーター（カメラ計測）モーダル -->
-  <div id="lightMeterModal" role="dialog" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:10000;flex-direction:column;align-items:stretch;">
+  <!-- lightMeterModal removed -->
+  <div id="lightMeterModal" style="display:none!important;">
     <!-- ヘッダー -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:max(14px,env(safe-area-inset-top)) 16px 12px;background:rgba(0,0,0,0.85);flex-shrink:0;">
       <div>
@@ -1024,14 +1024,13 @@
           <div id="vpdZoneMarkerLeaf" class="vpd-zone-marker alt"><span class="mk-label">L</span></div>
         </div>
         <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
-        <div id="vpdTargetLabel" class="vpd-target-label"></div>
       </div>
       <div id="statusBadge" class="status-badge status-ok">—</div>
       <div id="vpdSparkWrap" style="position:relative;width:100%;margin:4px 0 0;display:none;">
         <svg id="vpdSparkline" viewBox="0 0 200 50" preserveAspectRatio="none" style="width:100%;height:50px;display:block;overflow:visible;"></svg>
         <span id="vpdSparkLabel" style="position:absolute;font-size:0.7rem;font-weight:700;font-family:'Rajdhani',sans-serif;line-height:1;pointer-events:none;transform:translate(-100%,-50%);white-space:nowrap;"></span>
       </div>
-      <div id="rec" style="font-size:0.72rem;color:var(--text2);text-align:center;min-height:0;margin-top:4px;line-height:1.5;display:flex;flex-wrap:wrap;justify-content:center;gap:2px;"></div>
+      <div id="rec" style="display:none;"></div>
       <div id="vpdDiff" style="display:none"></div>
       <div id="targetHum" style="display:none"></div>
       <div id="ppfdNow" style="display:none"></div>
@@ -1113,8 +1112,6 @@
         <div class="stepper-row" id="dliRow" style="gap:6px;flex-wrap:nowrap;justify-content:flex-start;padding:6px 2px;">
           <span style="font-size:0.7rem;color:var(--text2);white-space:nowrap;flex:1;">DLI <span id="dliVal" style="color:var(--accent);font-weight:600;font-size:0.9rem;font-family:'Rajdhani',sans-serif;">—</span> <span style="opacity:0.55;font-size:0.62rem;">mol/m²/d</span><span id="dliTarget" style="opacity:0.55;font-size:0.62rem;"></span></span>
           <span onclick="cyclePhotoperiod()" class="dli-chip" style="cursor:pointer;font-size:0.65rem;color:var(--text2);background:rgba(127,127,127,0.14);border-radius:7px;padding:4px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;font-weight:500;"><span id="photoperiodLabel">18</span>h</span>
-          <span onclick="openLuxConverter()" class="dli-chip" style="cursor:pointer;font-size:0.65rem;color:var(--text2);background:rgba(127,127,127,0.14);border-radius:7px;padding:4px 8px;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;font-weight:500;">lux</span>
-          <span onclick="openLightMeter()" style="cursor:pointer;font-size:0.65rem;color:var(--accent);background:rgba(52,199,89,0.14);border-radius:7px;padding:4px 8px;font-weight:600;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;flex-shrink:0;" data-i18n="lux.meter_btn">Meter</span>
         </div>
         <div style="padding:4px 0 0;">
           <div style="position:relative;">
@@ -1237,7 +1234,6 @@
         </div>
         <button class="stepper-btn" onclick="adjustPh(0.1)">+</button>
       </div>
-      <div id="phTargetHint" class="stepper-target"></div>
       <!-- Water Temp -->
       <div class="stepper-row">
         <button class="stepper-btn" onclick="adjustWaterTemp(-0.5)">−</button>
@@ -1265,7 +1261,6 @@
         </div>
         <button class="stepper-btn" onclick="adjustEc(0.1)">+</button>
       </div>
-      <div id="ecTargetHint" class="stepper-target" style="display:none;"></div>
       <!-- Runoff EC -->
       <div id="runoffEcRow" class="stepper-row" style="display:none;">
         <button class="stepper-btn" onclick="adjustRunoffEc(-0.1)">−</button>
@@ -1276,10 +1271,7 @@
         </div>
         <button class="stepper-btn" onclick="adjustRunoffEc(0.1)">+</button>
       </div>
-      <div id="runoffTargetHint" class="stepper-target" style="display:none;"></div>
     </div>
-    <!-- EC Theory reference (Theory mode only) -->
-    <div id="feedingRef" style="font-size:0.68rem;color:var(--text);text-align:center;opacity:0.8;border-top:1px solid rgba(255,255,255,0.06);padding:5px 0;line-height:1.7;"></div>
     <div style="padding:4px 8px 0;">
       <div style="position:relative;">
         <input id="feedingNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('feedingNoteCount').textContent=100-this.value.length" style="width:100%;box-sizing:border-box;padding:5px 32px 5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
@@ -1292,20 +1284,6 @@
         ontouchstart="startSaveHold('feeding',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
         style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;" data-i18n="btn.save">Save</button>
       <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;" data-i18n="feed.press_hold">press &amp; hold</div>
-    </div>
-    <!-- Water Reminder -->
-    <div style="padding:8px 8px 4px;border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
-        <span id="reminderLabel" style="font-size:0.63rem;color:var(--text2);flex-shrink:0;letter-spacing:0.03em;" data-i18n="reminder.label">💧 次の給水リマインダー</span>
-        <div id="reminderBtnGroup" style="display:flex;gap:5px;flex-shrink:0;">
-          <button onclick="setWaterReminder(24)" style="font-size:0.62rem;padding:4px 9px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:7px;color:var(--text2);cursor:pointer;font-weight:500;">24h</button>
-          <button onclick="setWaterReminder(48)" style="font-size:0.62rem;padding:4px 9px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:7px;color:var(--text2);cursor:pointer;font-weight:500;">48h</button>
-          <button onclick="setWaterReminder(72)" style="font-size:0.62rem;padding:4px 9px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:7px;color:var(--text2);cursor:pointer;font-weight:500;">72h</button>
-          <button id="reminderCalBtn" onclick="addToCalendar()" style="display:none;font-size:0.62rem;padding:4px 8px;background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.35);border-radius:7px;color:var(--accent);cursor:pointer;">📅</button>
-          <button id="reminderCancelBtn" onclick="cancelWaterReminder()" style="display:none;font-size:0.62rem;padding:4px 8px;background:transparent;border:1px solid rgba(255,80,80,0.4);border-radius:7px;color:rgba(255,100,100,0.8);cursor:pointer;">✕</button>
-        </div>
-      </div>
-      <div id="reminderStatus" style="font-size:0.62rem;color:var(--accent);margin-top:5px;min-height:16px;"></div>
     </div>
     <!-- AI Feeding Review Panel -->
     <div id="aiFeedingPanel" style="display:none;padding:0 8px 4px;">
