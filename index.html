@@ -1719,7 +1719,7 @@
   const esc = s => s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
 
   /* === アプリの状態 === */
-  const MAX_TENTS = 8;
+  const MAX_TENTS = 9;
   let tents = [];
   let currentTent = 0;
   let pendingPhoto = null;
@@ -2049,7 +2049,7 @@
         _lp = false;
         _pt = setTimeout(() => {
           _lp = true;
-          closeRenameModal();
+          showTentMenu(i, btn);
         }, 520);
       };
       const cancelP = () => { if (_pt) { clearTimeout(_pt); _pt = null; } };
