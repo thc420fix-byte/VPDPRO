@@ -236,29 +236,40 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
-    /* ステージボタン */
-    .stage-row {
+    /* ステージ・セグメンテッドコントロール（iOS風） */
+    .stage-seg {
       display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
+      gap: 2px;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 3px;
+      border-radius: 13px;
+      background: rgba(127, 127, 127, 0.10);
     }
-    .stage-btn {
+    .seg-btn {
       flex: 1;
-      min-width: calc(33% - 6px);
-      padding: 6px;
-      font-size: 0.65rem;
-      font-weight: 700;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
+      min-width: 0;
+      padding: 9px 2px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      font-family: inherit;
+      letter-spacing: 0.01em;
+      border: none;
+      border-radius: 10px;
+      color: var(--text2);
       background: transparent;
       cursor: pointer;
       text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      -webkit-tap-highlight-color: transparent;
+      transition: color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease, transform 0.12s ease;
     }
-    .stage-btn.active {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: rgba(0, 255, 136, 0.1);
+    .seg-btn:active { transform: scale(0.96); }
+    .seg-btn.active {
+      font-weight: 700;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
     /* 入力行とボタン */
     .input-row {
@@ -435,9 +446,9 @@
         padding: 7px 4px;
         font-size: 0.75rem;
       }
-      .stage-btn {
-        padding: 6px 4px;
-        font-size: 0.75rem;
+      .seg-btn {
+        padding: 9px 1px;
+        font-size: 0.7rem;
       }
     }
     /* VPD表示 */
@@ -674,7 +685,7 @@
 @keyframes dangerPulse { 0%{opacity:1; transform:scale(1.03);} 50%{opacity:.6; transform:scale(1.06);} 100%{opacity:1; transform:scale(1.03);} }
 .pulse { animation: dangerPulse 1.2s ease-in-out infinite; }
 .ppfd-alert { display:block;width:100%;box-sizing:border-box;padding:6px 10px;border-radius:10px;color:#fff;font-weight:600;font-size:0.72rem;text-align:center;background:rgba(255,69,58,0.90);box-shadow:0 0 8px rgba(255,69,58,.4); }
-.tabs .tab, .stage-btn { font-weight: 700; }
+.tabs .tab { font-weight: 700; }
 
 .mode-pill { padding:3px 9px; font-size:0.6rem; cursor:pointer; color:rgba(255,255,255,0.45); user-select:none; }
 .mode-pill.active-pill { background:rgba(0,255,136,0.2); color:var(--accent); font-weight:700; }
@@ -1043,23 +1054,14 @@
         <div id="modeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')" data-i18n="mode.theory">Theory</div>
         <div id="modeMySpot" class="mode-pill" onclick="setSpotMode('myspot')" data-i18n="mode.myspot">My Spot</div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <button id="stageSelectorBtn" onclick="toggleStageDropdown()" style="flex:1;min-width:0;padding:7px 10px;background:rgba(255,255,255,0.05);border:none;border-radius:10px;color:var(--text);font-weight:600;display:flex;align-items:center;cursor:pointer;gap:6px;overflow:hidden;font-family:inherit;font-size:inherit;line-height:inherit;-webkit-tap-highlight-color:transparent;">
-          <span style="color:rgba(255,255,255,0.38);font-size:0.7rem;flex-shrink:0;letter-spacing:0;" data-i18n="feed.stage_label">Stage</span>
-          <span id="stageSelectorLabel" style="color:var(--accent);font-size:0.88rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;">Clone</span>
-          <span id="stageDropArrow" style="font-size:0.65rem;color:rgba(255,255,255,0.3);flex-shrink:0;">▾</span>
-        </button>
-        <div id="stageDayCount" style="display:none;flex-shrink:0;font-size:0.78rem;color:var(--text2);font-weight:600;white-space:nowrap;"></div>
+      <div id="stageSeg" class="stage-seg" role="tablist">
+        <button class="seg-btn" role="tab" data-s="clone" onclick="setStage('clone')" data-i18n="stage.clone">Clone</button>
+        <button class="seg-btn" role="tab" data-s="veg" onclick="setStage('veg')" data-i18n="stage.veg">Veg</button>
+        <button class="seg-btn" role="tab" data-s="flower" onclick="setStage('flower')" data-i18n="stage.flower">Flower</button>
+        <button class="seg-btn" role="tab" data-s="dry" onclick="setStage('dry')" data-i18n="stage.dry">Dry</button>
+        <button class="seg-btn" role="tab" data-s="harvest" onclick="setStage('harvest')" data-i18n="stage.harvest">Harvest</button>
       </div>
-      <div id="stageDropdown" style="display:none;margin-bottom:2px;">
-        <div class="stage-row">
-          <div class="stage-btn" data-s="clone" onclick="setStage('clone')" data-i18n="stage.clone">Clone</div>
-          <div class="stage-btn" data-s="veg" onclick="setStage('veg')" data-i18n="stage.veg">Veg</div>
-          <div class="stage-btn" data-s="flower" onclick="setStage('flower')" data-i18n="stage.flower">Flower</div>
-          <div class="stage-btn" data-s="dry" onclick="setStage('dry')" data-i18n="stage.dry">Dry</div>
-          <div class="stage-btn" data-s="harvest" onclick="setStage('harvest')" data-i18n="stage.harvest">Harvest</div>
-        </div>
-      </div>
+      <div id="stageDayCount" style="display:none;text-align:center;font-size:0.74rem;color:var(--text2);font-weight:600;white-space:nowrap;margin:6px 0 2px;"></div>
       <div id="startDateRow" style="display:none;align-items:center;gap:6px;justify-content:center;margin-bottom:4px;">
         <label style="font-size:0.68rem;color:var(--text2);font-weight:600;flex-shrink:0;letter-spacing:0.06em;text-transform:uppercase;" data-i18n="stage.start_label">Start</label>
         <input id="stageStartDate" type="date" style="width:110px;flex-shrink:0;font-size:0.78rem;height:24px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(52,199,89,0.3);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
@@ -2318,24 +2320,21 @@
   }
 
   /* === ステージ＆モードSettings === */
-  function toggleStageDropdown() {
-    const d = document.getElementById('stageDropdown');
-    const arrow = document.getElementById('stageDropArrow');
-    const open = d.style.display !== 'none';
-    d.style.display = open ? 'none' : 'block';
-    if (arrow) arrow.textContent = open ? '▾' : '▴';
-  }
-
   function updateStageSelector(s) {
-    const lbl = document.getElementById('stageSelectorLabel');
-    if (lbl) lbl.textContent = tr('stage.' + s) || s;
-    document.querySelectorAll('.stage-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.s === s);
+    // 各ステージのライフサイクル色で「点灯」させる iOS 風セグメンテッドコントロール
+    document.querySelectorAll('.seg-btn').forEach(btn => {
+      const on = btn.dataset.s === s;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      if (on) {
+        const c = (stages[btn.dataset.s] && stages[btn.dataset.s].color) || '#39d67a';
+        btn.style.color = c;
+        btn.style.background = c + '26';   // ≈15% tint
+      } else {
+        btn.style.color = '';
+        btn.style.background = '';
+      }
     });
-    const d = document.getElementById('stageDropdown');
-    const arrow = document.getElementById('stageDropArrow');
-    if (d) d.style.display = 'none';
-    if (arrow) arrow.textContent = '▾';
   }
 
   async function setStage(s) {
