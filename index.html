@@ -4860,7 +4860,7 @@ function classifyVpd(vpd, lo, hi) {
                   const pt = getLogDate(p);
                   const tl = `${pt.getHours()}:${String(pt.getMinutes()).padStart(2,'0')}`;
                   const pid = String(p.id).replace(/'/g, "\\'");
-                  const pNote = p.note ? `<div style="font-size:0.6rem;color:rgba(255,255,255,0.6);text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📝 ${esc(p.note)}</div>` : '';
+                  const pNote = p.note ? `<div style="font-size:0.6rem;color:var(--text2);text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📝 ${esc(p.note)}</div>` : '';
                   photosHtml += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;cursor:pointer;" onclick="event.stopPropagation();editLog('${pid}')"><img src="${esc(p.photo)}" style="width:88px;height:88px;object-fit:cover;border-radius:7px;" onclick="event.stopPropagation();(()=>{document.getElementById('overlayImg').src=this.src;document.getElementById('photoOverlay').style.display='flex';})()"><span style="font-size:0.6rem;opacity:0.7;">${tl}</span>${pNote}<button onclick="event.stopPropagation();deleteGalleryPhoto('${p.id}')" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(255,60,60,0.85);border:none;color:#fff;font-size:0.55rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>`;
                 });
                 photosHtml += `</div>`;
@@ -5236,7 +5236,7 @@ function classifyVpd(vpd, lo, hi) {
     if (!msg) {
       msg = document.createElement('div');
       msg.id = 'lockMsg';
-      msg.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(255,255,255,0.55);font-size:0.85rem;text-align:center;padding:24px;';
+      msg.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text2);font-size:0.85rem;text-align:center;padding:24px;';
       bs.appendChild(msg);
     }
     const render = () => {
@@ -5245,8 +5245,8 @@ function classifyVpd(vpd, lo, hi) {
       const h = Math.floor(remain / 3600000);
       const m = Math.ceil((remain % 3600000) / 60000);
       msg.innerHTML = appLang === 'en'
-        ? `<div style="font-size:2rem;">🔒</div><div>Locked after ${_PIN_MAX} wrong attempts</div><div style="font-size:1.1rem;color:rgba(255,255,255,0.8);font-weight:700;">${h}h ${m}m remaining</div><div style="font-size:0.7rem;opacity:0.7;">Your data is safe</div>`
-        : `<div style="font-size:2rem;">🔒</div><div>PINを${_PIN_MAX}回間違えたためロック中</div><div style="font-size:1.1rem;color:rgba(255,255,255,0.8);font-weight:700;">残り ${h}時間${m}分</div><div style="font-size:0.7rem;opacity:0.7;">データは消えていません</div>`;
+        ? `<div style="font-size:2rem;">🔒</div><div>Locked after ${_PIN_MAX} wrong attempts</div><div style="font-size:1.1rem;color:var(--text);font-weight:700;">${h}h ${m}m remaining</div><div style="font-size:0.7rem;opacity:0.7;">Your data is safe</div>`
+        : `<div style="font-size:2rem;">🔒</div><div>PINを${_PIN_MAX}回間違えたためロック中</div><div style="font-size:1.1rem;color:var(--text);font-weight:700;">残り ${h}時間${m}分</div><div style="font-size:0.7rem;opacity:0.7;">データは消えていません</div>`;
     };
     render();
     setInterval(render, 60000);
