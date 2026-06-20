@@ -1994,19 +1994,24 @@
         }
       }
       const stageLbl = tr('stage.' + t.stage) || t.stage || '';
-      const nameMatch = t.name.match(/(\d+)$/);
-      const shortName = nameMatch ? nameMatch[1] : t.name.slice(0, 3);
+      const displayNum = String(i + 1);
       const labelColor = isActive ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.52)';
       const stageColor = isActive ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.22)';
       btn.innerHTML = `<div class="tent-btn-bar" style="background:${dotColor};opacity:${isActive ? '1' : '0.6'};"></div>
       <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;pointer-events:none;padding-left:2px;">
-        <span style="font-size:0.8rem;font-weight:700;line-height:1;color:${labelColor};">${esc(shortName)}</span>
+        <span style="font-size:0.8rem;font-weight:700;line-height:1;color:${labelColor};">${displayNum}</span>
         <span style="font-size:0.58rem;font-weight:500;line-height:1;color:${stageColor};">${stageLbl}</span>
       </div>`;
 
-      // Double-tap → rename / long-press → menu / single tap → select
+      // Double-tap → rename / long-press → cancel rename / single tap → select
       let _pt = null; let _lp = false; let _lastTap = 0;
-      const startP = () => { _lp = false; _pt = setTimeout(() => { _lp = true; showTentMenu(i, btn); }, 520); };
+      const startP = () => {
+        _lp = false;
+        _pt = setTimeout(() => {
+          _lp = true;
+          closeRenameModal();
+        }, 520);
+      };
       const cancelP = () => { if (_pt) { clearTimeout(_pt); _pt = null; } };
       btn.addEventListener('mousedown',  startP);
       btn.addEventListener('touchstart', startP, { passive: true });
