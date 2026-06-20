@@ -288,6 +288,52 @@
       outline: none;
       border-radius: 2px;
     }
+    /* 開始日チップ（セグメンテッドコントロールと同言語の控えめなピル） */
+    .date-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      font-family: inherit;
+      letter-spacing: 0.02em;
+      color: var(--accent);
+      background: rgba(52, 199, 89, 0.10);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.2s ease, transform 0.12s ease;
+    }
+    .date-chip:active { transform: scale(0.96); }
+    .date-set {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px 6px 14px;
+      border-radius: 999px;
+      background: rgba(127, 127, 127, 0.10);
+    }
+    .date-set .ds-icon { font-size: 0.8rem; line-height: 1; flex-shrink: 0; }
+    .date-set #stageStartDate {
+      width: 102px; flex-shrink: 0;
+      font-size: 0.78rem; font-weight: 600; height: 22px;
+      background: transparent; color: var(--accent);
+      border: none; outline: none; color-scheme: dark; text-align: center;
+      font-family: inherit;
+    }
+    .date-set #clearDateBtn {
+      width: 26px; height: 26px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0; border: none; border-radius: 50%;
+      background: rgba(255, 90, 90, 0.12); color: rgba(255, 120, 120, 0.9);
+      font-size: 0.72rem; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.12s ease;
+    }
+    .date-set #clearDateBtn:active { transform: scale(0.9); }
     #phInput::placeholder,
     #ecInput::placeholder,
     #runoffEcInput::placeholder,
@@ -1062,12 +1108,16 @@
         <button class="seg-btn" role="tab" data-s="harvest" onclick="setStage('harvest')" data-i18n="stage.harvest">Harvest</button>
       </div>
       <div id="stageDayCount" style="display:none;text-align:center;font-size:0.74rem;color:var(--text2);font-weight:600;white-space:nowrap;margin:6px 0 2px;"></div>
-      <div id="startDateRow" style="display:none;align-items:center;gap:6px;justify-content:center;margin-bottom:4px;">
-        <label style="font-size:0.68rem;color:var(--text2);font-weight:600;flex-shrink:0;letter-spacing:0.06em;text-transform:uppercase;" data-i18n="stage.start_label">Start</label>
-        <input id="stageStartDate" type="date" style="width:110px;flex-shrink:0;font-size:0.78rem;height:24px;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(52,199,89,0.3);outline:none;color-scheme:dark;text-align:center;" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
-        <button id="clearDateBtn" oncontextmenu="return false;" data-i18n-aria="aria.clear_date" aria-label="開始日をクリア" style="background:transparent;border:none;color:rgba(255,120,120,0.6);font-size:0.85rem;width:36px;height:36px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;display:none;">✕</button>
+      <div id="startDateRow" style="display:none;align-items:center;justify-content:center;margin-bottom:4px;">
+        <div class="date-set">
+          <span class="ds-icon">📅</span>
+          <input id="stageStartDate" type="date" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
+          <button id="clearDateBtn" oncontextmenu="return false;" data-i18n-aria="aria.clear_date" aria-label="開始日をクリア" style="display:none;">✕</button>
+        </div>
       </div>
-      <div id="addDateRow" onclick="openStartDatePicker()" style="text-align:center;margin-bottom:4px;cursor:pointer;font-size:0.68rem;color:var(--muted);letter-spacing:0.04em;padding:8px 0;" data-i18n="stage.set_date">+ Set start date</div>
+      <div id="addDateRow" style="display:flex;justify-content:center;margin-bottom:4px;">
+        <button class="date-chip" onclick="openStartDatePicker()" data-i18n="stage.set_date">+ Set start date</button>
+      </div>
       <!-- 収量記録 (Harvestステージのみ) -->
       <div id="yieldRow" class="input-row" style="display:none;margin-bottom:2px;align-items:center;gap:8px;justify-content:center;">
         <label style="font-size:0.95rem;color:var(--text);font-weight:700;flex-shrink:0;" data-i18n="yield.label">🏆 収量</label>
@@ -2251,12 +2301,7 @@
     const hasDate = !!(inp && inp.value);
     if (btn) btn.style.display = hasDate ? 'flex' : 'none';
     if (row) row.style.display = hasDate ? 'flex' : 'none';
-    if (addRow) {
-      addRow.style.display = hasDate ? 'none' : '';
-      addRow.style.color = hasDate ? '' : 'var(--accent)';
-      addRow.style.opacity = hasDate ? '' : '0.85';
-      addRow.style.fontWeight = hasDate ? '' : '600';
-    }
+    if (addRow) addRow.style.display = hasDate ? 'none' : 'flex';
   }
 
   // Harvestステージのときだけ収量入力を表示
