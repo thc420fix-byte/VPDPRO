@@ -115,10 +115,11 @@
     #rec { display: none !important; }
     /* テントバー */
     .tent-bar {
-      display: flex;
+      display: inline-flex;
       align-items: center;
+      width: fit-content;
+      max-width: calc(100% - 52px);
       margin-bottom: 6px;
-      margin-right: 46px;
       background: rgba(0,0,0,0.30);
       border-radius: 13px;
       overflow-x: auto;
@@ -2069,15 +2070,11 @@
     if (tents.length < MAX_TENTS) {
       const addBtn = document.createElement('div');
       addBtn.className = 'tent-btn';
-      addBtn.style.cssText = 'flex:0 0 28px;height:28px;font-size:1rem;font-weight:300;color:rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;padding:0;border-radius:50%;';
+      addBtn.style.cssText = 'flex:0 0 26px;height:26px;font-size:1.1rem;font-weight:300;color:rgba(255,255,255,0.40);display:flex;align-items:center;justify-content:center;padding:0;border-radius:50%;order:-1;';
       addBtn.textContent = '+';
       addBtn.onclick = addTent;
       bar.appendChild(addBtn);
     }
-    // ⚙️ボタンと重ならないようにスペーサー
-    const spacer = document.createElement('div');
-    spacer.style.cssText = 'flex-shrink:0;min-width:46px;';
-    bar.appendChild(spacer);
   }
 
   async function addTent() {
