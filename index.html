@@ -1173,7 +1173,8 @@
         </div>
         <div style="padding:4px 0 0;">
           <div style="position:relative;">
-            <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" style="width:100%;box-sizing:border-box;padding:7px 10px;background:rgba(127,127,127,0.1);border:none;border-radius:8px;color:var(--text);font-size:0.72rem;outline:none;margin-bottom:3px;">
+            <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('monitorNoteClear').style.display=this.value?'flex':'none'" style="width:100%;box-sizing:border-box;padding:7px 32px 7px 10px;background:rgba(127,127,127,0.1);border:none;border-radius:8px;color:var(--text);font-size:0.72rem;outline:none;margin-bottom:3px;">
+            <button id="monitorNoteClear" onclick="document.getElementById('monitorNoteInput').value='';this.style.display='none';document.getElementById('monitorNoteInput').focus();" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);width:22px;height:22px;border:none;border-radius:50%;background:rgba(127,127,127,0.25);color:var(--text2);font-size:0.65rem;cursor:pointer;align-items:center;justify-content:center;padding:0;line-height:1;">✕</button>
           </div>
         </div>
         <!-- CO2 Level (shown when CO2 is ON) -->
@@ -1331,7 +1332,8 @@
     </div>
     <div style="padding:4px 8px 0;">
       <div style="position:relative;">
-        <input id="feedingNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" style="width:100%;box-sizing:border-box;padding:5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
+        <input id="feedingNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('feedingNoteClear').style.display=this.value?'flex':'none'" style="width:100%;box-sizing:border-box;padding:5px 28px 5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
+        <button id="feedingNoteClear" onclick="document.getElementById('feedingNoteInput').value='';this.style.display='none';document.getElementById('feedingNoteInput').focus();" style="display:none;position:absolute;right:4px;top:50%;transform:translateY(-50%);width:20px;height:20px;border:none;border-radius:50%;background:rgba(127,127,127,0.25);color:var(--text2);font-size:0.62rem;cursor:pointer;align-items:center;justify-content:center;padding:0;line-height:1;">✕</button>
       </div>
     </div>
     <div style="padding:4px 8px 2px;">
