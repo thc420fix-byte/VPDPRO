@@ -2045,8 +2045,9 @@
 
       // Double-tap → rename / long-press → cancel rename / single tap → select
       let _lastTap = 0;
-      btn.addEventListener('touchend', () => {
-        if (i !== currentTent) { _lastTap = 0; selectTent(i); return; }
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (i !== currentTent) { selectTent(i); return; }
         const now = Date.now();
         if (now - _lastTap < 350) { _lastTap = 0; showTentMenu(i, btn); }
         else { _lastTap = now; }
