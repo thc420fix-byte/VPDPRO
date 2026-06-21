@@ -120,47 +120,47 @@
       width: fit-content;
       max-width: calc(100% - 52px);
       margin-bottom: 6px;
-      background: rgba(0,0,0,0.30);
-      border-radius: 13px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      padding: 4px;
-      gap: 3px;
+      padding: 3px;
+      gap: 2px;
     }
     .tent-bar::-webkit-scrollbar { display: none; }
     .tent-btn {
       flex: 0 0 auto;
-      padding: 5px 11px;
+      padding: 5px 10px;
       background: transparent;
       border: none;
       cursor: pointer;
       white-space: nowrap;
       font-family: inherit;
       border-radius: 999px;
-      transition: background 0.2s ease, box-shadow 0.2s ease;
+      transition: background 0.18s ease, box-shadow 0.18s ease;
       display: flex;
       align-items: center;
       gap: 5px;
       -webkit-tap-highlight-color: transparent;
     }
     .tent-btn .t-dot {
-      width: 6px; height: 6px;
+      width: 5px; height: 5px;
       border-radius: 50%;
       flex-shrink: 0;
       transition: background 0.2s;
     }
     .tent-btn .t-num {
-      font-size: 0.80rem;
-      font-weight: 700;
-      color: rgba(255,255,255,0.38);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.40);
       line-height: 1;
-      transition: color 0.2s;
+      transition: color 0.18s;
     }
     .tent-btn .t-stage {
       font-size: 0.60rem;
       font-weight: 500;
-      color: rgba(255,255,255,0.50);
+      color: rgba(255,255,255,0.55);
       line-height: 1;
       max-width: 0;
       overflow: hidden;
@@ -169,11 +169,11 @@
       margin-left: -2px;
     }
     .tent-btn.active {
-      background: rgba(255,255,255,0.11);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.35), inset 0 0.5px 0 rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.13);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.30), inset 0 0.5px 0 rgba(255,255,255,0.10);
     }
     .tent-btn.active .t-num {
-      color: rgba(255,255,255,0.92);
+      color: rgba(255,255,255,0.95);
     }
     .tent-btn.active .t-stage {
       max-width: 60px;
