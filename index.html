@@ -131,7 +131,7 @@
     .tent-bar::-webkit-scrollbar { display: none; }
     .tent-btn {
       flex: 0 0 auto;
-      padding: 5px 10px;
+      padding: 5px 11px;
       background: transparent;
       border: none;
       cursor: pointer;
@@ -140,9 +140,15 @@
       border-radius: 999px;
       transition: background 0.18s ease, box-shadow 0.18s ease;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 5px;
+      gap: 2px;
       -webkit-tap-highlight-color: transparent;
+    }
+    .tent-btn .t-dot-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     .tent-btn .t-dot {
       width: 5px; height: 5px;
@@ -151,22 +157,21 @@
       transition: background 0.2s;
     }
     .tent-btn .t-num {
-      font-size: 0.78rem;
-      font-weight: 600;
+      font-size: 0.80rem;
+      font-weight: 700;
       color: rgba(255,255,255,0.40);
       line-height: 1;
       transition: color 0.18s;
     }
     .tent-btn .t-stage {
-      font-size: 0.60rem;
+      font-size: 0.55rem;
       font-weight: 500;
-      color: rgba(255,255,255,0.55);
+      color: rgba(255,255,255,0.50);
       line-height: 1;
-      max-width: 0;
+      max-height: 0;
       overflow: hidden;
       opacity: 0;
-      transition: max-width 0.22s ease, opacity 0.18s ease, margin-left 0.22s ease;
-      margin-left: -2px;
+      transition: max-height 0.22s ease, opacity 0.18s ease;
     }
     .tent-btn.active {
       background: rgba(255,255,255,0.13);
@@ -176,9 +181,8 @@
       color: rgba(255,255,255,0.95);
     }
     .tent-btn.active .t-stage {
-      max-width: 60px;
+      max-height: 14px;
       opacity: 1;
-      margin-left: 0;
     }
     /* タブ（hidden — bottom nav に置換） */
     .tabs { display: none; }
@@ -2042,7 +2046,7 @@
       }
       const stageLbl = tr('stage.' + t.stage) || t.stage || '';
       const displayNum = String(i + 1);
-      btn.innerHTML = `<span class="t-dot" style="background:${dotColor};opacity:${isActive ? '1' : '0.7'};"></span><span class="t-num">${displayNum}</span><span class="t-stage">${stageLbl}</span>`;
+      btn.innerHTML = `<div class="t-dot-row"><span class="t-dot" style="background:${dotColor};opacity:${isActive ? '1' : '0.7'};"></span><span class="t-num">${displayNum}</span></div><span class="t-stage">${stageLbl}</span>`;
 
       // Double-tap → rename / long-press → cancel rename / single tap → select
       let _lastTap = 0;
