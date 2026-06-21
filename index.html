@@ -377,21 +377,21 @@
     .stepper-row {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 7px 0;
-      border-bottom: 0.5px solid rgba(255,255,255,0.06);
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 2px;
+      border-bottom: 0.5px solid rgba(255,255,255,0.05);
     }
     .stepper-row:last-child { border-bottom: none; }
     .stepper-btn {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       flex-shrink: 0;
-      border-radius: 9px;
+      border-radius: 50%;
       border: none;
-      background: rgba(255,255,255,0.09);
-      color: rgba(255,255,255,0.65);
-      font-size: 1.2rem;
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.60);
+      font-size: 1.3rem;
       font-weight: 300;
       display: flex;
       align-items: center;
@@ -402,24 +402,23 @@
       -webkit-tap-highlight-color: transparent;
       transition: background 0.1s, transform 0.08s;
     }
-    .stepper-btn:active { background: rgba(255,255,255,0.18); transform: scale(0.88); }
+    .stepper-btn:active { background: rgba(255,255,255,0.16); transform: scale(0.88); }
     .stepper-center {
       display: flex;
-      align-items: baseline;
-      gap: 4px;
-      width: 178px;
-      justify-content: center;
+      align-items: center;
+      justify-content: space-between;
+      flex: 1;
+      padding: 0 4px;
     }
     .stepper-label {
-      font-size: 0.74rem;
-      color: rgba(255,255,255,0.42);
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.52);
       font-weight: 500;
-      min-width: 66px;
-      text-align: right;
+      text-align: left;
       letter-spacing: 0;
     }
     .stepper-val {
-      width: 54px;
+      width: 52px;
       font-size: 1.55rem;
       font-weight: 600;
       background: transparent;
@@ -427,14 +426,16 @@
       -webkit-text-fill-color: var(--accent);
       border: none;
       outline: none;
-      text-align: center;
+      text-align: right;
       font-family: 'Rajdhani', -apple-system, sans-serif;
       padding: 0;
     }
     .stepper-unit {
-      font-size: 0.7rem;
+      font-size: 0.70rem;
       color: rgba(255,255,255,0.35);
-      min-width: 34px;
+      min-width: 30px;
+      text-align: left;
+      padding-left: 3px;
       letter-spacing: 0;
     }
     /* pH/EC の目標レンジ表示（入力欄の直下） */
@@ -501,12 +502,12 @@
       margin-top: 3px; padding: 0 1px;
     }
     /* compact mode: Leaf VPD or CO2 row added → shrink all rows */
-    .stepper-rows.compact .stepper-row { padding: 4px 0; }
-    .stepper-rows.compact .stepper-btn { width: 36px; height: 36px; font-size: 1.1rem; border-radius: 8px; }
-    .stepper-rows.compact .stepper-val { font-size: 1.25rem; width: 42px; }
+    .stepper-rows.compact .stepper-row { padding: 6px 0; }
+    .stepper-rows.compact .stepper-btn { width: 30px; height: 30px; font-size: 1.0rem; border-radius: 50%; }
+    .stepper-rows.compact .stepper-val { font-size: 1.2rem; width: 42px; }
     .stepper-rows.compact #co2LevelVal { width: 54px; }
-    .stepper-rows.compact .stepper-label { font-size: 0.7rem; }
-    .stepper-rows.compact .stepper-unit { font-size: 0.65rem; }
+    .stepper-rows.compact .stepper-label { font-size: 0.72rem; }
+    .stepper-rows.compact .stepper-unit { font-size: 0.62rem; }
 
     /* iPhone optimization */
     @media (max-width: 600px) {
@@ -583,10 +584,10 @@
     }
     .toggle-btn {
       flex: 1;
-      padding: 6px 3px;
+      padding: 8px 3px;
       border: none;
       border-radius: 8px;
-      font-size: 0.63rem;
+      font-size: 0.70rem;
       font-weight: 600;
       background: transparent;
       color: rgba(255,255,255,0.4);
