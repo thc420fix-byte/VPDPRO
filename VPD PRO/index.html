@@ -2058,6 +2058,7 @@
         else { _lastTap = now; }
       });
       btn.addEventListener('click', () => { if (i !== currentTent) selectTent(i); });
+      btn.addEventListener('dblclick', (e) => { e.preventDefault(); showTentMenu(i, btn); });
       bar.appendChild(btn);
     });
     if (tents.length < MAX_TENTS) {
