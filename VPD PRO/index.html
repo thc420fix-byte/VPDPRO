@@ -1254,19 +1254,14 @@
   
 <div class="tab-content" id="tab-log">
   <div class="card">
-    <!-- Header: Feeding Log + Theory / My Spot -->
-    <div style="display:flex;align-items:center;margin-bottom:8px;">
-      <span style="flex:1;" class="card-title" data-i18n="feed.title">Nutrient Log</span>
-      <div style="flex-shrink:0;display:none;">
-        <div id="feedModeTheory" class="mode-pill active-pill" onclick="setSpotMode('theory')" data-i18n="mode.theory">Theory</div>
-        <div id="feedModeMySpot" class="mode-pill" onclick="setSpotMode('myspot')" data-i18n="mode.myspot">My Spot</div>
-      </div>
+    <div id="feedStageSeg" class="stage-seg" role="tablist" style="margin-bottom:8px;">
+      <button class="seg-btn" role="tab" data-s="clone" onclick="setStage('clone')" data-i18n="stage.clone">Clone</button>
+      <button class="seg-btn" role="tab" data-s="veg" onclick="setStage('veg')" data-i18n="stage.veg">Veg</button>
+      <button class="seg-btn" role="tab" data-s="flower" onclick="setStage('flower')" data-i18n="stage.flower">Flower</button>
+      <button class="seg-btn" role="tab" data-s="dry" onclick="setStage('dry')" data-i18n="stage.dry">Dry</button>
+      <button class="seg-btn" role="tab" data-s="harvest" onclick="setStage('harvest')" data-i18n="stage.harvest">Harvest</button>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-      <div style="flex:1;padding:7px 10px;background:rgba(255,255,255,0.05);border:none;border-radius:10px;display:flex;align-items:center;gap:6px;">
-        <span style="color:rgba(255,255,255,0.38);font-size:0.7rem;flex-shrink:0;letter-spacing:0;" data-i18n="feed.stage_label">Stage</span>
-        <span id="feedingStageName" style="color:var(--accent);font-size:0.88rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
-      </div>
+    <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:2px;">
       <div id="feedingDayCount" style="display:none;flex-shrink:0;font-size:0.78rem;color:var(--text2);font-weight:600;white-space:nowrap;"></div>
     </div>
     <!-- Fertilizer管理 -->
@@ -2664,9 +2659,7 @@
   function updateFeedingHeader() {
     const t = tents[currentTent];
     if (!t) return;
-    const nameEl = document.getElementById('feedingStageName');
     const refEl  = document.getElementById('feedingRef');
-    if (nameEl) nameEl.textContent = t.stage ? (tr('stage.' + t.stage) || stages[t.stage]?.name || '—') : '—';
     // Sync Week/Day display to Feeding tab
     const feedDC = document.getElementById('feedingDayCount');
     if (feedDC) {
