@@ -2011,8 +2011,10 @@
         }
       }
       const stageLbl = tr('stage.' + t.stage) || t.stage || '';
-      const displayNum = String(i + 1);
-      btn.innerHTML = `<span class="t-circle"><span class="t-vpd" style="background:${dotColor};"></span>${displayNum}</span><span class="t-stage">${stageLbl}</span>`;
+      const rawName = t.name || String(i + 1);
+      const displayName = rawName.length > 4 ? rawName.slice(0, 4) : rawName;
+      const nameFontSize = displayName.length > 2 ? '0.60rem' : '0.90rem';
+      btn.innerHTML = `<span class="t-circle" style="font-size:${nameFontSize};"><span class="t-vpd" style="background:${dotColor};"></span>${displayName}</span><span class="t-stage">${stageLbl}</span>`;
 
       // Double-tap → rename / long-press → cancel rename / single tap → select
       let _lastTap = 0;
