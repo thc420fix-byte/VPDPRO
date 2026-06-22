@@ -127,7 +127,8 @@
     }
     .tent-bar::-webkit-scrollbar { display: none; }
     .tent-btn {
-      flex: 1 1 38px;
+      flex: 0 0 auto;
+      width: 88px;
       padding: 0;
       background: transparent;
       border: none;
@@ -138,6 +139,13 @@
       align-items: center;
       gap: 3px;
       -webkit-tap-highlight-color: transparent;
+    }
+    @keyframes tentSlideIn {
+      from { transform: translateX(-28px) scale(0.82); opacity: 0; }
+      to   { transform: translateX(0)     scale(1);    opacity: 1; }
+    }
+    .tent-btn.slide-in {
+      animation: tentSlideIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
     }
     .tent-btn .t-circle {
       width: 100%; height: 38px;
@@ -2026,8 +2034,10 @@
       });
       btn.addEventListener('click', () => { if (i !== currentTent) selectTent(i); });
       btn.addEventListener('dblclick', (e) => { e.preventDefault(); showTentMenu(i, btn); });
+      if (i === _newTentIndex) btn.classList.add('slide-in');
       bar.appendChild(btn);
     });
+    _newTentIndex = -1;
     if (tents.length < MAX_TENTS) {
       const addBtn = document.createElement('div');
       addBtn.className = 'tent-btn';
@@ -2045,6 +2055,7 @@
     const t = defaultTent(id, `${num}`);
     await dbPut('tents', t);
     tents.push(t);
+    _newTentIndex = tents.length - 1;
     buildTentBar();
     const _tb = document.getElementById('tentBar');
     if (_tb) setTimeout(() => { const _last = _tb.querySelector('.tent-btn:last-of-type'); if (_last) _last.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' }); }, 50);
@@ -2090,6 +2101,7 @@
     showToast(appLang === 'en' ? '🗑 Tent deleted' : '🗑 テントを削除しました');
   }
 
+  let _newTentIndex = -1;
   let _renameTentIndex = 0;
   function renameTent(i) {
     _renameTentIndex = i;
