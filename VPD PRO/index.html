@@ -1129,10 +1129,12 @@
         <button class="date-chip" onclick="openStartDatePicker()" data-i18n="stage.set_date">+ Set start date</button>
       </div>
       <!-- 収量記録 (Harvestステージのみ) -->
-      <div id="yieldRow" class="input-row" style="display:none;margin-bottom:2px;align-items:center;gap:8px;justify-content:center;">
-        <label style="font-size:0.95rem;color:var(--text);font-weight:700;flex-shrink:0;" data-i18n="yield.label">🏆 収量</label>
-        <input id="yieldInput" type="text" inputmode="decimal" placeholder="—" style="width:80px;flex-shrink:0;font-size:1.1rem;font-weight:700;font-family:'Rajdhani',sans-serif;background:transparent;color:var(--accent);border:none;border-bottom:1px dashed rgba(0,255,136,0.4);outline:none;text-align:center;" onfocus="this.select()" onchange="applyYield(this.value)">
-        <span style="font-size:0.85rem;color:var(--text);flex-shrink:0;" data-i18n="yield.unit">g（乾燥重量）</span>
+      <div id="yieldRow" class="stepper-row" style="display:none;">
+        <div class="stepper-center">
+          <span class="stepper-label" data-i18n="yield.label" style="min-width:auto;white-space:nowrap;">🏆 収量</span>
+          <input id="yieldInput" class="stepper-val" type="text" inputmode="decimal" placeholder="—" style="border-bottom:1px dashed rgba(0,255,136,0.4);" onfocus="this.select()" onchange="applyYield(this.value)">
+          <span class="stepper-unit" data-i18n="yield.unit" style="min-width:auto;white-space:nowrap;">g（乾燥重量）</span>
+        </div>
       </div>
       <div class="toggle-row">
         <div class="toggle-btn active-day" id="btnDayNight" role="button" aria-pressed="true" onclick="toggleDayNight()">💡 Light ON</div>
