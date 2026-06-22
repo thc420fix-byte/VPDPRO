@@ -495,13 +495,6 @@
       font-size: 0.58rem; color: var(--text); opacity: 0.55;
       margin-top: 3px; padding: 0 1px;
     }
-    /* compact mode: Leaf VPD or CO2 row added → shrink all rows */
-    .stepper-rows.compact .stepper-row { padding: 6px 0; }
-    .stepper-rows.compact .stepper-btn { width: 30px; height: 30px; font-size: 1.0rem; border-radius: 50%; }
-    .stepper-rows.compact .stepper-val { font-size: 1.2rem; width: 42px; }
-    .stepper-rows.compact #co2LevelVal { width: 54px; }
-    .stepper-rows.compact .stepper-label { font-size: 0.72rem; }
-    .stepper-rows.compact .stepper-unit { font-size: 0.62rem; }
 
     /* iPhone optimization */
     @media (max-width: 600px) {
@@ -2467,7 +2460,7 @@
   function updateCompactMode() {
     const t = tents[currentTent];
     const rows = document.querySelector('#tab-monitor .stepper-rows');
-    if (rows) rows.classList.toggle('compact', !!(t.leaf || t.co2));
+    if (rows) rows.classList.remove('compact');
   }
 
   async function toggleLeaf() {
