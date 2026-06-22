@@ -3425,14 +3425,13 @@
       recEl.innerHTML = `<span style="color:var(--ok);font-size:0.72rem;">${tr('stage.'+t.stage)||(stages[t.stage]||{}).name||t.stage}${tr('vpd.rec_ok')}</span>`;
     }
 
-    // 評価中の値（Air or Leaf）を主役にし、状態色を適用。もう一方は控えめに。
+    // Air VPD は常に主役（大）。Leaf VPD は常に副役（小）。
     const stateColor = state === 'danger' ? 'var(--danger)' : state === 'warning' ? 'var(--warning,#ff9500)' : 'var(--accent)';
     const leafActive = !!t.leaf;
     if (airBlock && leafBlock && airEl && leafEl) {
-      airBlock.classList.toggle('secondary', leafActive);
-      leafBlock.classList.toggle('secondary', !leafActive);
-      // 主役の数字に状態色、脇役は secondary クラス側の muted 色に任せる（インライン色をクリア）
-      airEl.style.color = leafActive ? '' : stateColor;
+      airBlock.classList.remove('secondary');
+      leafBlock.classList.add('secondary');
+      airEl.style.color = stateColor;
       leafEl.style.color = leafActive ? stateColor : '';
     }
     // 目標ゾーンの数値ラベル（例: 目標 0.80–1.10 kPa）
