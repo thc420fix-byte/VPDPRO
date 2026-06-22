@@ -319,8 +319,8 @@
       font-family: inherit;
       letter-spacing: 0.02em;
       color: var(--accent);
-      background: rgba(52, 199, 89, 0.10);
-      border: none;
+      background: transparent;
+      border: 1px solid rgba(52, 199, 89, 0.35);
       border-radius: 999px;
       cursor: pointer;
       white-space: nowrap;
@@ -1186,7 +1186,7 @@
           <span style="font-size:0.7rem;color:var(--text2);white-space:nowrap;flex:1;">DLI <span id="dliVal" style="color:var(--accent);font-weight:600;font-size:0.9rem;font-family:'Rajdhani',sans-serif;">—</span> <span style="opacity:0.55;font-size:0.62rem;">mol/m²/d</span><span id="dliTarget" style="opacity:0.55;font-size:0.62rem;"></span></span>
           <button onclick="cyclePhotoperiod()" class="stepper-btn" style="font-size:0.68rem;font-weight:600;flex-shrink:0;" title="タップで光周期変更"><span id="photoperiodLabel">18</span>h</button>
         </div>
-        <div style="padding:4px 0 0;">
+        <div style="padding:2px 0 0;">
           <div style="position:relative;">
             <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('monitorNoteClear').style.display=this.value?'flex':'none'" style="width:100%;box-sizing:border-box;padding:7px 32px 7px 10px;background:rgba(127,127,127,0.1);border:none;border-radius:8px;color:var(--text);font-size:0.72rem;outline:none;margin-bottom:3px;">
             <button id="monitorNoteClear" onclick="document.getElementById('monitorNoteInput').value='';this.style.display='none';document.getElementById('monitorNoteInput').focus();" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);width:22px;height:22px;border:none;border-radius:50%;background:rgba(127,127,127,0.25);color:var(--text2);font-size:0.65rem;cursor:pointer;align-items:center;justify-content:center;padding:0;line-height:1;">✕</button>
@@ -1217,7 +1217,7 @@
           </div>
           <div style="font-size:0.6rem;color:var(--muted);text-align:center;padding-bottom:4px;" data-i18n="leaf.offset_hint">Leaf Temp = Air Temp + Offset</div>
         </div>
-        <div style="padding:4px 0 2px;">
+        <div style="padding:2px 0 2px;">
           <button id="monitorSaveBtn" class="save-btn"
             onmousedown="startSaveHold('monitor',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
             ontouchstart="startSaveHold('monitor',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
