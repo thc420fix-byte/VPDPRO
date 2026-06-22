@@ -57,8 +57,8 @@
     }
     #settingsToggle {
       position: absolute;
-      right: 10px;
-      top: max(6px, env(safe-area-inset-top));
+      right: 8px;
+      top: calc(max(8px, env(safe-area-inset-top)) + 6px);
       background: transparent;
       border: none;
       border-radius: 50%;
@@ -116,29 +116,36 @@
     /* テントバー */
     .tent-bar {
       display: flex;
-      align-items: flex-start;
-      width: calc(100% - 48px);
+      align-items: stretch;
+      width: calc(100% - 46px);
       background: transparent;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      padding: 2px 0 4px;
-      gap: 4px;
+      padding: 0;
+      gap: 6px;
     }
     .tent-bar::-webkit-scrollbar { display: none; }
     .tent-btn {
       flex: 0 0 auto;
-      min-width: 62px;
-      max-width: 168px;
-      padding: 0;
-      background: transparent;
+      min-width: 58px;
+      max-width: 164px;
+      height: 50px;
+      padding: 0 13px;
+      box-sizing: border-box;
+      background: rgba(255,255,255,0.055);
       border: none;
+      border-radius: 13px;
       cursor: pointer;
       font-family: inherit;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      justify-content: center;
+      gap: 2px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.18s ease, box-shadow 0.18s ease;
       -webkit-tap-highlight-color: transparent;
     }
     @keyframes tentSlideIn {
@@ -148,34 +155,35 @@
     .tent-btn.slide-in {
       animation: tentSlideIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
     }
-    .tent-btn .t-circle {
-      width: 100%; height: 38px;
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.90rem; font-weight: 700;
-      color: rgba(255,255,255,0.35);
-      background: rgba(255,255,255,0.07);
-      transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
-      position: relative;
-      padding: 0 12px; box-sizing: border-box;
+    .tent-btn .t-name {
+      max-width: 100%;
+      font-weight: 700;
+      line-height: 1.1;
+      color: rgba(255,255,255,0.62);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .tent-btn .t-vpd {
-      position: absolute; bottom: 3px; right: 3px;
-      width: 6px; height: 6px; border-radius: 50%;
-      border: 1px solid rgba(0,0,0,0.5);
+      transition: color 0.18s ease;
     }
     .tent-btn .t-stage {
-      font-size: 0.60rem; font-weight: 600;
-      color: rgba(255,255,255,0.30); white-space: nowrap;
+      font-size: 0.56rem; font-weight: 600; line-height: 1;
+      color: rgba(255,255,255,0.32); white-space: nowrap;
+      transition: color 0.18s ease;
     }
-    .tent-btn.active .t-circle {
+    .tent-btn .t-vpd {
+      position: absolute; top: 7px; right: 8px;
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .tent-btn.active {
       background: var(--accent);
-      color: rgba(0,0,0,0.85);
-      box-shadow: 0 2px 10px rgba(0,200,80,0.30);
+      box-shadow: 0 3px 12px rgba(0,200,80,0.28);
     }
-    .tent-btn.active .t-vpd { border-color: rgba(0,0,0,0.35); }
-    .tent-btn.active .t-stage { color: var(--accent); }
+    .tent-btn.active .t-name { color: rgba(0,0,0,0.88); }
+    .tent-btn.active .t-stage { color: rgba(0,0,0,0.55); }
+    .tent-btn.active .t-vpd { box-shadow: 0 0 0 1.5px rgba(0,0,0,0.15); }
+    .tent-btn.add {
+      min-width: 44px; max-width: 44px; padding: 0;
+      color: rgba(255,255,255,0.32);
+    }
+    .tent-btn.add span { font-size: 1.35rem; font-weight: 300; line-height: 1; }
     /* タブ（hidden — bottom nav に置換） */
     .tabs { display: none; }
     .tab { display: none; }
@@ -2024,7 +2032,7 @@
       const rawName = t.name || String(i + 1);
       const displayName = rawName.length > 20 ? rawName.slice(0, 20) : rawName;
       const nameFontSize = displayName.length > 8 ? '0.70rem' : displayName.length > 3 ? '0.80rem' : '0.88rem';
-      btn.innerHTML = `<span class="t-circle" style="font-size:${nameFontSize};"><span class="t-vpd" style="background:${dotColor};"></span>${displayName}</span><span class="t-stage">${stageLbl}</span>`;
+      btn.innerHTML = `<span class="t-vpd" style="background:${dotColor};"></span><span class="t-name" style="font-size:${nameFontSize};">${displayName}</span><span class="t-stage">${stageLbl}</span>`;
 
       // Double-tap → rename / long-press → cancel rename / single tap → select
       let _lastTap = 0;
@@ -2043,9 +2051,9 @@
     _newTentIndex = -1;
     if (tents.length < MAX_TENTS) {
       const addBtn = document.createElement('div');
-      addBtn.className = 'tent-btn';
-      addBtn.style.cssText = 'flex:0 0 38px;padding:0;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:transparent;cursor:pointer;order:-1;-webkit-tap-highlight-color:transparent;';
-      addBtn.innerHTML = '<span style="width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:300;color:rgba(255,255,255,0.30);background:rgba(255,255,255,0.07);">+</span>';
+      addBtn.className = 'tent-btn add';
+      addBtn.style.order = '-1';
+      addBtn.innerHTML = '<span>+</span>';
       addBtn.onclick = addTent;
       bar.appendChild(addBtn);
     }
