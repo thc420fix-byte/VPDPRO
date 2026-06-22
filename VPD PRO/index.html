@@ -2066,7 +2066,7 @@
     if (tents.length >= MAX_TENTS) return;
     const id = Date.now();
     const num = tents.length + 1;
-    const t = defaultTent(id, `${num}`);
+    const t = defaultTent(id, `room${num}`);
     await dbPut('tents', t);
     tents.push(t);
     _newTentIndex = tents.length - 1;
@@ -4372,7 +4372,7 @@
           tents.push(t);
         }
         if (tents.length === 0) {
-          const t = defaultTent(Date.now(), '1');
+          const t = defaultTent(Date.now(), 'room1');
           await dbPut('tents', t);
           tents.push(t);
         }
@@ -4440,7 +4440,7 @@
     localStorage.clear();
     tents = [];
     for (let i = 0; i < 3; i++) {
-      const t = defaultTent(Date.now() + i, `${i + 1}`);
+      const t = defaultTent(Date.now() + i, `room${i + 1}`);
       await dbPut('tents', t);
       tents.push(t);
     }
@@ -5438,7 +5438,7 @@ function classifyVpd(vpd, lo, hi) {
     allTents.sort((a, b) => (a.id < b.id ? -1 : 1));
     if (allTents.length === 0) {
       for (let i = 0; i < 3; i++) {
-        const t = defaultTent(i, `${i + 1}`);
+        const t = defaultTent(i, `room${i + 1}`);
         await dbPut('tents', t);
         allTents.push(t);
       }
