@@ -350,16 +350,6 @@
       border: none; outline: none; color-scheme: dark; text-align: center;
       font-family: inherit;
     }
-    .date-set #clearDateBtn {
-      width: 26px; height: 26px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      padding: 0; border: none; border-radius: 50%;
-      background: rgba(255, 90, 90, 0.12); color: rgba(255, 120, 120, 0.9);
-      font-size: 0.72rem; cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 0.12s ease;
-    }
-    .date-set #clearDateBtn:active { transform: scale(0.9); }
     #phInput::placeholder,
     #ecInput::placeholder,
     #runoffEcInput::placeholder,
@@ -1133,7 +1123,6 @@
           <span class="ds-icon">📅</span>
           <input id="stageStartDate" type="date" onchange="applyStageStartDate(this.value)" onclick="try{this.showPicker()}catch(e){}">
           <span id="stageDayCount" class="ds-days"></span>
-          <button id="clearDateBtn" oncontextmenu="return false;" data-i18n-aria="aria.clear_date" aria-label="開始日をクリア" style="display:none;">✕</button>
         </div>
       </div>
       <div id="addDateRow" style="display:flex;justify-content:center;margin:8px 0 4px;">
@@ -2294,12 +2283,10 @@
   }
 
   function _updateClearDateBtn() {
-    const btn = document.getElementById('clearDateBtn');
     const inp = document.getElementById('stageStartDate');
     const row = document.getElementById('startDateRow');
     const addRow = document.getElementById('addDateRow');
     const hasDate = !!(inp && inp.value);
-    if (btn) btn.style.display = hasDate ? 'flex' : 'none';
     if (row) row.style.display = hasDate ? 'flex' : 'none';
     if (addRow) addRow.style.display = hasDate ? 'none' : 'flex';
   }
@@ -2430,76 +2417,6 @@
     showToast(appLang === 'en' ? '🗑 Stage dates cleared' : '🗑 ステージ日付を削除しました');
   }
 
-  // 🗑 button: double tap = clear current stage date, long press = clear all
-  (() => {
-    const btn = document.getElementById('clearDateBtn');
-    if (!btn) return;
-    let longTimer = null;
-    let longPressed = false;
-    let lastTap = 0;
-
-    function flashRed() {
-      btn.style.borderColor = 'rgba(255,50,50,0.9)';
-      btn.style.background = 'rgba(255,50,50,0.2)';
-      setTimeout(() => { btn.style.borderColor = ''; btn.style.background = ''; }, 600);
-    }
-
-    // --- Touch ---
-    btn.addEventListener('touchstart', e => {
-      e.preventDefault();
-      longPressed = false;
-      longTimer = setTimeout(() => {
-        longPressed = true;
-        longTimer = null;
-        clearAllStageDates();
-        flashRed();
-      }, 600);
-    }, { passive: false });
-
-    btn.addEventListener('touchend', e => {
-      e.preventDefault();
-      if (longTimer) { clearTimeout(longTimer); longTimer = null; }
-      if (longPressed) return;
-      const now = Date.now();
-      if (now - lastTap < 350) {
-        lastTap = 0;
-        clearStageStartDate();
-      } else {
-        lastTap = now;
-      }
-    });
-
-    btn.addEventListener('touchmove', () => {
-      if (longTimer) { clearTimeout(longTimer); longTimer = null; }
-    }, { passive: true });
-
-    // --- Mouse (desktop / preview) ---
-    btn.addEventListener('mousedown', () => {
-      longPressed = false;
-      longTimer = setTimeout(() => {
-        longPressed = true;
-        longTimer = null;
-        clearAllStageDates();
-        flashRed();
-      }, 600);
-    });
-    btn.addEventListener('mouseup', () => {
-      if (longTimer) { clearTimeout(longTimer); longTimer = null; }
-    });
-    btn.addEventListener('mouseleave', () => {
-      if (longTimer) { clearTimeout(longTimer); longTimer = null; }
-    });
-    btn.addEventListener('click', () => {
-      if (longPressed) return;
-      const now = Date.now();
-      if (now - lastTap < 350) {
-        lastTap = 0;
-        clearStageStartDate();
-      } else {
-        lastTap = now;
-      }
-    });
-  })();
 
   async function applyStageStartDate(val) {
     if (val) {
