@@ -128,7 +128,8 @@
     .tent-bar::-webkit-scrollbar { display: none; }
     .tent-btn {
       flex: 0 0 auto;
-      width: 88px;
+      min-width: 62px;
+      max-width: 168px;
       padding: 0;
       background: transparent;
       border: none;
@@ -156,6 +157,8 @@
       background: rgba(255,255,255,0.07);
       transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
       position: relative;
+      padding: 0 12px; box-sizing: border-box;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .tent-btn .t-vpd {
       position: absolute; bottom: 3px; right: 3px;
@@ -2019,8 +2022,8 @@
       }
       const stageLbl = tr('stage.' + t.stage) || t.stage || '';
       const rawName = t.name || String(i + 1);
-      const displayName = rawName.length > 5 ? rawName.slice(0, 5) : rawName;
-      const nameFontSize = displayName.length > 3 ? '0.72rem' : '0.88rem';
+      const displayName = rawName.length > 20 ? rawName.slice(0, 20) : rawName;
+      const nameFontSize = displayName.length > 8 ? '0.70rem' : displayName.length > 3 ? '0.80rem' : '0.88rem';
       btn.innerHTML = `<span class="t-circle" style="font-size:${nameFontSize};"><span class="t-vpd" style="background:${dotColor};"></span>${displayName}</span><span class="t-stage">${stageLbl}</span>`;
 
       // Double-tap → rename / long-press → cancel rename / single tap → select
