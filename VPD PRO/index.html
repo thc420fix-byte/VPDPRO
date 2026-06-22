@@ -156,10 +156,8 @@
       border: 1px solid rgba(0,0,0,0.5);
     }
     .tent-btn .t-stage {
-      font-size: 0.52rem; font-weight: 600;
-      color: var(--accent); white-space: nowrap;
-      opacity: 0; max-height: 0; overflow: hidden;
-      transition: opacity 0.18s ease, max-height 0.2s ease;
+      font-size: 0.50rem; font-weight: 600;
+      color: rgba(255,255,255,0.30); white-space: nowrap;
     }
     .tent-btn.active .t-circle {
       background: var(--accent);
@@ -167,7 +165,7 @@
       box-shadow: 0 2px 10px rgba(0,200,80,0.30);
     }
     .tent-btn.active .t-vpd { border-color: rgba(0,0,0,0.35); }
-    .tent-btn.active .t-stage { opacity: 1; max-height: 12px; }
+    .tent-btn.active .t-stage { color: var(--accent); }
     /* タブ（hidden — bottom nav に置換） */
     .tabs { display: none; }
     .tab { display: none; }
