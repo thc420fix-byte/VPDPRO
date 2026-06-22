@@ -61,7 +61,7 @@
       top: calc(max(8px, env(safe-area-inset-top)) + 6px);
       background: transparent;
       border: none;
-      border-radius: 50%;
+      border-radius: 10px;
       color: var(--text2);
       font-size: 1.35rem;
       width: 38px;
@@ -383,7 +383,7 @@
       width: 36px;
       height: 36px;
       flex-shrink: 0;
-      border-radius: 50%;
+      border-radius: 10px;
       border: none;
       background: rgba(255,255,255,0.08);
       color: rgba(255,255,255,0.60);
@@ -1273,7 +1273,7 @@
     <div style="border-top:1px solid rgba(0,255,136,0.12);padding-top:8px;margin:6px 0 4px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
         <span style="font-size:0.65rem;color:var(--text2);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;" data-i18n="feed.nutrient_label">Nutrient</span>
-        <button onclick="addFertilizer()" data-i18n-aria="aria.add_nutrient" aria-label="肥料を追加" style="width:36px;height:36px;border-radius:50%;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);color:var(--accent);font-size:1.15rem;line-height:1;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
+        <button onclick="addFertilizer()" data-i18n-aria="aria.add_nutrient" aria-label="肥料を追加" style="width:36px;height:36px;border-radius:10px;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);color:var(--accent);font-size:1.15rem;line-height:1;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
       </div>
       <!-- タブバー -->
       <div id="fertTabBar" class="toggle-row" style="margin-bottom:6px;"></div>
@@ -6258,6 +6258,6 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
   </div>
 
   <!-- AI Chat Floating Button -->
-  <button id="aiChatFab" onclick="openAiChat()" style="position:fixed;right:16px;bottom:calc(80px + env(safe-area-inset-bottom));width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,rgba(52,199,89,0.25) 0%,rgba(52,199,89,0.12) 100%);border:1.5px solid rgba(52,199,89,0.55);color:var(--accent);font-size:1.35rem;cursor:pointer;z-index:5000;box-shadow:0 4px 18px rgba(52,199,89,0.28),0 2px 8px rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);" aria-label="AI Chat">✦</button>
+  <button id="aiChatFab" onclick="openAiChat()" style="position:fixed;right:16px;bottom:calc(80px + env(safe-area-inset-bottom));width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,rgba(52,199,89,0.25) 0%,rgba(52,199,89,0.12) 100%);border:1.5px solid rgba(52,199,89,0.55);color:var(--accent);font-size:1.35rem;cursor:pointer;z-index:5000;box-shadow:0 4px 18px rgba(52,199,89,0.28),0 2px 8px rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);" aria-label="AI Chat">✦</button>
 </body>
 </html>
