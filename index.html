@@ -163,7 +163,7 @@
       border: 1px solid rgba(0,0,0,0.5);
     }
     .tent-btn .t-stage {
-      font-size: 0.50rem; font-weight: 600;
+      font-size: 0.60rem; font-weight: 600;
       color: rgba(255,255,255,0.30); white-space: nowrap;
     }
     .tent-btn.active .t-circle {
@@ -2019,8 +2019,8 @@
       }
       const stageLbl = tr('stage.' + t.stage) || t.stage || '';
       const rawName = t.name || String(i + 1);
-      const displayName = rawName.length > 4 ? rawName.slice(0, 4) : rawName;
-      const nameFontSize = displayName.length > 2 ? '0.60rem' : '0.90rem';
+      const displayName = rawName.length > 5 ? rawName.slice(0, 5) : rawName;
+      const nameFontSize = displayName.length > 3 ? '0.72rem' : '0.88rem';
       btn.innerHTML = `<span class="t-circle" style="font-size:${nameFontSize};"><span class="t-vpd" style="background:${dotColor};"></span>${displayName}</span><span class="t-stage">${stageLbl}</span>`;
 
       // Double-tap → rename / long-press → cancel rename / single tap → select
