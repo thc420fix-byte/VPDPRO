@@ -126,6 +126,7 @@
       gap: 6px;
     }
     .tent-bar::-webkit-scrollbar { display: none; }
+    .tent-bar.fill .tent-btn:not(.add) { flex: 1; min-width: 0; max-width: none; }
     .tent-btn {
       flex: 0 0 auto;
       min-width: 58px;
@@ -2012,6 +2013,7 @@
   function buildTentBar() {
     const bar = document.getElementById('tentBar');
     bar.innerHTML = '';
+    bar.classList.toggle('fill', tents.length <= 3);
     tents.forEach((t, i) => {
       const btn = document.createElement('div');
       const isActive = i === currentTent;
