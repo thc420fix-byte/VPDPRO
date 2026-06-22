@@ -115,10 +115,9 @@
     #rec { display: none !important; }
     /* テントバー */
     .tent-bar {
-      display: inline-flex;
+      display: flex;
       align-items: flex-start;
-      width: fit-content;
-      max-width: calc(100% - 52px);
+      width: calc(100% - 48px);
       background: transparent;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -128,7 +127,7 @@
     }
     .tent-bar::-webkit-scrollbar { display: none; }
     .tent-btn {
-      flex: 0 0 auto;
+      flex: 1 1 38px;
       padding: 0;
       background: transparent;
       border: none;
@@ -2032,7 +2031,7 @@
     if (tents.length < MAX_TENTS) {
       const addBtn = document.createElement('div');
       addBtn.className = 'tent-btn';
-      addBtn.style.cssText = 'flex:0 0 auto;padding:0;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:transparent;cursor:pointer;order:-1;-webkit-tap-highlight-color:transparent;';
+      addBtn.style.cssText = 'flex:0 0 38px;padding:0;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:transparent;cursor:pointer;order:-1;-webkit-tap-highlight-color:transparent;';
       addBtn.innerHTML = '<span style="width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:300;color:rgba(255,255,255,0.30);background:rgba(255,255,255,0.07);">+</span>';
       addBtn.onclick = addTent;
       bar.appendChild(addBtn);
