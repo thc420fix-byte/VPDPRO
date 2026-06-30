@@ -55,10 +55,12 @@
       --muted: rgba(0,0,0,0.30);
       --leaf: #1a8c3a;
     }
+    .tent-bar-row {
+      display: flex;
+      align-items: center;
+    }
     #settingsToggle {
-      position: absolute;
-      right: 8px;
-      top: calc(max(8px, env(safe-area-inset-top)) + 6px);
+      flex: 0 0 38px;
       background: transparent;
       border: none;
       border-radius: 10px;
@@ -117,7 +119,8 @@
     .tent-bar {
       display: flex;
       align-items: stretch;
-      width: calc(100% - 46px);
+      flex: 1;
+      min-width: 0;
       background: transparent;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -131,12 +134,12 @@
       flex: 0 0 auto;
       min-width: 58px;
       max-width: 164px;
-      height: 50px;
-      padding: 0 13px;
+      min-height: 40px;
+      padding: 5px 8px;
       box-sizing: border-box;
       background: rgba(255,255,255,0.055);
       border: none;
-      border-radius: 13px;
+      border-radius: 11px;
       cursor: pointer;
       font-family: inherit;
       display: flex;
@@ -145,7 +148,6 @@
       justify-content: center;
       gap: 2px;
       position: relative;
-      overflow: hidden;
       transition: background 0.18s ease, box-shadow 0.18s ease;
       -webkit-tap-highlight-color: transparent;
     }
@@ -159,9 +161,11 @@
     .tent-btn .t-name {
       max-width: 100%;
       font-weight: 700;
-      line-height: 1.1;
+      line-height: 1.2;
       color: rgba(255,255,255,0.62);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      white-space: normal;
+      word-break: break-word;
+      text-align: center;
       transition: color 0.18s ease;
     }
     .tent-btn .t-stage {
@@ -182,10 +186,10 @@
     .tent-btn.active .t-stage { color: rgba(0,0,0,0.55); }
     .tent-btn.active .t-vpd { box-shadow: 0 0 0 1.5px rgba(0,0,0,0.15); }
     .tent-btn.add {
-      min-width: 44px; max-width: 44px; padding: 0;
+      min-width: 38px; max-width: 38px; padding: 0;
       color: rgba(255,255,255,0.32);
     }
-    .tent-btn.add span { font-size: 1.35rem; font-weight: 300; line-height: 1; }
+    .tent-btn.add span { font-size: 1.2rem; font-weight: 300; line-height: 1; }
     /* タブ（hidden — bottom nav に置換） */
     .tabs { display: none; }
     .tab { display: none; }
@@ -676,6 +680,8 @@
       transition: transform 0.3s ease;
     }
     #pwaUpdateBanner.show { transform: translateY(0); }
+    /* v307: バナー表示中はコンテンツを押し下げて被らないようにする */
+    body:has(#pwaUpdateBanner.show) { padding-top: calc(max(8px, env(safe-area-inset-top)) + 64px); }
     #pwaUpdateBanner .upd-text { flex: 1; font-size: 0.82rem; color: var(--text); }
     #pwaUpdateBanner .upd-btn {
       padding: 7px 13px; background: var(--accent); border: none;
@@ -732,8 +738,8 @@
     .save-popup.show { opacity:1; pointer-events:all; }
     .save-popup-box {
       background:var(--surface); border:1px solid rgba(0,255,136,0.4);
-      border-radius:16px; padding:24px 28px; min-width:260px; max-width:320px;
-      text-align:center; box-shadow:0 0 30px rgba(0,255,136,0.2);
+      border-radius:16px; padding:20px 20px; min-width:240px; max-width:calc(100vw - 32px);
+      text-align:center; box-shadow:0 0 30px rgba(0,255,136,0.2); box-sizing:border-box;
     }
   
 /* === Pro enhancements === */
@@ -814,7 +820,6 @@
   <!-- ===== Blank / Lockout Screen ===== -->
   <div id="blankScreen"></div>
 
-  <button id="settingsToggle" onclick="openSettings()" aria-label="Settings">⚙️</button>
   <!-- Settings Modal -->
   <div id="settingsModal" role="dialog" aria-modal="true" onclick="closeSettings(event)">
     <div id="settingsPanel">
@@ -833,6 +838,13 @@
           <span style="font-size:0.88rem;color:var(--text);" data-i18n="settings.week_day_count">Week / Day count</span>
           <div id="dayCountToggle" onclick="toggleDayCount()" style="width:42px;height:26px;border-radius:13px;background:var(--accent);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;">
             <div id="dayCountThumb" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+          </div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:0 14px;"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;">
+          <span style="font-size:0.88rem;color:var(--text);" data-i18n="settings.target_hint">目標ヒント</span>
+          <div id="targetHintToggle" onclick="toggleTargetHint()" style="width:42px;height:26px;border-radius:13px;background:var(--accent);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;">
+            <div id="targetHintThumb" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
           </div>
         </div>
         <div style="height:1px;background:var(--border);margin:0 14px;"></div>
@@ -925,7 +937,7 @@
       <div style="background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:8px;">
         <div style="padding:11px 14px;">
           <div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px;" data-i18n="settings.lm_url">LM Studio URL</div>
-          <input id="lmUrlInput" type="url" placeholder="http://localhost:11234" value=""
+          <input id="lmUrlInput" type="url" placeholder="http://localhost:1234" value=""
             style="width:100%;box-sizing:border-box;padding:7px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8rem;outline:none;"
             oninput="localStorage.setItem('lmUrl',this.value.trim())">
           <div style="display:flex;gap:8px;margin-top:8px;">
@@ -1058,7 +1070,10 @@
   <h1>Canopy</h1>
   <div class="subtitle" data-i18n="app.subtitle">Grow Environment Monitor</div>
 
-  <div class="tent-bar" id="tentBar"></div>
+  <div class="tent-bar-row">
+    <div class="tent-bar" id="tentBar"></div>
+    <button id="settingsToggle" onclick="openSettings()" aria-label="Settings">⚙️</button>
+  </div>
   <div class="tabs">
     <div class="tab active" data-tab="monitor" data-i18n="tab.monitor">📊 Monitor</div>
     <div class="tab" data-tab="log" data-i18n="tab.log">💧 Feeding</div>
@@ -1088,6 +1103,7 @@
         </div>
         <div class="vpd-zonebar-scale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0 kPa</span></div>
       </div>
+      <div id="vpdTargetLabel" class="vpd-target-label"></div>
       <div id="statusBadge" class="status-badge status-ok">—</div>
       <div id="vpdSparkWrap" style="position:relative;width:100%;margin:4px 0 0;display:none;">
         <svg id="vpdSparkline" viewBox="0 0 200 50" preserveAspectRatio="none" style="width:100%;height:50px;display:block;overflow:visible;"></svg>
@@ -1138,7 +1154,7 @@
       </div>
       <div class="stepper-rows">
         <!-- Temp -->
-        <div class="stepper-row">
+        <div class="stepper-row" style="flex-wrap:wrap;">
           <button class="stepper-btn" onclick="adjustTemp(-1)" data-i18n-aria="aria.temp_down" aria-label="温度を下げる">−</button>
           <div class="stepper-center">
             <span class="stepper-label" data-i18n="stepper.temp">Temp</span>
@@ -1146,9 +1162,10 @@
             <span id="tempUnitLabel" class="stepper-unit" onclick="toggleTempUnit()" style="cursor:pointer;user-select:none;">℃</span>
           </div>
           <button class="stepper-btn" onclick="adjustTemp(1)" data-i18n-aria="aria.temp_up" aria-label="温度を上げる">+</button>
+          <div id="tempTargetHint" style="width:100%;text-align:center;font-size:0.62rem;color:rgba(255,255,255,0.32);margin-top:-4px;line-height:1.6;"></div>
         </div>
         <!-- Humidity -->
-        <div class="stepper-row">
+        <div class="stepper-row" style="flex-wrap:wrap;">
           <button class="stepper-btn" onclick="adjustHum(-1)" data-i18n-aria="aria.hum_down" aria-label="湿度を下げる">−</button>
           <div class="stepper-center">
             <span class="stepper-label" data-i18n="stepper.humidity">Humidity</span>
@@ -1156,9 +1173,10 @@
             <span class="stepper-unit">%RH</span>
           </div>
           <button class="stepper-btn" onclick="adjustHum(1)" data-i18n-aria="aria.hum_up" aria-label="湿度を上げる">+</button>
+          <div id="humTargetHint" style="width:100%;text-align:center;font-size:0.62rem;color:rgba(255,255,255,0.32);margin-top:-4px;line-height:1.6;"></div>
         </div>
         <!-- PPFD -->
-        <div class="stepper-row">
+        <div class="stepper-row" style="flex-wrap:wrap;">
           <button class="stepper-btn" onclick="adjustCurrentPpfd(-10)" data-i18n-aria="aria.ppfd_down" aria-label="PPFDを下げる">−</button>
           <div class="stepper-center">
             <span class="stepper-label">PPFD</span>
@@ -1166,17 +1184,20 @@
             <span class="stepper-unit">µmol</span>
           </div>
           <button class="stepper-btn" onclick="adjustCurrentPpfd(10)" data-i18n-aria="aria.ppfd_up" aria-label="PPFDを上げる">+</button>
+          <div id="ppfdTargetHint" style="width:100%;text-align:center;font-size:0.62rem;color:rgba(255,255,255,0.32);margin-top:-4px;line-height:1.6;"></div>
         </div>
         <!-- DLI + Light tools -->
         <div class="stepper-row" id="dliRow" style="gap:6px;flex-wrap:nowrap;justify-content:flex-start;padding:6px 2px;">
           <span style="font-size:0.7rem;color:var(--text2);white-space:nowrap;flex:1;">DLI <span id="dliVal" style="color:var(--accent);font-weight:600;font-size:0.9rem;font-family:'Rajdhani',sans-serif;">—</span> <span style="opacity:0.55;font-size:0.62rem;">mol/m²/d</span><span id="dliTarget" style="opacity:0.55;font-size:0.62rem;"></span></span>
           <button onclick="cyclePhotoperiod()" class="stepper-btn" style="font-size:0.68rem;font-weight:600;flex-shrink:0;" title="タップで光周期変更"><span id="photoperiodLabel">18</span>h</button>
+          <button onclick="openLuxConverter()" class="stepper-btn" style="font-size:0.68rem;font-weight:600;flex-shrink:0;" title="LUX → PPFD" data-i18n="lux.meter_btn">Meter</button>
         </div>
         <div style="padding:2px 0 0;">
           <div style="position:relative;">
-            <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('monitorNoteClear').style.display=this.value?'flex':'none'" style="width:100%;box-sizing:border-box;padding:7px 32px 7px 10px;background:rgba(127,127,127,0.1);border:none;border-radius:8px;color:var(--text);font-size:0.72rem;outline:none;margin-bottom:3px;">
-            <button id="monitorNoteClear" onclick="document.getElementById('monitorNoteInput').value='';this.style.display='none';document.getElementById('monitorNoteInput').focus();" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);width:22px;height:22px;border:none;border-radius:50%;background:rgba(127,127,127,0.25);color:var(--text2);font-size:0.65rem;cursor:pointer;align-items:center;justify-content:center;padding:0;line-height:1;">✕</button>
+            <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('monitorNoteClear').style.display=this.value?'flex':'none';document.getElementById('monitorNoteCount').textContent=100-this.value.length;" style="width:100%;box-sizing:border-box;padding:7px 32px 7px 10px;background:rgba(127,127,127,0.1);border:none;border-radius:8px;color:var(--text);font-size:0.72rem;outline:none;margin-bottom:3px;">
+            <button id="monitorNoteClear" onclick="document.getElementById('monitorNoteInput').value='';this.style.display='none';document.getElementById('monitorNoteInput').focus();document.getElementById('monitorNoteCount').textContent=100;" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);width:22px;height:22px;border:none;border-radius:50%;background:rgba(127,127,127,0.25);color:var(--text2);font-size:0.65rem;cursor:pointer;align-items:center;justify-content:center;padding:0;line-height:1;">✕</button>
           </div>
+          <div style="text-align:right;font-size:0.6rem;color:var(--text2);opacity:0.5;margin-top:-1px;padding-right:2px;"><span id="monitorNoteCount">100</span></div>
         </div>
         <!-- CO2 Level (shown when CO2 is ON) -->
         <div id="co2LevelCard" style="display:none; border-top:1px solid rgba(255,255,255,0.06);">
@@ -1261,17 +1282,18 @@
       <button class="seg-btn" role="tab" data-s="dry" onclick="setStage('dry')" data-i18n="stage.dry">Dry</button>
       <button class="seg-btn" role="tab" data-s="harvest" onclick="setStage('harvest')" data-i18n="stage.harvest">Harvest</button>
     </div>
-    <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:2px;">
-      <div id="feedingDayCount" style="display:none;flex-shrink:0;font-size:0.78rem;color:var(--text2);font-weight:600;white-space:nowrap;"></div>
+    <div style="display:flex;align-items:center;justify-content:center;margin-bottom:2px;">
+      <div id="feedingDayCount" style="display:none;font-size:0.72rem;color:var(--text2);font-weight:600;white-space:nowrap;text-align:center;padding:2px 0 6px;"></div>
     </div>
+    <div id="feedingRef" style="font-size:0.62rem;color:var(--text2);text-align:center;padding:2px 0 4px;opacity:0.75;"></div>
     <!-- Fertilizer管理 -->
-    <div style="border-top:1px solid rgba(0,255,136,0.12);padding-top:8px;margin:6px 0 4px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <span style="font-size:0.65rem;color:var(--text2);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;" data-i18n="feed.nutrient_label">Nutrient</span>
-        <button onclick="addFertilizer()" data-i18n-aria="aria.add_nutrient" aria-label="肥料を追加" style="width:36px;height:36px;border-radius:10px;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.45);color:var(--accent);font-size:1.15rem;line-height:1;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
+    <div style="border-top:1px solid rgba(0,255,136,0.12);padding-top:8px;margin:4px 0 4px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:0 2px;">
+        <span style="font-size:0.82rem;color:var(--text);font-weight:700;letter-spacing:0.01em;" data-i18n="feed.nutrient_label">Nutrient</span>
+        <button onclick="addFertilizer()" data-i18n-aria="aria.add_nutrient" aria-label="肥料を追加" style="width:28px;height:28px;border-radius:8px;background:rgba(0,255,136,0.13);border:1px solid rgba(0,255,136,0.4);color:var(--accent);font-size:1.2rem;font-weight:300;line-height:1;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
       </div>
       <!-- タブバー -->
-      <div id="fertTabBar" class="toggle-row" style="margin-bottom:6px;"></div>
+      <div id="fertTabBar" class="toggle-row" style="margin-bottom:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap;"></div>
       <!-- タブコンテンツ -->
       <div id="fertTabContent" style="display:none;"></div>
       <!-- 全栄養素レシピ一覧 -->
@@ -1288,21 +1310,22 @@
         </div>
         <button class="stepper-btn" onclick="adjustPh(0.1)">+</button>
       </div>
+      <div id="phTargetHint" class="stepper-target"></div>
       <!-- Water Temp -->
       <div class="stepper-row">
         <button class="stepper-btn" onclick="adjustWaterTemp(-0.5)">−</button>
         <div class="stepper-center">
           <span class="stepper-label" data-i18n="stepper.water">Water</span>
-          <input id="waterTempInput" class="stepper-val" type="text" inputmode="numeric" placeholder="20" onfocus="this.select()">
+          <input id="waterTempInput" class="stepper-val" type="text" inputmode="numeric" placeholder="20" onfocus="this.select()" oninput="updateFeedingTargets()">
           <span id="waterTempUnit" class="stepper-unit">°C</span>
         </div>
         <button class="stepper-btn" onclick="adjustWaterTemp(0.5)">+</button>
       </div>
+      <div id="waterTempTargetHint" class="stepper-target"></div>
       <!-- EC Measurement Toggle -->
-      <div onclick="toggleEcRows()" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;cursor:pointer;border-top:1px solid rgba(255,255,255,0.06);">
-        <span style="font-size:0.75rem;color:var(--text2);letter-spacing:0.04em;" data-i18n="feed.ec_toggle">EC Measurement</span>
-        <div id="ecToggleSwitch" style="width:38px;height:22px;border-radius:11px;background:rgba(255,255,255,0.12);position:relative;transition:background 0.2s;flex-shrink:0;">
-          <div id="ecToggleThumb" style="width:18px;height:18px;border-radius:50%;background:var(--text2);position:absolute;top:2px;left:2px;transition:left 0.2s,background 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.4);"></div>
+      <div style="border-top:0.5px solid rgba(255,255,255,0.05);padding-top:8px;">
+        <div class="toggle-row">
+          <div class="toggle-btn" id="btnEcToggle" role="button" aria-pressed="false" onclick="toggleEcRows()" data-i18n="feed.ec_toggle">EC 計測</div>
         </div>
       </div>
       <!-- Input EC -->
@@ -1315,22 +1338,30 @@
         </div>
         <button class="stepper-btn" onclick="adjustEc(0.1)">+</button>
       </div>
+      <div id="ecTargetHint" class="stepper-target" style="display:none;"></div>
       <!-- Runoff EC -->
       <div id="runoffEcRow" class="stepper-row" style="display:none;">
-        <button class="stepper-btn" onclick="adjustRunoffEc(-0.1)">−</button>
+        <button id="runoffMinusBtn" class="stepper-btn" onclick="adjustRunoffEc(-0.1)">−</button>
         <div class="stepper-center">
           <span class="stepper-label" data-i18n="feed.runoff_ec">Runoff EC</span>
           <input id="runoffEcInput" class="stepper-val" type="text" inputmode="decimal" placeholder="1.8" onfocus="this.select()" oninput="updateFeedingTargets()">
           <span class="stepper-unit">mS</span>
         </div>
-        <button class="stepper-btn" onclick="adjustRunoffEc(0.1)">+</button>
+        <button id="runoffPlusBtn" class="stepper-btn" onclick="adjustRunoffEc(0.1)">+</button>
+      </div>
+      <div id="runoffTargetHint" class="stepper-target" style="display:none;"></div>
+      <div id="noRunoffRow" style="display:none;padding:0 0 4px;">
+        <div class="toggle-row">
+          <div class="toggle-btn" id="btnNoRunoff" role="button" aria-pressed="false" onclick="toggleNoRunoff()" data-i18n="feed.no_runoff">排液なし</div>
+        </div>
       </div>
     </div>
     <div style="padding:4px 8px 0;">
       <div style="position:relative;">
-        <input id="feedingNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('feedingNoteClear').style.display=this.value?'flex':'none'" style="width:100%;box-sizing:border-box;padding:5px 28px 5px 8px;background:rgba(255,255,255,0.05);border:none;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:0;color:var(--text2);font-size:0.72rem;outline:none;margin-bottom:3px;">
-        <button id="feedingNoteClear" onclick="document.getElementById('feedingNoteInput').value='';this.style.display='none';document.getElementById('feedingNoteInput').focus();" style="display:none;position:absolute;right:4px;top:50%;transform:translateY(-50%);width:20px;height:20px;border:none;border-radius:50%;background:rgba(127,127,127,0.25);color:var(--text2);font-size:0.62rem;cursor:pointer;align-items:center;justify-content:center;padding:0;line-height:1;">✕</button>
+        <input id="feedingNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('feedingNoteClear').style.display=this.value?'flex':'none';document.getElementById('feedingNoteCount').textContent=100-this.value.length;" style="width:100%;box-sizing:border-box;padding:7px 32px 7px 10px;background:rgba(127,127,127,0.1);border:none;border-radius:8px;color:var(--text);font-size:0.72rem;outline:none;margin-bottom:3px;">
+        <button id="feedingNoteClear" onclick="document.getElementById('feedingNoteInput').value='';this.style.display='none';document.getElementById('feedingNoteInput').focus();document.getElementById('feedingNoteCount').textContent=100;" style="display:none;position:absolute;right:4px;top:50%;transform:translateY(-50%);width:20px;height:20px;border:none;border-radius:50%;background:rgba(127,127,127,0.25);color:var(--text2);font-size:0.62rem;cursor:pointer;align-items:center;justify-content:center;padding:0;line-height:1;">✕</button>
       </div>
+      <div style="text-align:right;font-size:0.6rem;color:var(--text2);opacity:0.5;margin-top:-1px;padding-right:2px;"><span id="feedingNoteCount">100</span></div>
     </div>
     <div style="padding:4px 8px 2px;">
       <button id="feedingSaveBtn" class="save-btn"
@@ -1513,13 +1544,14 @@
     const rr = document.getElementById('runoffEcRow');
     if (ir) { ir.style.display = d; if (!show) { const inp = ir.querySelector('input'); if (inp) inp.value = ''; } }
     if (rr) { rr.style.display = d; if (!show) { const inp = rr.querySelector('input'); if (inp) inp.value = ''; } }
-    const sw = document.getElementById('ecToggleSwitch');
-    const th = document.getElementById('ecToggleThumb');
-    if (sw) sw.style.background = show ? 'var(--accent)' : 'rgba(255,255,255,0.12)';
-    if (th) { th.style.left = show ? '18px' : '2px'; th.style.background = show ? '#000' : 'var(--text2)'; }
+    const nr = document.getElementById('noRunoffRow');
+    if (nr) nr.style.display = show ? '' : 'none';
+    if (!show) { _noRunoff = false; applyNoRunoff(); }
+    const btn = document.getElementById('btnEcToggle');
+    if (btn) { btn.classList.toggle('active-day', show); btn.setAttribute('aria-pressed', show); }
     // EC 目標はインラインヒントへ移したので、行表示中は下部 feedingRef を隠す（重複回避）
     const ref = document.getElementById('feedingRef');
-    if (ref) ref.style.display = show ? 'none' : '';
+    if (ref) ref.style.display = (show || spotMode === 'myspot') ? 'none' : '';
     const eh = document.getElementById('ecTargetHint');
     const rh = document.getElementById('runoffTargetHint');
     if (eh) eh.style.display = show ? '' : 'none';
@@ -1530,6 +1562,22 @@
     _showEcRows = !_showEcRows;
     localStorage.setItem('showEcRows', _showEcRows);
     applyEcRows();
+  }
+  let _noRunoff = false;
+  function applyNoRunoff() {
+    const btn = document.getElementById('btnNoRunoff');
+    const inp = document.getElementById('runoffEcInput');
+    const minus = document.getElementById('runoffMinusBtn');
+    const plus = document.getElementById('runoffPlusBtn');
+    if (btn) { btn.classList.toggle('active-day', _noRunoff); btn.setAttribute('aria-pressed', _noRunoff); }
+    if (inp) { inp.value = _noRunoff ? '0' : (inp.value === '0' ? '' : inp.value); inp.disabled = _noRunoff; inp.style.opacity = _noRunoff ? '0.35' : ''; }
+    if (minus) { minus.disabled = _noRunoff; minus.style.opacity = _noRunoff ? '0.35' : ''; }
+    if (plus) { plus.disabled = _noRunoff; plus.style.opacity = _noRunoff ? '0.35' : ''; }
+    if (typeof updateFeedingTargets === 'function') updateFeedingTargets();
+  }
+  function toggleNoRunoff() {
+    _noRunoff = !_noRunoff;
+    applyNoRunoff();
   }
   const STRINGS = {
     ja: {
@@ -1595,13 +1643,13 @@
       'stage.clone':'苗期','stage.veg':'成長期','stage.flower':'開花期','stage.dry':'乾燥','stage.harvest':'収穫',
       'yield.label':'🏆 収量','yield.unit':'g（乾燥重量）',
       'mode.theory':'理論値','mode.myspot':'マイスポット',
-      'feed.title':'栄養素ログ','feed.ec_toggle':'EC 計測','feed.input_ec':'給液EC','feed.runoff_ec':'排液EC',
+      'feed.title':'栄養素ログ','feed.ec_toggle':'EC 計測','feed.input_ec':'給液EC','feed.runoff_ec':'排液EC','feed.no_runoff':'排液なし',
       'feed.press_hold':'長押しで保存',
       'feed.stage_label':'ステージ','feed.nutrient_label':'栄養素',
       'daynightbtn.on':'💡 ライトON','daynightbtn.off':'🌑 ライトOFF','btn.leaf_vpd':'🌿 Leaf VPD','btn.co2':'💨 CO₂',
       'stepper.temp':'温度','stepper.humidity':'湿度','stepper.leafdt':'葉温差','stepper.water':'水温','leaf.offset_hint':'葉温 = 気温 + オフセット',
       'stats.avg_vpd':'平均 VPD','stats.ok_rate':'OK 率','stats.saves':'記録数',
-      'settings.title':'設定','settings.dark_mode':'ダークモード','settings.week_day_count':'週 / 日 カウント',
+      'settings.title':'設定','settings.dark_mode':'ダークモード','settings.week_day_count':'週 / 日 カウント','settings.target_hint':'目標ヒント表示',
       'settings.temperature':'温度単位','settings.language':'言語','settings.add_home':'ホーム画面に追加',
       'settings.backup':'バックアップ','settings.export_json':'JSON 書き出し','settings.export_csv':'CSV 書き出し','settings.import_json':'JSON 読み込み',
       'settings.data':'データ','settings.new_cycle':'新しいサイクル','settings.clear_log':'ログを消去','settings.erase_all':'全データを削除',
@@ -1679,13 +1727,13 @@
       'stage.clone':'Clone','stage.veg':'Veg','stage.flower':'Flower','stage.dry':'Dry','stage.harvest':'Harvest',
       'yield.label':'🏆 Yield','yield.unit':'g (dry weight)',
       'mode.theory':'Theory','mode.myspot':'My Spot',
-      'feed.title':'Nutrient Log','feed.ec_toggle':'EC Measurement','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC',
+      'feed.title':'Nutrient Log','feed.ec_toggle':'EC Measurement','feed.input_ec':'Input EC','feed.runoff_ec':'Runoff EC','feed.no_runoff':'No Runoff',
       'feed.press_hold':'press & hold',
       'feed.stage_label':'Stage','feed.nutrient_label':'Nutrient',
       'daynightbtn.on':'💡 Light ON','daynightbtn.off':'🌑 Light OFF','btn.leaf_vpd':'🌿 Leaf VPD','btn.co2':'💨 CO₂',
       'stepper.temp':'Temp','stepper.humidity':'Humidity','stepper.leafdt':'Leaf ΔT','stepper.water':'Water','leaf.offset_hint':'Leaf Temp = Air Temp + Offset',
       'stats.avg_vpd':'AVG VPD','stats.ok_rate':'OK RATE','stats.saves':'SAVES',
-      'settings.title':'Settings','settings.dark_mode':'Dark Mode','settings.week_day_count':'Week / Day count',
+      'settings.title':'Settings','settings.dark_mode':'Dark Mode','settings.week_day_count':'Week / Day count','settings.target_hint':'Target Hints',
       'settings.temperature':'Temperature','settings.language':'Language','settings.add_home':'Add to Home Screen',
       'settings.backup':'Backup','settings.export_json':'Export JSON','settings.export_csv':'Export CSV','settings.import_json':'Import JSON',
       'settings.data':'Data','settings.new_cycle':'New Cycle','settings.clear_log':'Clear Log','settings.erase_all':'Erase All Data',
@@ -1962,6 +2010,7 @@
       cycle: 1,
       yield: null,
       cycleHistory: [],
+      sharedWaterL: null,
       stageSpots: {},
       logs: []
     };
@@ -2008,7 +2057,7 @@
   function buildTentBar() {
     const bar = document.getElementById('tentBar');
     bar.innerHTML = '';
-    bar.classList.toggle('fill', tents.length <= 3);
+    bar.classList.add('fill');
     tents.forEach((t, i) => {
       const btn = document.createElement('div');
       const isActive = i === currentTent;
@@ -2030,7 +2079,7 @@
       const rawName = t.name || String(i + 1);
       const displayName = rawName.length > 20 ? rawName.slice(0, 20) : rawName;
       const nameFontSize = displayName.length > 8 ? '0.66rem' : displayName.length > 3 ? '0.72rem' : '0.78rem';
-      btn.innerHTML = `<span class="t-name" style="font-size:${nameFontSize};">${displayName}</span><span class="t-stage"><span class="t-vpd" style="background:${dotColor};"></span>${stageLbl}</span>`;
+      btn.innerHTML = `<span class="t-name" style="font-size:${nameFontSize};">${esc(displayName)}</span><span class="t-stage"><span class="t-vpd" style="background:${dotColor};"></span>${stageLbl}</span>`; // v259: escape tent name to prevent stored XSS
 
       // Double-tap → rename / long-press → cancel rename / single tap → select
       let _lastTap = 0;
@@ -2055,6 +2104,11 @@
       addBtn.onclick = addTent;
       bar.appendChild(addBtn);
     }
+    // アクティブなチップをスクロールして表示
+    setTimeout(() => {
+      const activeBtn = bar.querySelector('.tent-btn.active');
+      if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+    }, 50);
   }
 
   async function addTent() {
@@ -2096,6 +2150,8 @@
     tents.splice(i, 1);
     if (currentTent > i) currentTent--;
     if (currentTent >= tents.length) currentTent = Math.max(0, tents.length - 1);
+    _viewCycle = null;          // v252: reset viewed cycle when tent is deleted
+    _cycleHistExpanded = false; // v285: reset on tent delete too
     closeRenameModal();
     buildTentBar();
     loadTentToUI(currentTent);
@@ -2145,6 +2201,7 @@
     const modal = document.getElementById('renameFertilizerModal');
     const input = document.getElementById('renameFertilizerInput');
     const t = tents[currentTent];
+    if (!t) return; // v274: null guard
     input.value = (t.fertilizerList[i].name || (appLang === 'en' ? `NUTRIENT${i + 1}` : `栄養素${i + 1}`));
     modal.style.display = 'flex';
     setTimeout(() => input.focus(), 50);
@@ -2155,6 +2212,7 @@
     const newName = input.value.trim().slice(0, 24);
     if (newName) {
       const t = tents[currentTent];
+      if (!t) return; // v274: null guard
       t.fertilizerList[_renameFertilizerIndex].name = newName;
       await dbPut('tents', t);
       renderFertilizerTabs();
@@ -2175,7 +2233,8 @@
     const _mn = document.getElementById('monitorNoteInput'); if (_mn) { _mn.value = ''; const _mc = document.getElementById('monitorNoteCount'); if (_mc) _mc.textContent = '100'; }
     await saveCurrentTentState();
     currentTent = i;
-    _viewCycle = null;   // テント切替で閲覧サイクルを現在へ戻す
+    _viewCycle = null;       // テント切替で閲覧サイクルを現在へ戻す
+    _cycleHistExpanded = false; // v285: reset expand state on tent switch
     loadTentToUI(i);
     buildTentBar();
     update();
@@ -2189,6 +2248,7 @@
   }
   async function saveCurrentTentState() {
     const t = tents[currentTent];
+    if (!t) return; // v261: guard against undefined tent (mirrors loadTentToUI pattern)
     // 空欄／無効入力の瞬間にテント切替が起きても NaN を永続化しない（直前の良い値を保持）
     const rawTemp = parseFloat(document.getElementById('tempVal').value);
     if (!isNaN(rawTemp)) t.temp = useFahrenheit ? (rawTemp - 32) * 5/9 : rawTemp;
@@ -2208,6 +2268,7 @@
   }
   function loadTentToUI(i) {
     const t = tents[i];
+    if (!t) return; // v248: guard against out-of-bounds index
     const monitorColor = 'var(--accent)';
     ['tempVal','humVal','ppfdVal','co2LevelVal','leafOffsetInput',
      'phInput','ecInput','runoffEcInput','waterTempInput'].forEach(id => {
@@ -2224,8 +2285,10 @@
       ? String(useFahrenheit ? parseFloat((parseFloat(lf.waterTemp) * 9/5 + 32).toFixed(1)) : lf.waterTemp) : '';
     _setFeed('waterTempInput', _wtDisplay);
     // modeInputCache もこのテントの値に同期。もう一方のモードは前テストの値が残らないよう破棄（ステージ既定値へフォールバック）
+    // v257: store as waterTempC (Celsius) to match saveModeInputs/restoreModeInputs contract
+    const _wtC = (lf.waterTemp !== undefined && lf.waterTemp !== null && lf.waterTemp !== '') ? String(lf.waterTemp) : '';
     modeInputCache[spotMode] = {
-      ph: lf.ph ?? '', ec: lf.ec ?? '', runoffEc: lf.runoffEc ?? '', waterTemp: _wtDisplay
+      ph: lf.ph ?? '', ec: lf.ec ?? '', runoffEc: lf.runoffEc ?? '', waterTempC: _wtC
     };
     modeInputCache[spotMode === 'theory' ? 'myspot' : 'theory'] = null;
     document.getElementById('tempVal').value = useFahrenheit ? Math.round(t.temp * 9/5 + 32) : Math.round(t.temp);
@@ -2260,6 +2323,7 @@
     _updateYieldRow();
     const linked = getLinkedDayCountDates(t, t.stage);
     updateStageDayCount(linked.base, linked.end, t.stage);
+    updateFeedingTargets();
   }
 
   // 「+ 開始日を設定」タップ時：入力欄を表示してからネイティブ日付ピッカーを開く。
@@ -2295,6 +2359,7 @@
     const row = document.getElementById('yieldRow');
     if (!row) return;
     const t = tents[currentTent];
+    if (!t) { row.style.display = 'none'; return; } // v276: null guard
     row.style.display = t.stage === 'harvest' ? 'flex' : 'none';
     const inp = document.getElementById('yieldInput');
     if (inp) inp.value = t.yield != null ? t.yield : '';
@@ -2302,6 +2367,7 @@
 
   async function applyYield(v) {
     const t = tents[currentTent];
+    if (!t) return; // v271: null guard
     const n = parseFloat(v);
     t.yield = (!isNaN(n) && n >= 0) ? n : null;
     await dbPut('tents', t);
@@ -2370,6 +2436,7 @@
 
   async function setStage(s) {
     const t = tents[currentTent];
+    if (!t) return; // v278: null guard
     t.stage = s;
     const dateInput = document.getElementById('stageStartDate');
     const savedDate = (t.stageDates && t.stageDates[s]) || '';
@@ -2384,10 +2451,12 @@
     update();
     buildStageTable();
     updateFeedingHeader();
+    updateFeedingTargets(); // v270: refresh target display after stage change
   }
 
   async function clearStageStartDate() {
     const t = tents[currentTent];
+    if (!t) return; // v277: null guard
     if (!t.stageDates) t.stageDates = {};
     if (!t.stageEndDates) t.stageEndDates = {};
     delete t.stageDates[t.stage];
@@ -2399,10 +2468,13 @@
     if (dc) dc.textContent = '';
     _updateClearDateBtn();
     await dbPut('tents', t);
+    if (typeof buildStageTable === 'function') buildStageTable(); // v262: refresh stage date pills
+    dbGetAll('logs').then(renderStageTimeline); // v262: sync timeline after date clear
   }
 
   async function clearAllStageDates() {
     const t = tents[currentTent];
+    if (!t) return; // v277: null guard
     t.stageDates = {};
     t.stageEndDates = {};
     await dbPut('tents', t);
@@ -2423,6 +2495,7 @@
       if (isNaN(d.getTime()) || d > today) { showToast(appLang === 'en' ? '⚠️ Date cannot be in the future' : '⚠️ 未来の日付は設定できません'); return; }
     }
     const t = tents[currentTent];
+    if (!t) return; // v277: null guard
     if (!t.stageDates) t.stageDates = {};
     t.stageDates[t.stage] = val || null;
     recalculateStageEndDates(t);
@@ -2431,6 +2504,8 @@
     const linked = getLinkedDayCountDates(t, t.stage);
     updateStageDayCount(linked.base, linked.end, t.stage);
     updateFeedingHeader();
+    if (typeof buildStageTable === 'function') buildStageTable(); // v262: refresh stage date pills
+    dbGetAll('logs').then(renderStageTimeline); // v262: sync timeline after date apply
   }
 
   function updateStageDayCount(dateStr, endDateStr, stage) {
@@ -2456,6 +2531,7 @@
   }
   async function toggleDayNight() {
     const t = tents[currentTent];
+    if (!t) return; // v279: null guard
     t.dayNight = t.dayNight === 'day' ? 'night' : 'day';
     _updateDayNightBtn(t.dayNight);
     await dbPut('tents', t);
@@ -2469,6 +2545,7 @@
 
   async function toggleLeaf() {
     const t = tents[currentTent];
+    if (!t) return; // v271: null guard
     t.leaf = !t.leaf;
     document.getElementById('btnLeaf').classList.toggle('active-leaf', t.leaf);
     document.getElementById('btnLeaf').setAttribute('aria-pressed', t.leaf);
@@ -2479,6 +2556,7 @@
   }
   async function toggleCO2() {
     const t = tents[currentTent];
+    if (!t) return; // v272: null guard
     t.co2 = !t.co2;
     document.getElementById('btnCO2').classList.toggle('active-co2', t.co2);
     document.getElementById('btnCO2').setAttribute('aria-pressed', t.co2);
@@ -2490,6 +2568,7 @@
     buildStageTable();
   }
   function adjustLeafOffset(delta) {
+    if (!tents[currentTent]) return; // v272: null guard
     let c = tents[currentTent].leafOffset || -2.0;
     c = Math.max(-10, Math.min(10, Math.round((c + delta)*10)/10));
     tents[currentTent].leafOffset = c;
@@ -2503,6 +2582,7 @@
    * deltaは°C単位。
    */
   async function adjustTemp(delta) {
+    if (!tents[currentTent]) return; // v273: null guard
     let c = tents[currentTent].temp;
     if (isNaN(c)) c = 24;
     if (useFahrenheit) {
@@ -2526,6 +2606,7 @@
    * deltaは%RH単位。
    */
   function adjustHum(delta) {
+    if (!tents[currentTent]) return; // v273: null guard
     let val = parseFloat(document.getElementById('humVal').value);
     if (isNaN(val)) val = tents[currentTent].hum;
     val = Math.max(10, Math.min(100, Math.round(val + delta)));
@@ -2534,6 +2615,7 @@
   }
   async function applyLeafOffset(val) {
     const t = tents[currentTent];
+    if (!t) return; // v273: null guard
     let v = parseFloat(String(val).replace(',', '.'));
     if (isNaN(v)) v = -2.0;
     const c = useFahrenheit ? v * 5/9 : v;
@@ -2543,6 +2625,7 @@
   }
 
   async function applyInlineVal(type, val) {
+    if (!tents[currentTent]) return; // v264: null guard
     let v = parseFloat(String(val).replace(',', '.'));
     if (isNaN(v)) {
       // 無効入力は破棄し、表示を現在の保存値へ復元（表示とモデルの乖離を防ぐ）
@@ -2583,6 +2666,7 @@
     document.getElementById('tempUnitLabel').textContent = unit;
     const leafLabel = document.getElementById('leafUnitLabel');
     if (leafLabel) leafLabel.textContent = unit;
+    if (!tents[currentTent]) { _applyUnitUI(); return; } // v275: null guard
     const c = tents[currentTent].temp;
     document.getElementById('tempVal').value = useFahrenheit ? Math.round(c * 9/5 + 32) : Math.round(c);
     const offset = tents[currentTent].leafOffset || -2.0;
@@ -2599,22 +2683,31 @@
     wtInput && (wtInput.placeholder = useFahrenheit ? '68' : '20');
     _applyUnitUI();
     buildMatrix();
+    buildStageTable(); // v284: refresh temp column unit after toggle
+    updateFeedingTargets();
+    if (tents[currentTent]) updateStepperTargetHints(tents[currentTent]); // v304: refresh temp unit in stepper hints
+    dbGetAll('logs').then(renderFeedRecentLogs); // v284: refresh water temp unit in recent logs
   }
 
   /* === Sweet Spot Mode === */
   let spotMode = 'theory';
   let dayCountVisible = localStorage.getItem('dayCountVisible') !== 'false';
+  let targetHintVisible = localStorage.getItem('targetHintVisible') !== 'false';
   let spotTolTemp = parseFloat(localStorage.getItem('spotTolTemp') || '1');
   let spotTolHum  = parseFloat(localStorage.getItem('spotTolHum')  || '3');
   let spotTolPpfd = parseFloat(localStorage.getItem('spotTolPpfd') || '50');
   let modeInputCache = { theory: null, myspot: null };
 
   function saveModeInputs() {
+    // v249: store waterTemp in Celsius to survive unit toggle between mode switches
+    const _wtRaw = document.getElementById('waterTempInput')?.value ?? '';
+    const _wtN = parseFloat(_wtRaw);
+    const _wtC = !_wtRaw || isNaN(_wtN) ? '' : String(useFahrenheit ? Math.round((_wtN - 32) * 5/9 * 10) / 10 : _wtN);
     modeInputCache[spotMode] = {
       ph: document.getElementById('phInput')?.value ?? '',
       ec: document.getElementById('ecInput')?.value ?? '',
       runoffEc: document.getElementById('runoffEcInput')?.value ?? '',
-      waterTemp: document.getElementById('waterTempInput')?.value ?? ''
+      waterTempC: _wtC
     };
   }
 
@@ -2627,11 +2720,17 @@
     const _s = stages[tents[currentTent]?.stage];
     const _defEc = (_s && _s.ecInput && _s.ecInput[1] > 0) ? ((_s.ecInput[0] + _s.ecInput[1]) / 2).toFixed(1) : '1.2';
     const _defRo = (_s && _s.ecRunoff && _s.ecRunoff[1] > 0) ? ((_s.ecRunoff[0] + _s.ecRunoff[1]) / 2).toFixed(1) : '1.4';
-    const vals = cached || { ph: '6.0', ec: _defEc, runoffEc: _defRo, waterTemp: '' };
+    const vals = cached || { ph: '6.0', ec: _defEc, runoffEc: _defRo, waterTempC: '' };
     if (ph) ph.value = vals.ph;
     if (ec) ec.value = vals.ec;
     if (runoff) runoff.value = vals.runoffEc;
-    if (wt) wt.value = vals.waterTemp;
+    // v249: convert cached Celsius back to display unit
+    if (wt) {
+      const _cN = parseFloat(vals.waterTempC);
+      wt.value = (vals.waterTempC !== '' && !isNaN(_cN))
+        ? (useFahrenheit ? parseFloat((_cN * 9/5 + 32).toFixed(1)) : _cN)
+        : '';
+    }
   }
 
   function setSpotMode(mode) {
@@ -2649,10 +2748,11 @@
     const feedBar = document.getElementById('feedingSpotBar');
     if (feedBar) feedBar.style.display = mode === 'myspot' ? 'flex' : 'none';
     const feedRef = document.getElementById('feedingRef');
-    if (feedRef) feedRef.style.display = mode === 'theory' ? '' : 'none';
+    if (feedRef) feedRef.style.display = (mode === 'theory' && !_showEcRows) ? '' : 'none';
     updateSpotDisplay();
     updateFeedingHeader();
     updateFeedingSpotDisplay();
+    updateFeedingTargets();
     update();
   }
 
@@ -2667,7 +2767,7 @@
       if (linked.base) {
         if (t.stage === 'harvest') {
           feedDC.textContent = linked.base.replace(/-/g, '/');
-          feedDC.style.display = '';
+          feedDC.style.display = dayCountVisible ? '' : 'none';
         } else {
         const days = inclusiveDayCount(linked.base, linked.end);
         const week = Math.ceil(days / 7);
@@ -2680,7 +2780,7 @@
     }
     if (refEl) {
       const s = stages[t.stage];
-      if (s && s.ecInput) {
+      if (s && s.ecInput && s.ecInput[1] > 0) {
         refEl.textContent = `${tr('feed.input_ec')}: ${s.ecInput[0]}–${s.ecInput[1]} mS  |  ${tr('feed.runoff_ec')}: ${s.ecRunoff[0]}–${s.ecRunoff[1]} mS`;
       } else {
         refEl.textContent = '';
@@ -2700,6 +2800,34 @@
     return 'ok';
   }
   // pH / 給液EC / 排液EC の入力欄直下に目標を表示し、現在値を範囲内かで色付け
+  function updateStepperTargetHints(t) {
+    const s = stages[t.stage] || {};
+    const th = document.getElementById('tempTargetHint');
+    const hh = document.getElementById('humTargetHint');
+    const ph = document.getElementById('ppfdTargetHint');
+    const pfx = tr('vpd.target') + ' ';
+    if (!targetHintVisible) {
+      if (th) th.textContent = '';
+      if (hh) hh.textContent = '';
+      if (ph) ph.textContent = '';
+      return;
+    }
+    if (th) {
+      if (s.temp) {
+        const lo = useFahrenheit ? Math.round(s.temp[0]*9/5+32) : s.temp[0];
+        const hi = useFahrenheit ? Math.round(s.temp[1]*9/5+32) : s.temp[1];
+        th.textContent = pfx + lo + '–' + hi + (useFahrenheit ? '°F' : '°C');
+      } else { th.textContent = ''; }
+    }
+    if (hh) {
+      hh.textContent = s.hum ? pfx + s.hum[0] + '–' + s.hum[1] + '%RH' : '';
+    }
+    if (ph) {
+      const ppfd = t.co2 ? s.ppfdCo2 : s.ppfd;
+      ph.textContent = (ppfd && ppfd[1] > 0) ? pfx + ppfd[0] + '–' + ppfd[1] + ' µmol' : '';
+    }
+  }
+
   function updateFeedingTargets() {
     const t = tents[currentTent];
     if (!t) return;
@@ -2710,7 +2838,7 @@
       if (!inp) return;
       const has = range && range[1] > 0;
       const v = parseFloat(inp.value || inp.placeholder);
-      if (hint) hint.innerHTML = has ? `${tr('vpd.target')} <b>${range[0].toFixed(1)}–${range[1].toFixed(1)}</b>` : '';
+      if (hint) hint.innerHTML = (has && targetHintVisible) ? `${tr('vpd.target')} <b>${range[0].toFixed(1)}–${range[1].toFixed(1)}</b>` : '';
       const cls = has ? classifyRange(v, range[0], range[1]) : null;
       const col = cls === 'danger' ? 'var(--danger)' : cls === 'warning' ? 'var(--warning,#ff9500)' : 'var(--accent)';
       // stepper-val は -webkit-text-fill-color が効くため両方セット
@@ -2720,6 +2848,22 @@
     apply('phInput', 'phTargetHint', PH_TARGET);
     apply('ecInput', 'ecTargetHint', s.ecInput);
     apply('runoffEcInput', 'runoffTargetHint', s.ecRunoff);
+    // Water temp hint (18–22°C / 64–72°F, fixed range)
+    (() => {
+      const WT_LO_C = 18, WT_HI_C = 22;
+      const lo = useFahrenheit ? Math.round(WT_LO_C * 9/5 + 32) : WT_LO_C;
+      const hi = useFahrenheit ? Math.round(WT_HI_C * 9/5 + 32) : WT_HI_C;
+      const inp = document.getElementById('waterTempInput');
+      const hint = document.getElementById('waterTempTargetHint');
+      if (hint) hint.innerHTML = targetHintVisible ? `${tr('vpd.target')} <b>${lo}–${hi}</b>` : '';
+      if (inp) {
+        const v = parseFloat(inp.value || inp.placeholder);
+        const cls = !isNaN(v) ? classifyRange(v, lo, hi) : null;
+        const col = cls === 'danger' ? 'var(--danger)' : cls === 'warning' ? 'var(--warning,#ff9500)' : 'var(--accent)';
+        inp.style.color = col;
+        inp.style.webkitTextFillColor = col;
+      }
+    })();
   }
 
 
@@ -2733,6 +2877,7 @@
     if (phEl.value && wtEl?.value && ecEl?.value) return; // already filled
     dbGetAll('logs').then(all => {
       const tent = tents[currentTent];
+      if (!tent) return; // v280: null guard (async callback — tent may have changed)
       const last = all.filter(l => l.tentId === tent.id && (Number(l.cycle)||1) === (Number(tent.cycle)||1) && (l.ph || l.waterTemp || l.ec))
                       .sort((a, b) => (b.ts || 0) - (a.ts || 0))[0];
       if (!last) return;
@@ -2740,6 +2885,7 @@
       if (wtEl && !wtEl.value && last.waterTemp != null) { wtEl.value = useFahrenheit ? parseFloat((last.waterTemp * 9/5 + 32).toFixed(1)) : last.waterTemp; }
       if (ecEl && !ecEl.value && last.ec)              { ecEl.value = last.ec; }
       if (roEl && !roEl.value && last.runoffEc)        { roEl.value = last.runoffEc; }
+      updateFeedingTargets();
     });
   }
 
@@ -2751,6 +2897,7 @@
     const content = document.getElementById('fertTabContent');
     if (!bar || !content) return;
     const t = tents[currentTent];
+    if (!t) return; // v276: null guard
     const list = t.fertilizerList || [];
 
     // タブバー
@@ -2770,7 +2917,8 @@
 
     // タブコンテンツ
     const f = list[currentFertTab];
-    const ratio = (f.waterL != null && f.waterL > 0 && f.amountMl != null && f.amountMl !== '') ? (f.amountMl / f.waterL).toFixed(2) : '—';
+    const sharedW = t.sharedWaterL;
+    const ratio = (sharedW != null && sharedW > 0 && f.amountMl != null && f.amountMl !== '') ? (f.amountMl / sharedW).toFixed(2) : '—';
     content.style.display = 'block';
     content.innerHTML = `
       <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);border-radius:10px;padding:10px 12px;position:relative;">
@@ -2779,8 +2927,8 @@
           <div>
             <div style="font-size:0.62rem;color:var(--text2);margin-bottom:3px;">${tr('fert.water_lbl')}</div>
             <div style="display:flex;align-items:baseline;gap:3px;">
-              <input value="${f.waterL ?? ''}" placeholder="0" type="number" min="0" step="0.5" oninput="updateFertilizer(${currentFertTab},'waterL',this.value)"
-                style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.18);color:var(--text);font-size:0.9rem;outline:none;text-align:right;padding:3px 0;">
+              <input value="${esc(String(sharedW ?? ''))}" placeholder="0" type="number" min="0" step="0.5" oninput="updateSharedWater(this.value)"
+                style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.18);color:var(--text);font-size:1.1rem;font-weight:600;outline:none;text-align:right;padding:3px 0;font-family:'Rajdhani',-apple-system,sans-serif;">
               <span style="font-size:0.62rem;color:var(--text2);white-space:nowrap;">L</span>
             </div>
           </div>
@@ -2788,15 +2936,15 @@
             <div style="font-size:0.62rem;color:var(--accent);font-weight:700;margin-bottom:3px;">${tr('fert.amount_lbl')}</div>
             <div style="display:flex;align-items:baseline;gap:3px;">
               <input value="${f.amountMl ?? ''}" placeholder="0" type="number" min="0" step="0.5" oninput="updateFertilizer(${currentFertTab},'amountMl',this.value)"
-                style="width:100%;background:transparent;border:none;border-bottom:1.5px solid rgba(0,255,136,0.5);color:var(--accent);font-size:1.5rem;font-weight:700;outline:none;text-align:right;padding:2px 0;font-family:'Rajdhani',-apple-system,sans-serif;">
-              <span style="font-size:0.72rem;color:var(--accent);white-space:nowrap;font-weight:600;">ml</span>
+                style="width:100%;background:transparent;border:none;border-bottom:1.5px solid rgba(0,255,136,0.5);color:var(--accent);font-size:1.1rem;font-weight:600;outline:none;text-align:right;padding:3px 0;font-family:'Rajdhani',-apple-system,sans-serif;">
+              <span style="font-size:0.62rem;color:var(--accent);white-space:nowrap;font-weight:600;">ml</span>
             </div>
           </div>
           <div>
             <div style="font-size:0.62rem;color:var(--text2);margin-bottom:3px;">${tr('fert.dilution_lbl')}</div>
             <div style="display:flex;align-items:baseline;gap:3px;">
-              <span style="color:var(--text);font-size:0.9rem;font-weight:600;">${ratio}</span>
-              <span style="font-size:0.6rem;color:var(--text2);white-space:nowrap;">ml/L</span>
+              <span style="color:var(--text);font-size:1.1rem;font-weight:600;font-family:'Rajdhani',-apple-system,sans-serif;">${ratio}</span>
+              <span style="font-size:0.62rem;color:var(--text2);white-space:nowrap;">ml/L</span>
             </div>
           </div>
         </div>
@@ -2813,7 +2961,7 @@
           const ml = parseFloat(x.amountMl);
           if (isNaN(ml) || ml <= 0) return '';
           totalMl += ml;
-          const r = (x.waterL > 0) ? (ml / x.waterL).toFixed(2) : null;
+          const r = (sharedW > 0) ? (ml / sharedW).toFixed(2) : null;
           const active = i === currentFertTab;
           return `<div class="fert-recipe-row" onclick="selectFertTab(${i})" style="cursor:pointer;${active ? 'outline:1px solid rgba(0,255,136,0.4);' : ''}"><span class="frn">${esc(nameOf(x, i))}</span><span class="frv">${ml}<small> ml${r ? ` · ${r} ml/L` : ''}</small></span></div>`;
         }).join('');
@@ -2829,6 +2977,10 @@
   function selectFertTab(idx) {
     currentFertTab = idx;
     renderFertilizerTabs();
+    setTimeout(() => {
+      const bar = document.getElementById('fertTabBar');
+      if (bar) { const active = bar.querySelector('.active-day'); if (active) active.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' }); }
+    }, 30);
   }
 
   function selectFertilizerTabAndEdit(idx) {
@@ -2839,6 +2991,7 @@
 
   async function addFertilizer() {
     const t = tents[currentTent];
+    if (!t) return; // v279: null guard
     if (!t.fertilizerList) t.fertilizerList = [];
     if (t.fertilizerList.length >= 10) { showToast(appLang === 'en' ? 'Max 10 nutrients per tent' : '栄養素は最大10個まで'); return; }
     const nextNum = t.fertilizerList.length + 1;
@@ -2850,6 +3003,7 @@
 
   async function removeFertilizer(idx) {
     const t = tents[currentTent];
+    if (!t) return; // v279: null guard
     if (!t.fertilizerList) return;
     t.fertilizerList.splice(idx, 1);
     if (currentFertTab >= t.fertilizerList.length) currentFertTab = Math.max(0, t.fertilizerList.length - 1);
@@ -2858,8 +3012,22 @@
   }
 
   let fertSaveTimer = null;
+  function updateSharedWater(val) {
+    const t = tents[currentTent];
+    if (!t) return; // v279: null guard
+    t.sharedWaterL =(val === '' || val === null) ? null : (isNaN(parseFloat(val)) ? null : parseFloat(val));
+    clearTimeout(fertSaveTimer);
+    const _savedTentIdx = currentTent;
+    fertSaveTimer = setTimeout(async () => {
+      if (tents[currentTent] === t && currentTent === _savedTentIdx) {
+        await dbPut('tents', t);
+        renderFertilizerTabs();
+      }
+    }, 600);
+  }
   function updateFertilizer(idx, key, val) {
     const t = tents[currentTent];
+    if (!t) return; // v279: null guard
     if (!t.fertilizerList || !t.fertilizerList[idx]) return;
     t.fertilizerList[idx][key] = key === 'name' ? val : (val === '' || val === null ? null : isNaN(parseFloat(val)) ? null : parseFloat(val));
     clearTimeout(fertSaveTimer);
@@ -2874,10 +3042,12 @@
 
   async function saveStageSpot() {
     const t = tents[currentTent];
+    if (!t) return; // v263: null guard (mirrors saveCurrentTentState pattern)
     if (!t.stageSpots) t.stageSpots = {};
     t.stageSpots[t.stage] = { temp: t.temp, hum: t.hum, ppfd: t.ppfd };
     await dbPut('tents', t);
     updateSpotDisplay();
+    updateFeedingTargets(); // v263: refresh feeding target display after spot save
     update();
     const dispT = useFahrenheit ? Math.round(t.temp * 9/5 + 32) + '°F' : t.temp + '°C';
     showToast(appLang === 'en' ? `📌 Spot saved: ${dispT} / ${t.hum}% / ${t.ppfd}µmol` : `📌 スポット保存: ${dispT} / ${t.hum}% / ${t.ppfd}µmol`);
@@ -2885,9 +3055,11 @@
 
   async function deleteStageSpot() {
     const t = tents[currentTent];
+    if (!t) return; // v263: null guard
     if (t.stageSpots) delete t.stageSpots[t.stage];
     await dbPut('tents', t);
     updateSpotDisplay();
+    updateFeedingTargets(); // v263: refresh feeding target display after spot delete
     update();
   }
 
@@ -2908,6 +3080,7 @@
 
     async function deleteAllSpots() {
       const t = tents[currentTent];
+      if (!t) return; // v277: null guard
       t.stageSpots = {};
       await dbPut('tents', t);
       updateSpotDisplay();
@@ -2972,6 +3145,7 @@
 
   async function saveFeedingSpot() {
     const t = tents[currentTent];
+    if (!t) return; // v277: null guard
     if (!t.stageSpots) t.stageSpots = {};
     // placeholder は「例示値」なので保存対象にしない（空欄はそのまま未設定に）
     const _fv = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
@@ -2982,11 +3156,11 @@
     if (!isNaN(ph)) spot.ph = ph;
     if (!isNaN(ec)) spot.ec = ec;
     if (!isNaN(runoffEc)) spot.runoffEc = runoffEc;
-    const fertilizers = (t.fertilizerList || []).filter(f => f.waterL || f.amountMl);
+    const fertilizers = (t.fertilizerList || []).filter(f => f.amountMl);
     if (fertilizers.length) {
       spot.fertilizers = fertilizers.map(f => ({
         name: f.name,
-        waterL: f.waterL,
+        waterL: t.sharedWaterL,
         amountMl: f.amountMl
       }));
     }
@@ -2999,6 +3173,7 @@
 
   async function deleteFeedingSpot() {
     const t = tents[currentTent];
+    if (!t) return; // v278: null guard
     if (t.stageSpots && t.stageSpots[t.stage]) {
       delete t.stageSpots[t.stage].ph;
       delete t.stageSpots[t.stage].ec;
@@ -3012,6 +3187,7 @@
 
   async function deleteAllFeedingSpots() {
     const t = tents[currentTent];
+    if (!t) return; // v277: null guard
     if (t.stageSpots) {
       Object.keys(t.stageSpots).forEach(k => {
         delete t.stageSpots[k].ph;
@@ -3084,6 +3260,7 @@
     if (spotMode !== 'myspot') { bar.style.display = 'none'; return; }
     bar.style.display = 'flex';
     const t = tents[currentTent];
+    if (!t) { bar.style.display = 'none'; return; } // v278: null guard
     const spot = t.stageSpots && t.stageSpots[t.stage];
     const delBtn = document.getElementById('deleteFeedingSpotBtn');
     const hasFeedingData = spot && (spot.ph != null || spot.ec != null || spot.runoffEc != null);
@@ -3094,9 +3271,10 @@
     }
     if (delBtn) delBtn.style.display = 'flex';
     const parts = [];
-    if (spot.ph != null) parts.push(`pH ${spot.ph}`);
-    if (spot.ec != null) parts.push(`EC ${spot.ec}mS`);
-    if (spot.runoffEc != null) parts.push(`Runoff ${spot.runoffEc}mS`);
+    const _sph = parseFloat(spot.ph), _sec = parseFloat(spot.ec), _sroff = parseFloat(spot.runoffEc); // v296: parseFloat guards
+    if (!isNaN(_sph)) parts.push(`pH ${_sph}`);
+    if (!isNaN(_sec)) parts.push(`EC ${_sec}mS`);
+    if (!isNaN(_sroff)) parts.push(`Runoff ${_sroff}mS`);
     let html = `📌 ${parts.join(' / ')}`;
     if (spot.fertilizers && spot.fertilizers.length) {
       const fertParts = spot.fertilizers.map(f => {
@@ -3114,6 +3292,7 @@
     const infoEl = document.getElementById('spotInfo');
     if (!infoEl || spotMode !== 'myspot') return;
     const t = tents[currentTent];
+    if (!t) return; // v268: null guard (mirrors saveStageSpot pattern)
     const spot = t.stageSpots && t.stageSpots[t.stage];
     const delBtn = document.getElementById('deleteSpotBtn');
     if (!spot) {
@@ -3122,23 +3301,25 @@
       return;
     }
     if (delBtn) delBtn.style.display = 'flex';
-    if (spot.temp == null || spot.hum == null) { infoEl.innerHTML = `<span style="color:rgba(255,255,255,0.45);">${tr('spot.unsaved')}</span>`; return; }
-    const dTc = parseFloat((t.temp - spot.temp).toFixed(1));
-    const dH = Math.round(t.hum - spot.hum);
-    const dP = Math.round(t.ppfd - (spot.ppfd || 0));
+    const _sTemp = parseFloat(spot.temp), _sHum = parseFloat(spot.hum), _sPpfd = parseFloat(spot.ppfd || 0); // v296: parseFloat guards
+    if (isNaN(_sTemp) || isNaN(_sHum)) { infoEl.innerHTML = `<span style="color:rgba(255,255,255,0.45);">${tr('spot.unsaved')}</span>`; return; }
+    const dTc = parseFloat((t.temp - _sTemp).toFixed(1));
+    const dH = Math.round(t.hum - _sHum);
+    const dP = Math.round(t.ppfd - _sPpfd);
     const fmt = (v, thr, unit) => {
       const cls = Math.abs(v) <= thr ? 'on' : 'off';
       return `<span class="spot-delta ${cls}">${v > 0 ? '+' : ''}${v}${unit}</span>`;
     };
-    const spotTempDisp = useFahrenheit ? Math.round(spot.temp * 9/5 + 32) + '°F' : spot.temp + '°C';
+    const spotTempDisp = useFahrenheit ? Math.round(_sTemp * 9/5 + 32) + '°F' : _sTemp + '°C';
     const dTDisp = useFahrenheit ? (dTc * 9/5).toFixed(1) : dTc;
     const dTUnit = useFahrenheit ? '°F' : '°C';
-    infoEl.innerHTML = `${tr('spot.label')}${spotTempDisp} / ${spot.hum}% / ${spot.ppfd}µmol &nbsp;|&nbsp; ${fmt(parseFloat(dTDisp), useFahrenheit ? 1.8 : 1, dTUnit)} ${fmt(dH,3,'%')} ${fmt(dP,50,'µmol')}`;
+    infoEl.innerHTML = `${tr('spot.label')}${spotTempDisp} / ${_sHum}% / ${_sPpfd}µmol &nbsp;|&nbsp; ${fmt(parseFloat(dTDisp), useFahrenheit ? 1.8 : 1, dTUnit)} ${fmt(dH,3,'%')} ${fmt(dP,50,'µmol')}`;
   }
 
   /* === DLI & lux→PPFD 変換 === */
   function updateDli() {
     const t = tents[currentTent];
+    if (!t) return; // v271: null guard
     const h = t.photoperiod || 18;
     const lbl = document.getElementById('photoperiodLabel');
     if (lbl) lbl.textContent = h;
@@ -3162,6 +3343,7 @@
   }
   async function cyclePhotoperiod() {
     const t = tents[currentTent];
+    if (!t) return; // v272: null guard
     const opts = [12, 18, 20, 24];
     const cur = opts.indexOf(t.photoperiod || 18);
     t.photoperiod = opts[(cur + 1) % opts.length];
@@ -3199,6 +3381,7 @@
     if (!ppfd) return;
     ppfd = Math.max(0, Math.min(2000, ppfd)); // PPFD入力欄と同じ上限でクランプ
     const t = tents[currentTent];
+    if (!t) return; // v278: null guard
     t.ppfd = ppfd;
     const inp = document.getElementById('ppfdVal');
     if (inp) inp.value = ppfd;
@@ -3227,7 +3410,7 @@
     stopLightMeter();
     try {
       _lmStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+        video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
       });
       const video = document.getElementById('lmVideo');
       video.srcObject = _lmStream;
@@ -3288,6 +3471,7 @@
 
   function _lmUpdateZoneBar(ppfd) {
     const t = tents[currentTent];
+    if (!t) return; // v278: null guard
     const range = getPpfdRange(t.stage, t.co2);
     const wrap = document.getElementById('lmZoneWrap');
     if (!wrap || !range || range[1] === 0) { if (wrap) wrap.style.display = 'none'; return; }
@@ -3324,6 +3508,7 @@
     closeLightMeter();
     if (!ppfd) return;
     const t = tents[currentTent];
+    if (!t) return; // v278: null guard
     t.ppfd = ppfd;
     const inp = document.getElementById('ppfdVal');
     if (inp) inp.value = ppfd;
@@ -3351,15 +3536,17 @@
       _decoyTorchStream.getTracks().forEach(t => t.stop());
       _decoyTorchStream = null;
     }
+    if (!document.hidden) _resumeReminder(); // v252: recalc watering timer on foreground resume
   });
 
   /* === VPD計算および表示 === */
   function update() {
     const t = tents[currentTent];
+    if (!t) return; // v270: null guard — update() called everywhere; must not crash on empty tent list
     const temp = t.temp;
     const hum  = t.hum;
     const airV = calcVPD(temp, hum);
-    const leafV= Math.max(0, calcLeafVPD(temp, hum, t.leafOffset));
+    const leafV = Math.max(0, calcLeafVPD(temp, hum, t.leafOffset ?? -2));
     document.getElementById('vpdAir').textContent  = isNaN(airV)  ? '--' : airV.toFixed(2);
     document.getElementById('vpdLeaf').textContent = isNaN(leafV) ? '--' : leafV.toFixed(2);
     document.getElementById('leafBlock').style.opacity = t.leaf ? '1' : '0.6';
@@ -3407,8 +3594,8 @@
       badge.classList.add('status-danger','pulse');
       badge.textContent = check < lo ? tr('vpd.too_low') : tr('vpd.too_high');
       const ppfdRange = getPpfdRange(t.stage, t.co2);
-      const ecIn = parseFloat(document.getElementById('ecInput')?.value) || null;
-      const ecRun = parseFloat(document.getElementById('runoffEcInput')?.value) || null;
+      const ecIn = (() => { const n = parseFloat(document.getElementById('ecInput')?.value); return isNaN(n) ? null : n; })();
+      const ecRun = (() => { const n = parseFloat(document.getElementById('runoffEcInput')?.value); return isNaN(n) ? null : n; })();
       renderActionButtons(generateAction(check, lo, hi, temp, hum, Number(t.ppfd || 0), t.dayNight === 'night' ? null : ppfdRange, ecIn, ecRun), recEl);
     } else if (state === 'warning') {
       badge.classList.add('status-warning');
@@ -3417,7 +3604,7 @@
     } else {
       badge.classList.add('status-ok');
       badge.textContent = tr('vpd.ok');
-      recEl.innerHTML = `<span style="color:var(--ok);font-size:0.72rem;">${tr('stage.'+t.stage)||(stages[t.stage]||{}).name||t.stage}${tr('vpd.rec_ok')}</span>`;
+      recEl.innerHTML = `<span style="color:var(--ok);font-size:0.72rem;">${esc(tr('stage.'+t.stage)||(stages[t.stage]||{}).name||t.stage)}${tr('vpd.rec_ok')}</span>`; // v260: esc stage label (XSS via malicious backup)
     }
 
     // Air VPD は常に主役（大）。Leaf VPD は常に副役（小）。
@@ -3431,7 +3618,9 @@
     }
     // 目標ゾーンの数値ラベル（例: 目標 0.80–1.10 kPa）
     const tgtLabel = document.getElementById('vpdTargetLabel');
-    if (tgtLabel) tgtLabel.innerHTML = `${tr('vpd.target')} <b>${lo.toFixed(2)}–${hi.toFixed(2)}</b> kPa`;
+    if (tgtLabel) tgtLabel.innerHTML = targetHintVisible ? `${tr('vpd.target')} <b>${lo.toFixed(2)}–${hi.toFixed(2)}</b> kPa` : '';
+    // ステッパー行目標ヒント (temp / hum / ppfd)
+    updateStepperTargetHints(t);
 
     // My Spot mode override
     if (spotMode === 'myspot') {
@@ -3525,6 +3714,7 @@
   }
 
   function adjustCurrentPpfd(delta) {
+    if (!tents[currentTent]) return; // v274: null guard
     let val = parseInt(document.getElementById('ppfdVal').value || '0', 10);
     if (isNaN(val)) val = tents[currentTent].ppfd || 0;
     val = Math.max(0, Math.min(2000, Math.round((val + delta) / 10) * 10));
@@ -3534,6 +3724,7 @@
 
   async function adjustCo2Level(delta) {
     const t = tents[currentTent];
+    if (!t) return; // v274: null guard
     const v = Math.max(400, Math.min(1500, ((t.co2Level || 1000) + delta)));
     t.co2Level = v;
     document.getElementById('co2LevelVal').value = v;
@@ -3542,6 +3733,7 @@
   }
   async function applyCo2Level(val) {
     const t = tents[currentTent];
+    if (!t) return; // v274: null guard
     let v = parseInt(val, 10);
     if (isNaN(v)) v = 1000;
     v = Math.max(400, Math.min(1500, Math.round(v / 100) * 100));
@@ -3645,9 +3837,9 @@
     const temps = tempsC;
     hums.forEach(h => {
       html += `<tr><td style="${stickyTD}">${h}%</td>`;
-      const tent = tents[currentTent];
-      const curTemp = Math.round(tent.temp || 25);
-      const curHum5 = Math.round((tent.hum || 60) / 5) * 5;
+      const tent = tents[currentTent]; // v265: use optional chaining so matrix renders even with null tent
+      const curTemp = Math.round((tent?.temp) || 25);
+      const curHum5 = Math.round(((tent?.hum) || 60) / 5) * 5;
       temps.forEach(t => {
         const v = calcVPD(t, h);
         let bg;
@@ -3713,6 +3905,7 @@
         // GROW GALLERY: 写真のみのログを直接保存
         try {
           const t = tents[currentTent];
+          if (!t) return; // v278: null guard
           const now = new Date();
           const ts = now.toLocaleString('ja-JP');
           const log = {
@@ -3728,10 +3921,13 @@
             photo: compressed, fertilizers: []
           };
           await dbPut('logs', log);
+          t.logs = t.logs || [];
           t.logs.push(log.id);
           await dbPut('tents', t);
           const allLogs = await dbGetAll('logs');
           renderStageTimeline(allLogs);
+          renderVpdStats(allLogs); // v283: sync stats after direct photo log save
+          renderVpdSparkline(allLogs); // v288: sync sparkline after gallery photo save (log has vpd)
           _photoSource = 'log';
         } catch(err) {
           showToast(appLang === 'en' ? '⚠️ Failed to save photo' : '⚠️ 写真の保存に失敗しました');
@@ -3773,6 +3969,7 @@
 
     const _saveIdx = currentTent;
     const t = tents[_saveIdx];
+    if (!t) return; // v266: null guard (mirrors saveCurrentTentState pattern)
     const id = Date.now() + '-' + t.id;
     const log = {
       id,
@@ -3798,6 +3995,7 @@
       photo: pendingPhoto,
       fertilizers: (t.fertilizerList || []).filter(f => f.name || f.amountMl)
     };
+    t.logs = t.logs || [];
     t.logs.push(log.id);
     // Save後も入力値をテントに紐付けて保持（タブ切替後も残る）
     t.lastFeeding = {
@@ -3811,10 +4009,11 @@
     if (feedNoteEl) { feedNoteEl.value = ''; const fc = document.getElementById('feedingNoteCount'); if (fc) fc.textContent = '100'; }
     clearPhoto();
     buildTentBar();
-    dbGetAll('logs').then(logs => {  // 1回取得して3レンダーで共有
+    dbGetAll('logs').then(logs => {  // 1回取得して4レンダーで共有
       renderFeedRecentLogs(logs);
       renderVpdSparkline(logs);
       renderVpdStats(logs);
+      renderStageTimeline(logs); // v286: sync Analysis tab after feeding log save
     });
     const fertNames = (log.fertilizers || []).map(f => esc(f.name)).filter(Boolean).join('、');
     const dispTemp = useFahrenheit ? (log.temp * 9/5 + 32).toFixed(1) + '°F' : log.temp + '°C';
@@ -3838,6 +4037,7 @@
     (preloaded ? Promise.resolve(preloaded) : dbGetAll('logs')).then(all => {
       if (_sparkIdx !== currentTent) return;
       const tent = tents[currentTent];
+      if (!tent) return; // v255: null guard to match renderVpdStats pattern
       const rows = all.filter(r => r.tentId === tent.id && (Number(r.cycle)||1) === (Number(tent.cycle)||1) && r.vpd != null)
                       .sort((a,b) => (a.ts||0)-(b.ts||0)).slice(-10);
       if (rows.length < 2) { svg.innerHTML = ''; if (wrap) wrap.style.display = 'none'; if (label) label.textContent = ''; return; }
@@ -3979,13 +4179,14 @@
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           ${recent.map(l => {
+            const _rid = String(l.id).replace(/'/g, "\\'"); // v285: quote-escape for onclick
             const date = l.timestamp ? l.timestamp.replace(/\d{4}\//, '').replace(/:\d{2}$/, '') : '—';
             const stage = (stages[l.stage] ? tr('stage.'+l.stage)||stages[l.stage].name : l.stage) || '—';
             const parts = [];
             if (l.vpd != null) parts.push(`VPD <strong style="color:var(--accent)">${parseFloat(l.vpd).toFixed(2)}</strong>`);
-            if (l.ph) parts.push(`pH <strong style="color:var(--text)">${l.ph}</strong>`);
-            if (l.waterTemp != null) { const _wt = useFahrenheit ? (l.waterTemp * 9/5 + 32).toFixed(1) : l.waterTemp; parts.push(`${tr('recent.water_temp')} <strong style="color:var(--text)">${_wt}${useFahrenheit ? '°F' : '°C'}</strong>`); }
-            if (l.ec) parts.push(`EC <strong style="color:var(--text)">${l.ec}</strong>${l.runoffEc ? `→${l.runoffEc}` : ''}`);
+            const _ph = parseFloat(l.ph); if (!isNaN(_ph)) parts.push(`pH <strong style="color:var(--text)">${_ph}</strong>`); // v293: parseFloat guards against crafted-backup XSS
+            if (l.waterTemp != null) { const _wtRaw = parseFloat(l.waterTemp); if (!isNaN(_wtRaw)) { const _wt = useFahrenheit ? (_wtRaw * 9/5 + 32).toFixed(1) : _wtRaw; parts.push(`${tr('recent.water_temp')} <strong style="color:var(--text)">${_wt}${useFahrenheit ? '°F' : '°C'}</strong>`); } }
+            const _ec = parseFloat(l.ec); const _roff = parseFloat(l.runoffEc); if (!isNaN(_ec)) parts.push(`EC <strong style="color:var(--text)">${_ec}</strong>${!isNaN(_roff) ? `→${_roff}` : ''}`);
             const fertLine = (l.fertilizers && l.fertilizers.length)
               ? l.fertilizers.filter(f => f.name || f.amountMl).map(f => esc(f.name || '?') + (f.amountMl != null ? ` ${f.amountMl}ml` : '')).join('　')
               : '';
@@ -4000,7 +4201,7 @@
                   <div style="font-size:0.6rem;color:var(--accent);font-weight:600;">${esc(stage)}</div>
                   <div style="font-size:0.55rem;color:var(--muted);">${esc(date)}</div>
                 </div>
-                <button onclick="deleteLogEntry(${l.id})" style="background:none;border:none;color:var(--muted);font-size:0.9rem;cursor:pointer;padding:2px 4px;line-height:1;" title="${tr('confirm.ok_btn')}">✕</button>
+                <button onclick="deleteLogEntry('${_rid}')" style="background:none;border:none;color:var(--muted);font-size:0.9rem;cursor:pointer;padding:2px 4px;line-height:1;" title="${tr('confirm.ok_btn')}">✕</button>
               </div>
             </div>`;
           }).join('')}
@@ -4113,7 +4314,7 @@
     const input = document.getElementById('runoffEcInput');
     let val = parseFloat(input.value || input.placeholder || '0');
     if (isNaN(val)) val = 0;
-    val = Math.max(0, Math.round((val + delta) * 10) / 10);
+    val = Math.max(0, Math.min(10, Math.round((val + delta) * 10) / 10)); // v250: add max cap
     input.value = val.toFixed(1);
     updateFeedingTargets();
   }
@@ -4122,6 +4323,7 @@
   // 過去ログは残したまま（cycleタグで分離）、ステージ・日付・収量をリセットして次のサイクルを開始
   async function startNewCycle() {
     const t = tents[currentTent];
+    if (!t) return; // v269: null guard (mirrors saveCurrentTentState pattern)
     const cur = t.cycle || 1;
     const yieldNote = t.yield != null
       ? (appLang === 'en' ? `\n(Yield ${t.yield}g recorded)` : `\n（収量 ${t.yield}g を記録済み）`)
@@ -4140,7 +4342,8 @@
       stageEndDates: t.stageEndDates ? { ...t.stageEndDates } : {}
     });
     t.cycle = cur + 1;
-    _viewCycle = null;   // 新サイクル開始時は現在サイクルを表示
+    _viewCycle = null;          // 新サイクル開始時は現在サイクルを表示
+    _cycleHistExpanded = false; // v285: collapse history on new cycle
     t.stage = 'clone';
     t.stageDates = {};
     t.stageEndDates = {};
@@ -4199,10 +4402,11 @@
   }
 
   async function deleteLogEntry(id) {
+    const dbKey = /^\d+$/.test(String(id)) ? Number(id) : id;
     if (!(await customConfirm(tr('confirm.delete_log')))) return;
-    await dbDelete('logs', id);
+    await dbDelete('logs', dbKey);
     const t = tents[currentTent];
-    if (t) { t.logs = (t.logs || []).filter(lid => String(lid) !== String(id)); await dbPut('tents', t); }
+    if (t) { t.logs = (t.logs || []).filter(lid => String(lid) !== String(dbKey)); await dbPut('tents', t); }
     buildTentBar();
     dbGetAll('logs').then(logs => {  // 1回取得して全レンダーで共有
       renderFeedRecentLogs(logs);
@@ -4214,6 +4418,7 @@
   }
 
   async function clearLogs(skipConfirm = false) {
+    if (!tents[currentTent]) return; // v274: null guard
     const tentName = tents[currentTent].name || `Tent ${currentTent + 1}`;
     if (!skipConfirm && !(await customConfirm(tr('confirm.clear_logs').replace('${name}', tentName)))) return;
     const logs = await dbGetAll('logs');
@@ -4227,6 +4432,7 @@
     tents[currentTent].co2Level = 1000;
     tents[currentTent].leafOffset = -2.0;
     tents[currentTent].stageDates = {};
+    tents[currentTent].stageEndDates = {}; // v285: also reset end-dates so Analysis tab doesn't show stale values
     tents[currentTent].stageSpots = {};
     recalculateStageEndDates(tents[currentTent]);
     await dbPut('tents', tents[currentTent]);
@@ -4272,11 +4478,12 @@
     const max = useFahrenheit ? 104 : 40;
     val = Math.max(min, Math.min(max, Math.round((val + step) * 10) / 10));
     input.value = val.toFixed(1);
+    updateFeedingTargets();
   }
 
   /* === Backup機能 === */
   // エクスポート／インポート両方で使う設定キーのホワイトリスト（信頼境界）
-  const SETTINGS_KEYS = ['appLang','vpdTheme','dayCountVisible','spotTolTemp','spotTolHum','spotTolPpfd','dryTemp','dryHum','dryVpd','showEcRows','aiEnabled','lmUrl','useFahrenheit'];
+  const SETTINGS_KEYS = ['appLang','vpdTheme','dayCountVisible','targetHintVisible','spotTolTemp','spotTolHum','spotTolPpfd','dryTemp','dryHum','dryVpd','showEcRows','aiEnabled','lmUrl','useFahrenheit'];
   async function exportData() {
     const tentsData = tents.slice();
     const logs = await dbGetAll('logs');
@@ -4355,11 +4562,30 @@
           const t = data.tents[i];
           if (!STAGE_ORDER.includes(t.stage)) t.stage = 'veg';
           if (t.fertilizerList) t.fertilizerList = _sanitizeFerts(t.fertilizerList);
+          if (t.yield != null) t.yield = _numOrNull(t.yield); // v295: guard yield against crafted-backup XSS
+          if (t.sharedWaterL != null) t.sharedWaterL = _numOrNull(t.sharedWaterL); // v306: sanitize sharedWaterL — prevents value-attribute injection XSS
+          if (Array.isArray(t.cycleHistory)) {
+            t.cycleHistory.forEach(h => {
+              if (!h) return;
+              if (h.yield != null) h.yield = _numOrNull(h.yield);
+              // v305: sanitize h.cycle — prevents onclick injection in renderCycleHistory
+              h.cycle = Math.max(1, parseInt(h.cycle, 10) || 1);
+            });
+          }
           if (t.stageSpots && typeof t.stageSpots === 'object') {
             Object.keys(t.stageSpots).forEach(k => {
               const sp = t.stageSpots[k];
               if (sp && sp.fertilizers) sp.fertilizers = _sanitizeFerts(sp.fertilizers);
+              if (sp) ['temp','hum','ppfd','ph','ec','runoffEc'].forEach(f => { if (sp[f] != null) sp[f] = _numOrNull(sp[f]); }); // v296
             });
+          }
+          // v297: sanitize stageDates/stageEndDates — only allow YYYY-MM-DD format
+          const _isDate = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+          const _sanitizeDateMap = obj => { if (!obj || typeof obj !== 'object') return {}; const r = {}; Object.keys(obj).forEach(k => { if (_isDate(obj[k])) r[k] = obj[k]; }); return r; };
+          t.stageDates = _sanitizeDateMap(t.stageDates);
+          t.stageEndDates = _sanitizeDateMap(t.stageEndDates);
+          if (Array.isArray(t.cycleHistory)) {
+            t.cycleHistory.forEach(h => { if (h) { h.stageDates = _sanitizeDateMap(h.stageDates); h.stageEndDates = _sanitizeDateMap(h.stageEndDates); } });
           }
           await dbPut('tents', t);
           tents.push(t);
@@ -4374,6 +4600,20 @@
           if (log && log.fertilizers) log.fertilizers = _sanitizeFerts(log.fertilizers);
           // 写真は data:image/ のデータURLのみ許可（改変バックアップからの属性ブレイクアウトXSS防止）
           if (log && log.photo && !/^data:image\//.test(String(log.photo))) log.photo = null;
+          // v261: sanitize log.stage (mirrors tent stage sanitization at line 4457)
+          if (log && !STAGE_ORDER.includes(log.stage)) log.stage = 'veg';
+          // v285: sanitize log.id — only alphanumeric/hyphen/dot allowed; regenerate if crafted to prevent onclick-injection XSS
+          if (log && !/^[\w.\-]+$/.test(String(log.id ?? ''))) {
+            log.id = Date.now() + '-import-' + Math.floor(Math.random() * 1e6);
+          }
+          // v293: sanitize numeric log fields — prevents XSS from crafted backup JSON where ph/ec/vpd/etc hold HTML strings
+          if (log) {
+            ['ph','ec','runoffEc','waterTemp','vpd','temp','hum','ppfd','leafVpd','co2val','leafOffset'].forEach(k => {
+              if (log[k] != null) log[k] = _numOrNull(log[k]);
+            });
+            // v299: sanitize timestamp — only allow digits, slashes, spaces, colons (ja-JP locale format); reject HTML-injected strings
+            if (log.timestamp != null && !/^[\d\/\s:]+$/.test(String(log.timestamp))) log.timestamp = '';
+          }
           await dbPut('logs', log);
         }
         // Restore settings from backup
@@ -4398,6 +4638,7 @@
           renderVpdSparkline(logs);
           renderVpdStats(logs);
           renderFeedRecentLogs(logs);
+          renderStageTimeline(logs); // v283: sync Analysis timeline after import
         });
         showToast(tr('toast.import_ok'));
       } else {
@@ -4419,7 +4660,21 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       const ov = document.getElementById('photoOverlay');
-      if (ov && ov.style.display !== 'none') closeOverlay();
+      if (ov && ov.style.display !== 'none') { closeOverlay(); return; }
+      // v300: close rename / edit-log / AI chat modals on Escape (UX: all dialogs should respond to Escape)
+      const rn = document.getElementById('renameModal');
+      if (rn && rn.style.display === 'flex') { closeRenameModal(); return; }
+      const rf = document.getElementById('renameFertilizerModal');
+      if (rf && rf.style.display === 'flex') { closeRenameFertilizerModal(); return; }
+      const el = document.getElementById('editLogModal');
+      if (el && el.style.display === 'flex') { closeEditLogModal(); return; }
+      const ac = document.getElementById('aiChatModal');
+      if (ac && ac.style.display === 'flex') { closeAiChat(); return; }
+      // v302: settings panel and lux converter also close on Escape
+      const sm = document.getElementById('settingsModal');
+      if (sm && sm.classList.contains('open')) { sm.classList.remove('open'); return; }
+      const lx = document.getElementById('luxModal');
+      if (lx && lx.style.display !== 'none') { closeLuxConverter(); return; }
     }
   });
 
@@ -4489,7 +4744,7 @@ function classifyVpd(vpd, lo, hi) {
     const priority = [];
 
     const tempUnit = useFahrenheit ? '°F' : '°C';
-    const tempDelta = useFahrenheit ? 1.8 : 1.0;
+    const tempDelta = 1.0;
     if (vpd > vpdMax) {
       const adj = calcHumAdjust(vpd, vpdMax);
       priority.push({ rank: 1, text: `${tr('action.hum_up')}${adj}%`, fn: () => { adjustHumidity(adj); } });
@@ -4648,13 +4903,14 @@ function classifyVpd(vpd, lo, hi) {
     const showAll = _cycleHistExpanded || viewedHidden || overflow <= 0;
     const visibleRows = showAll ? rows : rows.slice(0, COLLAPSED_MAX);
     const rowHtml = r => {
-      const isViewed = r.cycle === _ac;
-      const yieldTxt = r.yield != null ? `${r.yield}g` : '—';
+      const safeCycle = parseInt(r.cycle, 10) || 1; // v305: render-site guard against non-numeric cycle
+      const isViewed = safeCycle === _ac;
+      const yieldTxt = (r.yield != null && !isNaN(parseFloat(r.yield))) ? `${parseFloat(r.yield)}g` : '—'; // v295: parseFloat guard
       const isBest = best != null && r.yield === best && r.yield > 0;
       const daysTxt = r.days != null ? `${r.days}${dLabel}` : '—';
       const curTag = r.current ? `<span style="font-size:0.6rem;color:var(--accent);margin-left:5px;">●</span>` : '';
-      return `<div onclick="setViewCycle(${r.cycle})" style="display:flex;justify-content:space-between;align-items:center;padding:7px 8px;border-radius:8px;margin-bottom:4px;cursor:pointer;background:${isViewed ? 'rgba(52,199,89,0.12)' : 'rgba(255,255,255,0.04)'};border:1px solid ${isViewed ? 'rgba(52,199,89,0.3)' : 'transparent'};">
-        <span style="font-size:0.78rem;font-weight:700;color:var(--text);">${appLang === 'en' ? 'Cycle' : 'サイクル'} ${r.cycle}${curTag}</span>
+      return `<div onclick="setViewCycle(${safeCycle})" style="display:flex;justify-content:space-between;align-items:center;padding:7px 8px;border-radius:8px;margin-bottom:4px;cursor:pointer;background:${isViewed ? 'rgba(52,199,89,0.12)' : 'rgba(255,255,255,0.04)'};border:1px solid ${isViewed ? 'rgba(52,199,89,0.3)' : 'transparent'};">
+        <span style="font-size:0.78rem;font-weight:700;color:var(--text);">${appLang === 'en' ? 'Cycle' : 'サイクル'} ${safeCycle}${curTag}</span>
         <span style="display:flex;gap:12px;align-items:center;">
           <span style="font-size:0.7rem;color:var(--text2);">${daysTxt}</span>
           <span style="font-size:0.82rem;font-weight:700;color:${isBest ? 'var(--accent)' : 'var(--text)'};">${isBest ? '🏆 ' : ''}${yieldTxt}</span>
@@ -4678,6 +4934,7 @@ function classifyVpd(vpd, lo, hi) {
     const el = document.getElementById('stageTimeline');
     if (!el) return;
     const t = tents[currentTent];
+    if (!t) { el.innerHTML = ''; return; } // v267: null guard (prevents crash when no tent is active)
     const order = STAGE_ORDER;
     renderCycleSelector();
     renderCycleHistory();
@@ -4794,7 +5051,7 @@ function classifyVpd(vpd, lo, hi) {
                   const tl = `${pt.getHours()}:${String(pt.getMinutes()).padStart(2,'0')}`;
                   const pid = String(p.id).replace(/'/g, "\\'");
                   const pNote = p.note ? `<div style="font-size:0.6rem;color:var(--text2);text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📝 ${esc(p.note)}</div>` : '';
-                  photosHtml += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;cursor:pointer;" onclick="event.stopPropagation();editLog('${pid}')"><img src="${esc(p.photo)}" style="width:88px;height:88px;object-fit:cover;border-radius:7px;" onclick="event.stopPropagation();(()=>{document.getElementById('overlayImg').src=this.src;document.getElementById('photoOverlay').style.display='flex';})()"><span style="font-size:0.6rem;opacity:0.7;">${tl}</span>${pNote}<button onclick="event.stopPropagation();deleteGalleryPhoto('${p.id}')" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(255,60,60,0.85);border:none;color:#fff;font-size:0.55rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>`;
+                  photosHtml += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;cursor:pointer;" onclick="event.stopPropagation();editLog('${pid}')"><img src="${esc(p.photo)}" style="width:88px;height:88px;object-fit:cover;border-radius:7px;" onclick="event.stopPropagation();(()=>{document.getElementById('overlayImg').src=this.src;document.getElementById('photoOverlay').style.display='flex';})()"><span style="font-size:0.6rem;opacity:0.7;">${tl}</span>${pNote}<button onclick="event.stopPropagation();deleteGalleryPhoto('${pid}')" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(255,60,60,0.85);border:none;color:#fff;font-size:0.55rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>`;
                 });
                 photosHtml += `</div>`;
               }
@@ -4806,8 +5063,8 @@ function classifyVpd(vpd, lo, hi) {
             const isPhotoOnly = false;
             const isMonitor = l.type === 'monitor';
             const details = isMonitor
-              ? [l.temp ? `${useFahrenheit ? Math.round(l.temp * 9/5 + 32) + '°F' : (Math.round(l.temp * 10) / 10) + '°C'}` : '', l.hum ? `${Math.round(l.hum)}%` : '', l.leafVpd ? `VPD ${l.leafVpd}` : '', l.ppfd ? `PPFD ${l.ppfd}` : ''].filter(Boolean).join('　')
-              : [l.ph ? `pH ${l.ph}` : '', l.waterTemp != null ? `💧${useFahrenheit ? (l.waterTemp * 9/5 + 32).toFixed(1) : l.waterTemp}${useFahrenheit ? '°F' : '°C'}` : '', l.ec ? `EC ${l.ec}` : '', l.runoffEc ? `→${l.runoffEc}` : ''].filter(Boolean).join('　');
+              ? [l.temp ? `${useFahrenheit ? Math.round(l.temp * 9/5 + 32) + '°F' : (Math.round(l.temp * 10) / 10) + '°C'}` : '', l.hum ? `${Math.round(l.hum)}%` : '', !isNaN(parseFloat(l.leafVpd)) ? `VPD ${parseFloat(l.leafVpd)}` : '', !isNaN(parseFloat(l.ppfd)) ? `PPFD ${parseFloat(l.ppfd)}` : ''].filter(Boolean).join('　') // v293: parseFloat guards against crafted-backup XSS
+              : [!isNaN(parseFloat(l.ph)) ? `pH ${parseFloat(l.ph)}` : '', l.waterTemp != null && !isNaN(parseFloat(l.waterTemp)) ? `💧${useFahrenheit ? (parseFloat(l.waterTemp) * 9/5 + 32).toFixed(1) : parseFloat(l.waterTemp)}${useFahrenheit ? '°F' : '°C'}` : '', !isNaN(parseFloat(l.ec)) ? `EC ${parseFloat(l.ec)}` : '', !isNaN(parseFloat(l.runoffEc)) ? `→${parseFloat(l.runoffEc)}` : ''].filter(Boolean).join('　');
             const label = isMonitor ? '📊' : '💧';
             const fertTags = !isMonitor && l.fertilizers && l.fertilizers.length
               ? `<div style="display:flex;justify-content:flex-end;opacity:1;font-size:0.72rem;color:var(--text);margin-top:0;padding-right:0;width:100%;box-sizing:border-box;">${(l.fertilizers).map(f => `${esc(f.name || '?')}${f.amountMl ? ' ' + esc(String(f.amountMl)) + 'ml' : ''}`).join('　')}</div>`
@@ -4821,7 +5078,7 @@ function classifyVpd(vpd, lo, hi) {
                 onclick="event.stopPropagation();(function(el){if(el._nt)return;el._nt=setTimeout(function(){el._nt=null;editLog('${logId}')},300)})(this)"
                 style="${hidden ? 'display:none;' : ''}padding:4px 0;border-bottom:1px solid rgba(127,127,127,0.2);font-size:0.72rem;color:var(--text);cursor:pointer;">
               <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="opacity:0.85;white-space:nowrap;margin-right:6px;">${fmtTsParts(l.timestamp).date} ${label} ${fmtTsParts(l.timestamp).time}</span>
+                <span style="opacity:0.85;white-space:nowrap;margin-right:6px;">${esc(fmtTsParts(l.timestamp).date)} ${label} ${esc(fmtTsParts(l.timestamp).time)}</span>
                 <span style="text-align:right;opacity:1;flex:1;">${details}</span>
               </div>${fertTags}${noteHtml}${photoThumb}
             </div>`;
@@ -4839,7 +5096,7 @@ function classifyVpd(vpd, lo, hi) {
               <span style="font-size:0.8rem;font-weight:${isCurrent ? '700' : '600'};color:${isCurrent ? color : 'var(--text)'};">${tr('stage.'+key)||s.name}${isCurrent ? ' ◀' : ''}</span>
               <span style="display:flex;align-items:center;gap:6px;">
                 <span style="font-size:0.72rem;color:var(--text);opacity:0.9;white-space:nowrap;">
-                  <span style="opacity:${isCurrent ? '0.9' : '0.4'};">${dateStr ? dateStr.replace(/-/g, '/') : (key === 'harvest' ? '' : '—')}</span>${daysText ? `　<span style="color:var(--accent);font-weight:700;opacity:${isCurrent ? '1' : '0.4'};">${daysText}</span>` : ''}${key === 'harvest' && _cycleYield != null ? `　<span style="color:var(--accent);font-weight:700;">🏆 ${esc(String(_cycleYield))}g</span>` : ''}
+                  <span style="opacity:${isCurrent ? '0.9' : '0.4'};">${dateStr ? esc(dateStr).replace(/-/g, '/') : (key === 'harvest' ? '' : '—')}</span>${daysText ? `　<span style="color:var(--accent);font-weight:700;opacity:${isCurrent ? '1' : '0.4'};">${daysText}</span>` : ''}${key === 'harvest' && _cycleYield != null ? `　<span style="color:var(--accent);font-weight:700;">🏆 ${esc(String(_cycleYield))}g</span>` : ''}
                 </span>
                 ${dateStr ? `<span id="sicon-${key}" style="font-size:0.75rem;color:var(--accent);opacity:0.7;cursor:pointer;background:rgba(52,199,89,0.1);border-radius:4px;padding:1px 5px;font-weight:700;">▶</span>` : ''}
               </span>
@@ -4861,10 +5118,15 @@ function classifyVpd(vpd, lo, hi) {
     const scrollY = window.scrollY;
     const dbKey = /^\d+$/.test(id) ? Number(id) : id;
     await dbDelete('logs', dbKey);
-    // BUG-1 fix: ログ削除はログ削除だけに留め、ステージ開始日 (stageDates) には触れない。
-    // stageDates を消したい場合は setStage() 側で行う。
+    // v254: sync tent.logs array to remove deleted log ID (matches deleteLogEntry pattern)
+    const _t = tents[currentTent];
+    if (_t) { _t.logs = (_t.logs || []).filter(lid => String(lid) !== String(dbKey)); await dbPut('tents', _t); }
+    // stageDates には触れない — ステージ開始日の変更は setStage() 側で行う。
     const logs = await dbGetAll('logs');
     renderStageTimeline(logs);
+    renderVpdStats(logs); // v282: sync stats after stage log delete
+    renderFeedRecentLogs(logs); // v288: sync Recent Feeds when feeding log deleted from Analysis tab
+    renderVpdSparkline(logs); // v290: sync sparkline after stage log delete (log has vpd)
     openStages.forEach(id => {
       const el = document.getElementById(id);
       const key = id.replace('slog-', '');
@@ -4895,7 +5157,7 @@ function classifyVpd(vpd, lo, hi) {
     const row = (label, fid, val, unit, step='any') =>
       `<div style="display:grid;grid-template-columns:96px 1fr 36px;gap:8px;align-items:center;margin-bottom:8px;">
          <label style="font-size:0.75rem;color:var(--text);">${label}</label>
-         <input id="${fid}" type="number" step="${step}" value="${val ?? ''}"
+         <input id="${fid}" type="number" step="${step}" value="${esc(val ?? '')}"
                 style="background:transparent;border:none;border-bottom:1px solid var(--muted);color:var(--accent);font-size:0.95rem;outline:none;padding:4px 0;">
          <span style="font-size:0.7rem;color:var(--text);opacity:0.7;">${unit}</span>
        </div>`;
@@ -4933,7 +5195,7 @@ function classifyVpd(vpd, lo, hi) {
           rows += `<div style="display:grid;grid-template-columns:1fr 70px 30px;gap:6px;align-items:center;margin-bottom:6px;">
             <input id="el_fert_name_${i}" value="${esc(f.name || '')}" maxlength="24"
                    style="background:transparent;border:none;border-bottom:1px solid var(--muted);color:var(--accent);font-size:0.85rem;outline:none;padding:3px 0;">
-            <input id="el_fert_amt_${i}" type="number" step="0.5" value="${f.amountMl || ''}"
+            <input id="el_fert_amt_${i}" type="number" step="0.5" value="${f.amountMl != null && !isNaN(parseFloat(f.amountMl)) ? parseFloat(f.amountMl) : ''}"
                    style="background:transparent;border:none;border-bottom:1px solid var(--muted);color:var(--accent);font-size:0.85rem;outline:none;padding:3px 0;text-align:right;">
             <span style="font-size:0.65rem;color:var(--text);opacity:0.7;">ml</span>
           </div>`;
@@ -5051,10 +5313,11 @@ function classifyVpd(vpd, lo, hi) {
     const dbKey = /^\d+$/.test(id) ? Number(id) : id;
     await dbDelete('logs', dbKey);
     const t = tents[currentTent];
-    t.logs = (t.logs || []).filter(lid => String(lid) !== String(dbKey));
-    await dbPut('tents', t);
+    if (t) { t.logs = (t.logs || []).filter(lid => String(lid) !== String(dbKey)); await dbPut('tents', t); }
     const allLogs = await dbGetAll('logs');
     renderStageTimeline(allLogs);
+    renderVpdStats(allLogs); // v282: sync stats after gallery photo delete
+    renderVpdSparkline(allLogs); // v289: sync sparkline after gallery photo delete (log has vpd)
     openStages.forEach(sid => {
       const el = document.getElementById(sid);
       const key = sid.replace('slog-', '');
@@ -5384,7 +5647,7 @@ function classifyVpd(vpd, lo, hi) {
     if (!setup) return;
     const set = _pinIsSet();
     const lbl = setup.querySelector('span');
-    if (lbl) lbl.textContent = set ? tr('settings.change_pin') : tr('settings.set_pin');
+    if (lbl) { const k = set ? 'settings.change_pin' : 'settings.set_pin'; lbl.dataset.i18n = k; lbl.textContent = tr(k); }
     const removeRow = document.getElementById('pinRemoveRow');
     if (remove) remove.style.display = set ? '' : 'none';
     if (removeRow) removeRow.style.display = set ? '' : 'none';
@@ -5457,6 +5720,13 @@ function classifyVpd(vpd, lo, hi) {
           delete t.stageSpots[old]; dirty = true;
         }
       });
+      // migrate: 旧 fertilizerList[].waterL → sharedWaterL
+      if (t.sharedWaterL == null && Array.isArray(t.fertilizerList)) {
+        const firstW = t.fertilizerList.find(f => f.waterL != null && f.waterL !== '');
+        if (firstW) { t.sharedWaterL = parseFloat(firstW.waterL) || null; dirty = true; }
+        t.fertilizerList.forEach(f => { delete f.waterL; });
+        if (t.fertilizerList.some(f => 'waterL' in f)) dirty = true;
+      }
       if (dirty) await dbPut('tents', t);
     }
     tents = allTents;
@@ -5494,9 +5764,15 @@ function classifyVpd(vpd, lo, hi) {
     document.getElementById('decoyScreen').style.display = 'flex';
     const btn = document.getElementById('decoyPowerBtn');
     // タップ＝点灯/消灯、2秒長押し＝PIN入力（またはそのまま本体へ）
+    // v308: _longPressFired フラグで長押しとタップを区別。iOS では touchcancel が
+    //       touchend より先に来て _decoyHoldTimer が null になるケースがあるため
+    //       click を fallback にし、touchstart で prevented でも発火させる。
+    let _longPressFired = false;
     const startHold = () => {
+      _longPressFired = false;
       _decoyHoldTimer = setTimeout(() => {
         _decoyHoldTimer = null;
+        _longPressFired = true;
         _showDecoyPin();
       }, 2000);
     };
@@ -5507,9 +5783,19 @@ function classifyVpd(vpd, lo, hi) {
         if (toggle) _decoyToggleLight();
       }
     };
+    // touchstart: preventDefault でスクロール抑止。長押しタイマー開始。
     btn.addEventListener('touchstart', e => { e.preventDefault(); startHold(); }, { passive: false });
-    btn.addEventListener('touchend',   e => { e.preventDefault(); endHold(true); });
-    btn.addEventListener('touchcancel',() => endHold(false));
+    // touchend: 通常タップで endHold。preventDefault しないと iOS が click を発火し二重発火するため防止。
+    btn.addEventListener('touchend', e => { e.preventDefault(); endHold(true); });
+    // touchcancel: iOS でシステム割込み時に発火。タイマーをキャンセルするが toggle はしない。
+    //   → 長押し未発火なら click が後続するので click 側で拾う。
+    btn.addEventListener('touchcancel', () => {
+      if (_decoyHoldTimer) { clearTimeout(_decoyHoldTimer); _decoyHoldTimer = null; }
+    });
+    // click: iOS PWA で touchcancel→touchend の順で来た場合の fallback。
+    //        touchend で preventDefault した場合 click は来ないが、
+    //        touchcancel 後は click が来ることがある。長押しでなければトグル。
+    btn.addEventListener('click', () => { if (!_longPressFired) _decoyToggleLight(); _longPressFired = false; });
     btn.addEventListener('mousedown',  startHold);
     btn.addEventListener('mouseup',    () => endHold(true));
     btn.addEventListener('mouseleave', () => endHold(false));
@@ -5637,7 +5923,7 @@ function classifyVpd(vpd, lo, hi) {
   }
 
   async function _realInit() {
-    await initDB();
+    try { await initDB(); } catch (_) { showToast(appLang === 'en' ? '⚠️ Storage unavailable — open in a non-private window' : '⚠️ ストレージが使用できません。プライベート以外のウインドウでお試しください'); return; } // v298: show error instead of silent crash when IndexedDB is blocked
     // restore theme
     if (localStorage.getItem('vpdTheme') === 'light') {
       document.body.classList.add('light-mode');
@@ -5755,12 +6041,28 @@ function classifyVpd(vpd, lo, hi) {
       renderVpdSparkline(logs);
       renderStageTimeline(logs);
     });
-    updateStageSelector(tents[currentTent].stage);
-    _updateDayNightBtn(tents[currentTent].dayNight || 'day');
+    if (tents[currentTent]) { // v274: null guard
+      updateStageSelector(tents[currentTent].stage);
+      _updateDayNightBtn(tents[currentTent].dayNight || 'day');
+    }
     const rl = document.getElementById('reminderLabel');
     if (rl) rl.textContent = tr('reminder.label');
     updateFeedingHeader();
     renderFertilizerTabs();
+    updateFeedingTargets();
+  }
+  function _updateTargetHintToggleUI() {
+    const thumb = document.getElementById('targetHintThumb');
+    const track = document.getElementById('targetHintToggle');
+    if (thumb) thumb.style.left = targetHintVisible ? '22px' : '2px';
+    if (track) track.style.background = targetHintVisible ? 'var(--accent)' : 'rgba(255,255,255,0.15)';
+  }
+  function toggleTargetHint() {
+    targetHintVisible = !targetHintVisible;
+    localStorage.setItem('targetHintVisible', targetHintVisible);
+    _updateTargetHintToggleUI();
+    updateFeedingTargets();
+    update();
   }
   function openSettings() {
     document.getElementById('settingsModal').classList.add('open');
@@ -5769,6 +6071,7 @@ function classifyVpd(vpd, lo, hi) {
     const dcth = document.getElementById('dayCountThumb');
     if (dcth) dcth.style.left = dayCountVisible ? '22px' : '2px';
     if (dct) dct.style.background = dayCountVisible ? 'var(--accent)' : 'rgba(255,255,255,0.15)';
+    _updateTargetHintToggleUI();
     _updateDecoyToggleUI();
     _applyUnitUI();
     applyLang();
@@ -5781,8 +6084,10 @@ function classifyVpd(vpd, lo, hi) {
     if (thumb) thumb.style.left = dayCountVisible ? '22px' : '2px';
     if (track) track.style.background = dayCountVisible ? 'var(--accent)' : 'rgba(255,255,255,0.15)';
     updateFeedingHeader();
-    const dc = document.getElementById('stageDayCount');
-    if (dc && dc.textContent) dc.style.display = dayCountVisible ? '' : 'none';
+    const t = tents[currentTent];
+    if (!t) return; // v278: null guard
+    const linked = getLinkedDayCountDates(t, t.stage);
+    updateStageDayCount(linked.base, linked.end, t.stage);
   }
   /* === デコイ起動画面 設定トグル === */
   const _decoyEnabled = () => localStorage.getItem('decoyMode') === 'true';
@@ -5817,7 +6122,7 @@ function classifyVpd(vpd, lo, hi) {
     const tc = document.getElementById('tab-' + target);
     if (tc) tc.classList.add('active');
     if (target === 'monitor') { renderVpdSparkline(); }
-    if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); renderFeedRecentLogs(); prefillLastWatering(); }
+    if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); updateFeedingTargets(); renderFeedRecentLogs(); prefillLastWatering(); }
     if (target === 'analysis') { dbGetAll('logs').then(logs => { renderStageTimeline(logs); renderVpdStats(logs); renderVpdSparkline(logs); }); }
     if (target === 'table') { buildStageTable(); buildMatrix(); }
     // AI Chat FAB: show only on analysis/table tabs (avoid conflicting with inline AI buttons)
@@ -5834,7 +6139,7 @@ function classifyVpd(vpd, lo, hi) {
       tab.classList.add('active');
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.getElementById('tab-' + target).classList.add('active');
-      if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); renderFeedRecentLogs(); }
+      if (target === 'log') { updateFeedingHeader(); updateFeedingSpotDisplay(); renderFertilizerTabs(); restoreModeInputs(spotMode); updateFeedingTargets(); renderFeedRecentLogs(); }
       if (target === 'analysis') { dbGetAll('logs').then(logs => { renderStageTimeline(logs); }); }
       if (target === 'table') { buildStageTable(); buildMatrix(); }
     };
@@ -5866,6 +6171,7 @@ function classifyVpd(vpd, lo, hi) {
   let _aiEnabled = localStorage.getItem('aiEnabled') === 'true';
   const _aiChatHistory = [];
   let _aiChatInFlight = false;
+  let _aiChatAbortCtrl = null; // v253: abort on modal close
 
   function applyAiToggle() {
     const sw = document.getElementById('aiToggleSwitch');
@@ -5894,12 +6200,14 @@ function classifyVpd(vpd, lo, hi) {
       : (appLang === 'en' ? 'AI Advice disabled' : 'AI アドバイス OFF'));
   }
 
-  async function askLLM(messages) {
-    const base = (localStorage.getItem('lmUrl') || 'http://localhost:11234').replace(/\/$/, '');
+  async function askLLM(messages, externalSignal) {
+    const base = (localStorage.getItem('lmUrl') || 'http://localhost:1234').replace(/\/$/, '');
     let res;
     // 到達不能なサーバでfetchが無限に待機して入力欄が固まるのを防ぐ（30秒で中断）
     const _ctrl = new AbortController();
     const _to = setTimeout(() => _ctrl.abort(), 30000);
+    // v253: forward external abort (e.g. modal close) to internal controller
+    if (externalSignal) externalSignal.addEventListener('abort', () => _ctrl.abort(), { once: true });
     try {
       res = await fetch(base + '/v1/chat/completions', {
         method: 'POST',
@@ -5910,6 +6218,9 @@ function classifyVpd(vpd, lo, hi) {
       });
     } catch(e) {
       if (e.name === 'AbortError') {
+        // v282: 外部シグナル（モーダル閉じ）による中断は AbortError のままリスロー→sendAiChat がサイレント処理
+        // タイムアウトによる中断のみ Error に変換してエラーメッセージを表示する
+        if (externalSignal && externalSignal.aborted) throw e;
         throw new Error('Timeout — LM Studio did not respond within 30s');
       }
       // CORS or network error（メッセージ文言はロケール/エンジン依存なので name で判定）
@@ -5943,6 +6254,7 @@ function classifyVpd(vpd, lo, hi) {
 
   async function runAiAdvice() {
     const t = tents[currentTent];
+    if (!t) return; // v279: null guard
     const vpdVal = document.getElementById('vpdAir') ? document.getElementById('vpdAir').textContent : '—';
     const stage = stages[t.stage] ? stages[t.stage].name : t.stage;
     const btn = document.querySelector('#aiAdvicePanel button');
@@ -5953,9 +6265,13 @@ function classifyVpd(vpd, lo, hi) {
     if (btn) btn.disabled = true;
     const _dispTemp = useFahrenheit ? `${Math.round(t.temp * 9/5 + 32)}°F` : `${t.temp}°C`;
     const _sysLang2 = appLang === 'en' ? 'Always respond in English.' : 'Always respond in Japanese.';
-    const prompt = `You are a cannabis grow expert. Current conditions:
-Stage: ${stage} | Temp: ${_dispTemp} | RH: ${t.hum}% | VPD: ${vpdVal} kPa | PPFD: ${t.ppfd} µmol | ${t.dayNight === 'night' ? 'Night' : 'Day'} | CO2: ${t.co2 ? 'ON' : 'OFF'}
-Give 2-3 concise, actionable tips to optimize this environment. Be specific with numbers. Max 120 words.`;
+    const _stAdv = stages[t.stage];
+    const _vpdTarget = _stAdv ? `${_stAdv.vpd[0]}–${_stAdv.vpd[1]} kPa` : '0.8–1.2 kPa';
+    const _ppfdRange = _stAdv && _stAdv.ppfd[1] > 0
+      ? `${_stAdv.ppfd[0]}–${t.co2 ? _stAdv.ppfdCo2[1] : _stAdv.ppfd[1]} µmol` : 'N/A';
+    const prompt = `Cannabis grow environment review:
+Stage: ${stage} | Temp: ${_dispTemp} | RH: ${t.hum}% | VPD: ${vpdVal} kPa (target: ${_vpdTarget}) | PPFD: ${t.ppfd} µmol (target: ${_ppfdRange}) | ${t.dayNight === 'night' ? 'Night' : 'Day'} | CO2: ${t.co2 ? 'ON' : 'OFF'}
+Give 2-3 actionable tips to reach the targets. Be specific with numbers. Do not recommend CO2 above 1500 ppm. Max 120 words.`;
     try {
       const reply = await askLLM([{ role: 'system', content: `You are a concise, expert cannabis cultivation assistant. ${_sysLang2}` }, { role: 'user', content: prompt }]);
       result.textContent = reply;
@@ -5968,6 +6284,7 @@ Give 2-3 concise, actionable tips to optimize this environment. Be specific with
 
   async function runAiFeeding() {
     const t = tents[currentTent];
+    if (!t) return; // v279: null guard
     const stage = stages[t.stage] ? stages[t.stage].name : t.stage;
     const ec = document.getElementById('ecInput') ? document.getElementById('ecInput').value : '—';
     const runoff = document.getElementById('runoffEcInput') ? document.getElementById('runoffEcInput').value : '—';
@@ -5981,9 +6298,12 @@ Give 2-3 concise, actionable tips to optimize this environment. Be specific with
     if (btn) btn.disabled = true;
     const _wtUnit = useFahrenheit ? '°F' : '°C';
     const _sysLang3 = appLang === 'en' ? 'Always respond in English.' : 'Always respond in Japanese.';
+    const _stFeed = stages[t.stage];
+    const _ecTgt = _stFeed && _stFeed.ecInput[1] > 0 ? `${_stFeed.ecInput[0]}–${_stFeed.ecInput[1]} mS` : '—';
+    const _roTgt = _stFeed && _stFeed.ecRunoff[1] > 0 ? `${_stFeed.ecRunoff[0]}–${_stFeed.ecRunoff[1]} mS` : '—';
     const prompt = `Cannabis feeding review:
-Stage: ${stage} | Input EC: ${ec} mS | Runoff EC: ${runoff} mS | pH: ${ph} | Water Temp: ${waterTemp}${_wtUnit}
-Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed. Max 100 words.`;
+Stage: ${stage} | Input EC: ${ec} mS (target: ${_ecTgt}) | Runoff EC: ${runoff} mS (target: ${_roTgt}) | pH: ${ph} (optimal: soil 6.0–6.5 / hydro 5.8–6.2) | Water Temp: ${waterTemp}${_wtUnit} (optimal: 18–22°C)
+Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if needed. Max 100 words.`;
     try {
       const reply = await askLLM([{ role: 'system', content: `You are a concise, expert cannabis cultivation assistant. ${_sysLang3}` }, { role: 'user', content: prompt }]);
       result.textContent = reply;
@@ -6002,6 +6322,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
     _aiChatHistory.length = 0;
     const wrap = document.getElementById('aiChatMessages');
     if (wrap) wrap.innerHTML = '';
+    const inp = document.getElementById('aiChatInput'); if (inp) inp.value = ''; // v258: clear unsent input on reopen
     const _sysLang = appLang === 'en' ? 'Always respond in English.' : 'Always respond in Japanese.';
     const _greeting = appLang === 'en' ? 'Hello! Ask me anything about VPD, nutrients, grow stages, or plant health.' : 'こんにちは！VPD・栄養素・栽培ステージ・植物の健康について何でも聞いてください。';
     _aiChatHistory.push({ role: 'system', content: `You are a concise cannabis cultivation expert. ${_sysLang} Answer questions about VPD, nutrients, growing stages, and plant health. Keep answers under 150 words.` });
@@ -6012,6 +6333,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
   function closeAiChat() {
     const modal = document.getElementById('aiChatModal');
     if (modal) modal.style.display = 'none';
+    if (_aiChatAbortCtrl) { _aiChatAbortCtrl.abort(); _aiChatAbortCtrl = null; } // v253
   }
 
   function appendChatBubble(role, text) {
@@ -6035,6 +6357,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
     input.value = '';
     input.disabled = true;
     _aiChatInFlight = true;
+    _aiChatAbortCtrl = new AbortController(); // v253
     appendChatBubble('user', text);
     _aiChatHistory.push({ role: 'user', content: text });
     const typing = appendChatBubble('assistant', '…');
@@ -6042,11 +6365,14 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
       // system(先頭) は常に保持し、残りは直近9件。slice(-10)だと会話が伸びるとsystemが脱落し言語指定が消える
       const _sys = _aiChatHistory[0];
       const _recent = _aiChatHistory.slice(1).slice(-9);
-      const reply = await askLLM(_sys ? [_sys, ..._recent] : _recent);
+      const reply = await askLLM(_sys ? [_sys, ..._recent] : _recent, _aiChatAbortCtrl.signal);
       _aiChatHistory.push({ role: 'assistant', content: reply });
       if (typing) typing.textContent = reply;
     } catch(e) {
-      if (typing) {
+      // v253: AbortError means modal was closed — silently remove typing indicator
+      if (e.name === 'AbortError') {
+        if (typing) typing.remove();
+      } else if (typing) {
         typing.textContent = appLang === 'en' ? '⚠ Cannot connect to LM Studio. Check URL in Settings.' : '⚠ LM Studio に接続できません。設定でURLを確認してください。';
         // タップで消せるようにする
         typing.style.cursor = 'pointer';
@@ -6054,6 +6380,7 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
       }
     } finally {
       _aiChatInFlight = false;
+      _aiChatAbortCtrl = null; // v253
       input.disabled = false;
       input.focus();
     }
@@ -6083,16 +6410,19 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
       btn.classList.remove('holding');
     }
   }
+  let _savePopupTimer = null; // v251
   function showSavePopup(title, lines) {
     document.getElementById('savePopupTitle').textContent = title;
     document.getElementById('savePopupBody').innerHTML = lines.map(l => `<div>${l}</div>`).join('');
     document.getElementById('savePopup').classList.add('show');
-    setTimeout(() => document.getElementById('savePopup').classList.remove('show'), 3000);
+    clearTimeout(_savePopupTimer);
+    _savePopupTimer = setTimeout(() => document.getElementById('savePopup').classList.remove('show'), 3000);
   }
 
   /* === Monitor ログ保存 === */
   async function saveMonitorLog() {
     const t = tents[currentTent];
+    if (!t) return; // v274: null guard
     let temp = parseFloat(document.getElementById('tempVal').value) || 0;
     if (useFahrenheit) temp = Math.round((temp - 32) * 5 / 9 * 10) / 10;
     const hum  = parseFloat(document.getElementById('humVal').value)  || 0;
@@ -6116,13 +6446,14 @@ Evaluate these values. Flag any issues. Give 1-2 specific corrections if needed.
       temp, hum, ppfd, co2val, leafVpd, note,
       vpd: parseFloat(calcVPD(temp, hum).toFixed(3))
     };
-    tents[currentTent].logs = tents[currentTent].logs || [];
-    tents[currentTent].logs.push(log.id);
+    t.logs = t.logs || [];
+    t.logs.push(log.id);
     await dbPut('logs', log);
+    await dbPut('tents', t); // v255: use captured t (not tents[currentTent]) to avoid post-await tent switch race
     if (noteEl) { noteEl.value = ''; const mc = document.getElementById('monitorNoteCount'); if (mc) mc.textContent = '100'; }
     buildTentBar();
     const airVpdNow = log.vpd.toFixed(2);
-    dbGetAll('logs').then(logs => { renderVpdSparkline(logs); renderVpdStats(logs); });
+    dbGetAll('logs').then(logs => { renderVpdSparkline(logs); renderVpdStats(logs); renderStageTimeline(logs); }); // v286: sync Analysis tab
     const dispMonTemp = useFahrenheit ? (log.temp * 9/5 + 32).toFixed(1) + '°F' : log.temp + '°C';
     const _L = appLang === 'en';
     showSavePopup(_L ? 'Monitor Saved ✅' : '環境を記録しました ✅', [
