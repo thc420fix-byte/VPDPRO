@@ -6542,7 +6542,7 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
         /* Detect SW waiting (update already downloaded) */
         if (reg.waiting) {
           _swWaiting = reg.waiting;
-          document.getElementById('pwaUpdateBanner').classList.add('show');
+          if (_isStandalone) { applySwUpdate(); } else { document.getElementById('pwaUpdateBanner').classList.add('show'); }
         }
         reg.addEventListener('updatefound', () => {
           const sw = reg.installing;
@@ -6550,7 +6550,7 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
           sw.addEventListener('statechange', () => {
             if (sw.state === 'installed' && navigator.serviceWorker.controller) {
               _swWaiting = sw;
-              document.getElementById('pwaUpdateBanner').classList.add('show');
+              if (_isStandalone) { applySwUpdate(); } else { document.getElementById('pwaUpdateBanner').classList.add('show'); }
             }
           });
         });
