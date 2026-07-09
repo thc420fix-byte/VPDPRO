@@ -1148,7 +1148,7 @@
         </div>
       </div>
       <div class="toggle-row">
-        <div class="toggle-btn active-day" id="btnDayNight" role="button" aria-pressed="true" onclick="toggleDayNight()">💡 Light ON</div>
+        <div class="toggle-btn active-day" id="btnDayNight" role="button" aria-pressed="true" onclick="toggleDayNight()" data-i18n="daynightbtn.on">💡 Light ON</div>
         <div class="toggle-btn" id="btnLeaf" role="button" aria-pressed="false" onclick="toggleLeaf()" data-i18n="btn.leaf_vpd">🌿 Leaf VPD</div>
         <div class="toggle-btn" id="btnCO2" role="button" aria-pressed="false" onclick="toggleCO2()" data-i18n="btn.co2">💨 CO₂</div>
       </div>
@@ -1194,7 +1194,7 @@
         </div>
         <div style="padding:2px 0 0;">
           <div style="position:relative;">
-            <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('monitorNoteClear').style.display=this.value?'flex':'none';document.getElementById('monitorNoteCount').textContent=100-this.value.length;" style="width:100%;box-sizing:border-box;padding:7px 32px 7px 10px;background:rgba(127,127,127,0.1);border:none;border-radius:8px;color:var(--text);font-size:0.72rem;outline:none;margin-bottom:3px;">
+            <input id="monitorNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('monitorNoteClear').style.display=this.value?'flex':'none';document.getElementById('monitorNoteCount').textContent=Math.max(0,100-this.value.length);" style="width:100%;box-sizing:border-box;padding:7px 32px 7px 10px;background:rgba(127,127,127,0.1);border:none;border-radius:8px;color:var(--text);font-size:0.72rem;outline:none;margin-bottom:3px;">
             <button id="monitorNoteClear" onclick="document.getElementById('monitorNoteInput').value='';this.style.display='none';document.getElementById('monitorNoteInput').focus();document.getElementById('monitorNoteCount').textContent=100;" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);width:22px;height:22px;border:none;border-radius:50%;background:rgba(127,127,127,0.25);color:var(--text2);font-size:0.65rem;cursor:pointer;align-items:center;justify-content:center;padding:0;line-height:1;">✕</button>
           </div>
           <div style="text-align:right;font-size:0.6rem;color:var(--text2);opacity:0.5;margin-top:-1px;padding-right:2px;"><span id="monitorNoteCount">100</span></div>
@@ -1358,7 +1358,7 @@
     </div>
     <div style="padding:4px 8px 0;">
       <div style="position:relative;">
-        <input id="feedingNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('feedingNoteClear').style.display=this.value?'flex':'none';document.getElementById('feedingNoteCount').textContent=100-this.value.length;" style="width:100%;box-sizing:border-box;padding:7px 32px 7px 10px;background:rgba(127,127,127,0.1);border:none;border-radius:8px;color:var(--text);font-size:0.72rem;outline:none;margin-bottom:3px;">
+        <input id="feedingNoteInput" type="text" data-i18n-placeholder="memo.placeholder" placeholder="Note (optional)" maxlength="100" oninput="document.getElementById('feedingNoteClear').style.display=this.value?'flex':'none';document.getElementById('feedingNoteCount').textContent=Math.max(0,100-this.value.length);" style="width:100%;box-sizing:border-box;padding:7px 32px 7px 10px;background:rgba(127,127,127,0.1);border:none;border-radius:8px;color:var(--text);font-size:0.72rem;outline:none;margin-bottom:3px;">
         <button id="feedingNoteClear" onclick="document.getElementById('feedingNoteInput').value='';this.style.display='none';document.getElementById('feedingNoteInput').focus();document.getElementById('feedingNoteCount').textContent=100;" style="display:none;position:absolute;right:4px;top:50%;transform:translateY(-50%);width:20px;height:20px;border:none;border-radius:50%;background:rgba(127,127,127,0.25);color:var(--text2);font-size:0.62rem;cursor:pointer;align-items:center;justify-content:center;padding:0;line-height:1;">✕</button>
       </div>
       <div style="text-align:right;font-size:0.6rem;color:var(--text2);opacity:0.5;margin-top:-1px;padding-right:2px;"><span id="feedingNoteCount">100</span></div>
@@ -1444,10 +1444,10 @@
 <div id="toast" class="toast"></div>
 
   <!-- SW update banner -->
-  <div id="pwaUpdateBanner" role="dialog" data-i18n-aria="pwa.update_aria" aria-label="アップデート">
+  <div id="pwaUpdateBanner" role="dialog" aria-hidden="true" data-i18n-aria="pwa.update_aria" aria-label="アップデート">
     <div class="upd-text" data-i18n="pwa.update_avail">🌿 新バージョンが利用可能です</div>
     <button class="upd-btn" onclick="applySwUpdate()" data-i18n="pwa.update_now">今すぐ更新</button>
-    <button class="upd-close" onclick="document.getElementById('pwaUpdateBanner').classList.remove('show')" data-i18n-aria="pwa.close_aria" aria-label="閉じる">✕</button>
+    <button class="upd-close" onclick="document.getElementById('pwaUpdateBanner').classList.remove('show');this.closest('#pwaUpdateBanner').setAttribute('aria-hidden','true')" data-i18n-aria="pwa.close_aria" aria-label="閉じる">✕</button>
   </div>
 
 <!-- Bottom Navigation -->
@@ -1471,7 +1471,7 @@
 </nav>
 
 <!-- Save ポップアップ -->
-<div id="savePopup" class="save-popup" onclick="document.getElementById('savePopup').classList.remove('show')">
+<div id="savePopup" class="save-popup" role="dialog" aria-hidden="true" onclick="this.classList.remove('show');this.setAttribute('aria-hidden','true')">
   <div class="save-popup-box">
     <div style="font-size:2rem;margin-bottom:8px;">✅</div>
     <div id="savePopupTitle" style="font-size:1.1rem;font-weight:700;color:var(--accent);margin-bottom:12px;">Saved!</div>
@@ -1750,7 +1750,9 @@
     }
   };
   const tr = k => (STRINGS[appLang]?.[k]) ?? (STRINGS.ja[k] ?? k);
-  const esc = s => s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+  // v314: 数値(pH/EC等)がそのまま渡されると .replace が無く TypeError で落ちるため、
+  // 文字列化してからエスケープする（editLog の row() 経由で実際に発生した実クラッシュを修正）。
+  const esc = s => (s === null || s === undefined || s === '') ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
   /* === アプリの状態 === */
   const MAX_TENTS = 9;
@@ -2569,7 +2571,9 @@
   }
   function adjustLeafOffset(delta) {
     if (!tents[currentTent]) return; // v272: null guard
-    let c = tents[currentTent].leafOffset || -2.0;
+    // v318: || だと offset がちょうど 0 の瞬間に falsy 判定でデフォルト -2.0 へ巻き戻る
+    // (+/-ボタンで0を跨ぐたびに値がリセットされる実バグだった)。null/undefined のみ既定値にする。
+    let c = tents[currentTent].leafOffset ?? -2.0;
     c = Math.max(-10, Math.min(10, Math.round((c + delta)*10)/10));
     tents[currentTent].leafOffset = c;
     const input = document.getElementById('leafOffsetInput');
@@ -2669,7 +2673,7 @@
     if (!tents[currentTent]) { _applyUnitUI(); return; } // v275: null guard
     const c = tents[currentTent].temp;
     document.getElementById('tempVal').value = useFahrenheit ? Math.round(c * 9/5 + 32) : Math.round(c);
-    const offset = tents[currentTent].leafOffset || -2.0;
+    const offset = tents[currentTent].leafOffset ?? -2.0;
     const offsetEl = document.getElementById('leafOffsetInput');
     if (offsetEl) offsetEl.value = useFahrenheit ? (offset * 9/5).toFixed(1) : offset.toFixed(1);
     // Water temp unit label + convert displayed value
@@ -2878,13 +2882,13 @@
     dbGetAll('logs').then(all => {
       const tent = tents[currentTent];
       if (!tent) return; // v280: null guard (async callback — tent may have changed)
-      const last = all.filter(l => l.tentId === tent.id && (Number(l.cycle)||1) === (Number(tent.cycle)||1) && (l.ph || l.waterTemp || l.ec))
+      const last = all.filter(l => l.tentId === tent.id && (Number(l.cycle)||1) === (Number(tent.cycle)||1) && (l.ph != null || l.waterTemp != null || l.ec != null))
                       .sort((a, b) => (b.ts || 0) - (a.ts || 0))[0];
       if (!last) return;
-      if (!phEl.value && last.ph)                      { phEl.value = last.ph; }
+      if (!phEl.value && last.ph != null)               { phEl.value = last.ph; }
       if (wtEl && !wtEl.value && last.waterTemp != null) { wtEl.value = useFahrenheit ? parseFloat((last.waterTemp * 9/5 + 32).toFixed(1)) : last.waterTemp; }
-      if (ecEl && !ecEl.value && last.ec)              { ecEl.value = last.ec; }
-      if (roEl && !roEl.value && last.runoffEc)        { roEl.value = last.runoffEc; }
+      if (ecEl && !ecEl.value && last.ec != null)       { ecEl.value = last.ec; }
+      if (roEl && !roEl.value && last.runoffEc != null) { roEl.value = last.runoffEc; }
       updateFeedingTargets();
     });
   }
@@ -3998,9 +4002,11 @@
     t.logs = t.logs || [];
     t.logs.push(log.id);
     // Save後も入力値をテントに紐付けて保持（タブ切替後も残る）
+    // v318: || だと ph/ec/waterTemp が正当な 0 のとき消えてしまう
+    // (saveCurrentTentState 側の ?? 実装と矛盾していた)ため ?? に統一。
     t.lastFeeding = {
-      ph: log.ph || '', ec: log.ec || '',
-      runoffEc: log.runoffEc || '', waterTemp: log.waterTemp || ''
+      ph: log.ph ?? '', ec: log.ec ?? '',
+      runoffEc: log.runoffEc ?? '', waterTemp: log.waterTemp ?? ''
     };
     await dbPut('logs', log);
     if (currentTent === _saveIdx) await dbPut('tents', t);
@@ -4165,7 +4171,7 @@
       const tent = tents[currentTent];
       if (!tent) { el.innerHTML = ''; return; }
       const recent = all
-        .filter(l => l.tentId === tent.id && (Number(l.cycle)||1) === (Number(tent.cycle)||1) && (l.ph || l.ec || l.waterTemp))
+        .filter(l => l.tentId === tent.id && (Number(l.cycle)||1) === (Number(tent.cycle)||1) && (l.ph != null || l.ec != null || l.waterTemp != null))
         .sort((a, b) => (b.ts || 0) - (a.ts || 0))
         .slice(0, 5);
       if (!recent.length) { el.innerHTML = ''; return; }
@@ -5406,9 +5412,13 @@ function classifyVpd(vpd, lo, hi) {
 
   async function _pinNukeAllData() {
     try {
+      // v315: 自タブが保持する接続を閉じないと deleteDatabase が 'blocked' のまま
+      // 無期限にハングし、PIN3回失敗時の消去が完了しない（セキュリティ機能の実質的な無効化）。
+      // 自接続を閉じ、onblocked も解決させて必ず抜けるようにする。
+      if (typeof db !== 'undefined' && db) { try { db.close(); } catch(_) {} }
       await new Promise(r => {
         const req = indexedDB.deleteDatabase('VPD_FINAL_DB');
-        req.onsuccess = r; req.onerror = r;
+        req.onsuccess = r; req.onerror = r; req.onblocked = r;
       });
     } catch(e) {}
     _cryptoKey = null;
@@ -5438,8 +5448,10 @@ function classifyVpd(vpd, lo, hi) {
     const render = () => {
       const remain = _pinLockRemain();
       if (remain <= 0) { location.reload(); return; }
-      const h = Math.floor(remain / 3600000);
-      const m = Math.ceil((remain % 3600000) / 60000);
+      // v316: 分を先に ceil してから時に繰り上げないと「23h 60m」のような表示になる
+      const totalMin = Math.ceil(remain / 60000);
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
       msg.innerHTML = appLang === 'en'
         ? `<div style="font-size:2rem;">🔒</div><div>Locked after ${_PIN_MAX} wrong attempts</div><div style="font-size:1.1rem;color:var(--text);font-weight:700;">${h}h ${m}m remaining</div><div style="font-size:0.7rem;opacity:0.7;">Your data is safe</div>`
         : `<div style="font-size:2rem;">🔒</div><div>PINを${_PIN_MAX}回間違えたためロック中</div><div style="font-size:1.1rem;color:var(--text);font-weight:700;">残り ${h}時間${m}分</div><div style="font-size:0.7rem;opacity:0.7;">データは消えていません</div>`;
@@ -5493,7 +5505,15 @@ function classifyVpd(vpd, lo, hi) {
     _pinSubmit();
   }
 
-  async function _pinSubmit() {
+  // PBKDF2導出(21万回イテレーション)は100ms超かかることがあり、120ms後の自動送信を
+  // 素早く連打すると前回の _pinSubmit が完了する前に次回が走り、非同期処理が重複実行される
+  // (正しいPINでも解除失敗・失敗カウンター破損の原因になる)。Promiseチェーンで直列化する。
+  let _pinSubmitChain = Promise.resolve();
+  function _pinSubmit() {
+    _pinSubmitChain = _pinSubmitChain.then(() => _pinSubmitInner());
+    return _pinSubmitChain;
+  }
+  async function _pinSubmitInner() {
     const buf = _pinBuf;
     _pinBuf = ''; _updatePinDots();
 
@@ -6414,9 +6434,11 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
   function showSavePopup(title, lines) {
     document.getElementById('savePopupTitle').textContent = title;
     document.getElementById('savePopupBody').innerHTML = lines.map(l => `<div>${l}</div>`).join('');
-    document.getElementById('savePopup').classList.add('show');
+    const _pop = document.getElementById('savePopup');
+    _pop.classList.add('show');
+    _pop.removeAttribute('aria-hidden');
     clearTimeout(_savePopupTimer);
-    _savePopupTimer = setTimeout(() => document.getElementById('savePopup').classList.remove('show'), 3000);
+    _savePopupTimer = setTimeout(() => { _pop.classList.remove('show'); _pop.setAttribute('aria-hidden', 'true'); }, 3000);
   }
 
   /* === Monitor ログ保存 === */
@@ -6542,7 +6564,10 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
         /* Detect SW waiting (update already downloaded) */
         if (reg.waiting) {
           _swWaiting = reg.waiting;
-          if (_isStandalone) { applySwUpdate(); } else { document.getElementById('pwaUpdateBanner').classList.add('show'); }
+          if (_isStandalone) { /* v320: ホーム画面PWAでは自動リロードが再検知ループを起こし
+                                    「消せないバナー」に見えていたため、強制リロードせず
+                                    次回起動時に自然切り替わるのを待つだけにする（無表示）。 */ }
+          else { const _b = document.getElementById('pwaUpdateBanner'); _b.classList.add('show'); _b.removeAttribute('aria-hidden'); }
         }
         reg.addEventListener('updatefound', () => {
           const sw = reg.installing;
@@ -6550,7 +6575,10 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
           sw.addEventListener('statechange', () => {
             if (sw.state === 'installed' && navigator.serviceWorker.controller) {
               _swWaiting = sw;
-              if (_isStandalone) { applySwUpdate(); } else { document.getElementById('pwaUpdateBanner').classList.add('show'); }
+              if (_isStandalone) { /* v320: ホーム画面PWAでは自動リロードが再検知ループを起こし
+                                    「消せないバナー」に見えていたため、強制リロードせず
+                                    次回起動時に自然切り替わるのを待つだけにする（無表示）。 */ }
+          else { const _b = document.getElementById('pwaUpdateBanner'); _b.classList.add('show'); _b.removeAttribute('aria-hidden'); }
             }
           });
         });
