@@ -671,15 +671,18 @@
       border: 1.5px solid var(--accent);
       border-radius: 14px;
       padding: 12px 16px;
-      display: flex;
+      /* v328: 従来は display:flex + transform:translateY(-100%-30px) で隠していたが、
+         ホーム画面PWA(standalone)では env(safe-area-inset-top)≈59px の分だけ基準位置が
+         下がり、-86px の移動では上に押し出しきれず下端が画面内に残っていた
+         (実機診断で top:-28px に居座るのを確認)。transform 頼みをやめ、
+         非表示時は display:none で完全に消す。 */
+      display: none;
       align-items: center;
       gap: 10px;
       z-index: 5500;
       box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-      transform: translateY(calc(-100% - 30px));
-      transition: transform 0.3s ease;
     }
-    #pwaUpdateBanner.show { transform: translateY(0); }
+    #pwaUpdateBanner.show { display: flex; }
     /* v307: バナー表示中はコンテンツを押し下げて被らないようにする */
     body:has(#pwaUpdateBanner.show) { padding-top: calc(max(8px, env(safe-area-inset-top)) + 64px); }
     #pwaUpdateBanner .upd-text { flex: 1; font-size: 0.82rem; color: var(--text); }
@@ -6509,7 +6512,7 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
     /* v324: 設定画面末尾にビルド番号 + 実行時判定値を表示し、
        「実機で今どのバージョン/どの判定結果が動いているか」を
        開発者ツール無しでユーザー自身がスクリーンショットで確認・報告できるようにする。 */
-    const APP_BUILD = 'v327';
+    const APP_BUILD = 'v328';
 
     const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
       || ('standalone' in navigator && !!navigator.standalone);
