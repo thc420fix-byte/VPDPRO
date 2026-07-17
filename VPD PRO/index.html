@@ -6571,18 +6571,13 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
     /* Service Worker registration + update detection */
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').then(reg => {
-        /* v323: 「以前からこのブラウジングコンテキストがSW管理下だったか」を最初に確定させる。
-           ホーム画面に追加した直後のスタンドアロン起動は、Safariタブとは別の新規
-           ブラウジングコンテキストとして扱われることがあり、その場合 controller が
-           まだ無い＝初回インストール相当になる。_isStandalone の判定に加えて、
-           「本当に以前のバージョンからの更新か（_hadController）」でも二重にガードする。 */
+        /* v324: 「スタンドアロンかどうか」を実行時に判定してバナー表示を出し分ける方式は
+           端末によって _isStandalone / controller の状態が信頼できないケースがあり、
+           条件分岐だけではバナーの誤表示を防ぎきれなかった（実機で複数パターン確認済み）。
+           更新の適用自体は controllerchange → reload で既に裏側で行われるため、
+           通知バナーは判定に関わらず一切出さないことにする。 */
         const _hadController = !!navigator.serviceWorker.controller;
-        function _maybeShowBanner() {
-          if (_isStandalone || !_hadController) return; // 初回インストール/ホーム画面PWAではバナーを出さない
-          const _b = document.getElementById('pwaUpdateBanner');
-          _b.classList.add('show');
-          _b.removeAttribute('aria-hidden');
-        }
+        function _maybeShowBanner() { /* v324: バナー通知は恒久的に無効化 */ }
         /* Detect SW waiting (update already downloaded) */
         if (reg.waiting) {
           _swWaiting = reg.waiting;
