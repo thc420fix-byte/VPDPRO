@@ -6509,7 +6509,7 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
     /* v324: 設定画面末尾にビルド番号 + 実行時判定値を表示し、
        「実機で今どのバージョン/どの判定結果が動いているか」を
        開発者ツール無しでユーザー自身がスクリーンショットで確認・報告できるようにする。 */
-    const APP_BUILD = 'v326';
+    const APP_BUILD = 'v327';
 
     const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
       || ('standalone' in navigator && !!navigator.standalone);
@@ -6518,19 +6518,33 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
 
     (function _renderBuildLabel() {
       const el = document.getElementById('appBuildLabel');
-      const banner = document.getElementById('pwaUpdateBanner');
-      if (!el || !banner) return;
+      if (!el) return;
       function update() {
         const ctrl = ('serviceWorker' in navigator) && !!navigator.serviceWorker.controller;
-        const cs = getComputedStyle(banner);
+        // v327: 「上部に残るバナー」の正体を突き止める。
+        // pwaUpdateBanner という id を持つ要素の数(重複id検出)と、
+        // バナー本文テキストを含む要素のうち画面上部に実際に見えているものを探す。
+        const byId = document.querySelectorAll('#pwaUpdateBanner');
+        let culprit = 'none';
+        const all = document.querySelectorAll('div,section,header,aside');
+        for (const n of all) {
+          const t = (n.textContent || '');
+          if (!/利用可能|New version available/.test(t)) continue;
+          if (t.length > 120) continue; // バナー本体だけに絞る(親コンテナ除外)
+          const r = n.getBoundingClientRect();
+          const cs = getComputedStyle(n);
+          const onScreen = r.top < 120 && r.bottom > 0 && cs.visibility !== 'hidden' && cs.display !== 'none' && parseFloat(cs.opacity) > 0.05;
+          if (onScreen) {
+            culprit = (n.id || n.tagName) + '@top' + Math.round(r.top) + ' tf:' + cs.transform.replace(/\s+/g,'').slice(0,24);
+            break;
+          }
+        }
         el.textContent = 'build ' + APP_BUILD + ' · standalone:' + _isStandalone + ' · sw:' + ctrl
-          + ' · cls:[' + banner.className + ']'
-          + ' · ariaHidden:' + banner.getAttribute('aria-hidden')
-          + ' · tf:' + cs.transform.replace(/\s+/g,'').slice(0,40);
+          + ' · #banner×' + byId.length
+          + ' · visible:' + culprit;
       }
       update();
-      new MutationObserver(update).observe(banner, { attributes: true, attributeFilter: ['class', 'aria-hidden', 'style'] });
-      setInterval(update, 1000);
+      setInterval(update, 800);
     })();
 
     /* 設定メニュー内のインストール行の表示制御 */
