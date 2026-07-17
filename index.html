@@ -1228,6 +1228,7 @@
           <button id="monitorSaveBtn" class="save-btn"
             onmousedown="startSaveHold('monitor',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
             ontouchstart="startSaveHold('monitor',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
+            onkeydown="handleSaveKeydown(event,'monitor',this)"
             style="width:100%;padding:11px;background:var(--accent);border:none;border-radius:13px;color:#000;font-size:0.88rem;font-weight:700;cursor:pointer;letter-spacing:0.02em;" data-i18n="btn.save">Save</button>
           <div style="text-align:center;font-size:0.56rem;color:rgba(255,255,255,0.28);margin-top:4px;letter-spacing:0.04em;" data-i18n="feed.press_hold">press &amp; hold</div>
         </div>
@@ -1367,6 +1368,7 @@
       <button id="feedingSaveBtn" class="save-btn"
         onmousedown="startSaveHold('feeding',this)" onmouseup="cancelSaveHold(this)" onmouseleave="cancelSaveHold(this)"
         ontouchstart="startSaveHold('feeding',this);event.preventDefault();" ontouchend="cancelSaveHold(this)" ontouchcancel="cancelSaveHold(this)"
+        onkeydown="handleSaveKeydown(event,'feeding',this)"
         style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;" data-i18n="btn.save">Save</button>
       <div style="text-align:center;font-size:0.58rem;color:var(--muted);margin-top:3px;letter-spacing:0.04em;" data-i18n="feed.press_hold">press &amp; hold</div>
     </div>
@@ -6430,6 +6432,14 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
       btn.classList.remove('holding');
     }
   }
+  // v321: 長押し(mousedown/touchstart)専用だとキーボード操作(Enter/Space)では保存できないため、
+  // キーボードでは長押しを要求せず即時保存する。
+  function handleSaveKeydown(e, type, btn) {
+    if (e.repeat) return;
+    if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+    e.preventDefault();
+    if (type === 'monitor') { saveMonitorLog(); } else { saveLog(); }
+  }
   let _savePopupTimer = null; // v251
   function showSavePopup(title, lines) {
     document.getElementById('savePopupTitle').textContent = title;
@@ -6584,7 +6594,13 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
         });
         /* Reload when SW takes over after SKIP_WAITING */
         let _refreshing = false;
+        /* v322: 初回インストール(まだcontrollerが無い状態からclients.claim()で
+           controlledになる瞬間)にもcontrollerchangeが発火し、ホーム画面に追加した
+           直後に問答無用でリロード→バナー誤表示の原因になっていたため、
+           「既にcontroller管理下だった」場合のみリロードする。 */
+        let _hadController = !!navigator.serviceWorker.controller;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!_hadController) { _hadController = true; return; }
           if (!_refreshing) { _refreshing = true; window.location.reload(); }
         });
       }).catch(err => {
