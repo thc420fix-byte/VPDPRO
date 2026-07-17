@@ -6509,7 +6509,7 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
     /* v324: 設定画面末尾にビルド番号 + 実行時判定値を表示し、
        「実機で今どのバージョン/どの判定結果が動いているか」を
        開発者ツール無しでユーザー自身がスクリーンショットで確認・報告できるようにする。 */
-    const APP_BUILD = 'v325';
+    const APP_BUILD = 'v326';
 
     const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
       || ('standalone' in navigator && !!navigator.standalone);
@@ -6518,9 +6518,19 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
 
     (function _renderBuildLabel() {
       const el = document.getElementById('appBuildLabel');
-      if (!el) return;
-      const ctrl = ('serviceWorker' in navigator) && !!navigator.serviceWorker.controller;
-      el.textContent = 'build ' + APP_BUILD + ' · standalone:' + _isStandalone + ' · sw:' + ctrl;
+      const banner = document.getElementById('pwaUpdateBanner');
+      if (!el || !banner) return;
+      function update() {
+        const ctrl = ('serviceWorker' in navigator) && !!navigator.serviceWorker.controller;
+        const cs = getComputedStyle(banner);
+        el.textContent = 'build ' + APP_BUILD + ' · standalone:' + _isStandalone + ' · sw:' + ctrl
+          + ' · cls:[' + banner.className + ']'
+          + ' · ariaHidden:' + banner.getAttribute('aria-hidden')
+          + ' · tf:' + cs.transform.replace(/\s+/g,'').slice(0,40);
+      }
+      update();
+      new MutationObserver(update).observe(banner, { attributes: true, attributeFilter: ['class', 'aria-hidden', 'style'] });
+      setInterval(update, 1000);
     })();
 
     /* 設定メニュー内のインストール行の表示制御 */
