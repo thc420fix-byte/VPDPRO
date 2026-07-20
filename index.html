@@ -934,7 +934,6 @@
         </div>
       </div>
       <div style="font-size:0.65rem;color:var(--muted);line-height:1.5;padding:0 4px;margin-bottom:6px;" data-i18n="settings.offline_note">100% offline — no account, no server.</div>
-      <div id="appBuildLabel" style="font-size:0.6rem;color:var(--muted);opacity:0.5;padding:0 4px;margin-bottom:6px;">build —</div>
 
       <!-- AI / Local LLM -->
       <div style="font-size:0.62rem;font-weight:600;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;padding:0 4px;margin-bottom:4px;margin-top:12px;" data-i18n="settings.ai_section">AI (Local LLM)</div>
@@ -6509,46 +6508,10 @@ Evaluate against targets. Flag issues clearly. Give 1-2 specific corrections if 
     let _pwaPrompt = null;
     let _swWaiting = null;
 
-    /* v324: 設定画面末尾にビルド番号 + 実行時判定値を表示し、
-       「実機で今どのバージョン/どの判定結果が動いているか」を
-       開発者ツール無しでユーザー自身がスクリーンショットで確認・報告できるようにする。 */
-    const APP_BUILD = 'v328';
-
     const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
       || ('standalone' in navigator && !!navigator.standalone);
     const _isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
       || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-    (function _renderBuildLabel() {
-      const el = document.getElementById('appBuildLabel');
-      if (!el) return;
-      function update() {
-        const ctrl = ('serviceWorker' in navigator) && !!navigator.serviceWorker.controller;
-        // v327: 「上部に残るバナー」の正体を突き止める。
-        // pwaUpdateBanner という id を持つ要素の数(重複id検出)と、
-        // バナー本文テキストを含む要素のうち画面上部に実際に見えているものを探す。
-        const byId = document.querySelectorAll('#pwaUpdateBanner');
-        let culprit = 'none';
-        const all = document.querySelectorAll('div,section,header,aside');
-        for (const n of all) {
-          const t = (n.textContent || '');
-          if (!/利用可能|New version available/.test(t)) continue;
-          if (t.length > 120) continue; // バナー本体だけに絞る(親コンテナ除外)
-          const r = n.getBoundingClientRect();
-          const cs = getComputedStyle(n);
-          const onScreen = r.top < 120 && r.bottom > 0 && cs.visibility !== 'hidden' && cs.display !== 'none' && parseFloat(cs.opacity) > 0.05;
-          if (onScreen) {
-            culprit = (n.id || n.tagName) + '@top' + Math.round(r.top) + ' tf:' + cs.transform.replace(/\s+/g,'').slice(0,24);
-            break;
-          }
-        }
-        el.textContent = 'build ' + APP_BUILD + ' · standalone:' + _isStandalone + ' · sw:' + ctrl
-          + ' · #banner×' + byId.length
-          + ' · visible:' + culprit;
-      }
-      update();
-      setInterval(update, 800);
-    })();
 
     /* 設定メニュー内のインストール行の表示制御 */
     function _refreshInstallRow() {
